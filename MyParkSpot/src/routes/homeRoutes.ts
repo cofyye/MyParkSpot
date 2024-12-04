@@ -1,9 +1,11 @@
-const express = require("express");
+import express from "express";
+
+import homeController from "../controllers/homeController";
+
 const router = express.Router();
-const homeController = require("../controllers/homeController");
 
 router.get("/", homeController.getHome);
 router.get("/mysql-data", homeController.getMysqlData);
 router.get("/redis-data", homeController.getRedisData);
 
-module.exports = router;
+export default router;

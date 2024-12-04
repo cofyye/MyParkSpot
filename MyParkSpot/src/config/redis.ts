@@ -1,5 +1,4 @@
-const redis = require("redis");
-require("dotenv").config();
+import * as redis from "redis";
 
 const client = redis.createClient({
   url: process.env.REDIS_URL,
@@ -16,4 +15,4 @@ async function connectRedis() {
 
 connectRedis();
 
-module.exports = client;
+export default client;

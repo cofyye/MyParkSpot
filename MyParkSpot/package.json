@@ -2,9 +2,11 @@
   "name": "myparkspot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "ts-node ./src/app.ts",
+    "start:dev": "nodemon",
+    "build": "tsc"
   },
   "author": "",
   "license": "ISC",
@@ -14,5 +16,13 @@
     "express": "^4.21.1",
     "mysql2": "^3.11.5",
     "redis": "^4.7.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.1",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "tslib": "^2.8.1",
+    "typescript": "^5.7.2"
   }
 }

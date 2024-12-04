@@ -1,11 +1,13 @@
-const mysqlConnection = require("../config/mysql");
-const redisClient = require("../config/redis");
+import { Request, Response } from "express";
 
-exports.getHome = (req, res) => {
+import mysqlConnection from "../config/mysql";
+import redisClient from "../config/redis";
+
+const getHome = async (req: Request, res: Response): Promise<void> => {
   res.send("Welcome to the Home Page");
 };
 
-exports.getMysqlData = (req, res) => {
+const getMysqlData = async (req: Request, res: Response): Promise<void> => {
   mysqlConnection.query("SELECT * FROM events", (err, results) => {
     if (err) {
       console.error("Error fetching data from MySQL:", err);
@@ -16,7 +18,7 @@ exports.getMysqlData = (req, res) => {
   });
 };
 
-exports.getRedisData = async (req, res) => {
+const getRedisData = async (req: Request, res: Response): Promise<void> => {
   try {
     const value = await redisClient.get("kljuc");
     res.send(value);
@@ -25,3 +27,5 @@ exports.getRedisData = async (req, res) => {
     res.status(500).send("Error getting data from Redis");
   }
 };
+
+export default { getHome, getMysqlData, getRedisData };
