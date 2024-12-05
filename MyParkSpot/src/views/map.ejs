@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyParkSpot - Mapa</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.fullscreen/Control.FullScreen.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css"
+    />
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+      }
+      #map {
+        height: calc(100% - 50px);
+        width: 100%;
+        position: absolute;
+        top: 50px;
+      }
+      nav {
+        height: 50px;
+        color: black;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+      }
+      nav a {
+        color: black;
+        text-decoration: none;
+        margin-left: 50px;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <span>MyParkSpot</span>
+      <a href="/">Home</a>
+    </nav>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.fullscreen/Control.FullScreen.js"></script>
+    <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+    <script>
+      const map = L.map("map", {
+        attributionControl: false,
+        zoomControl: false,
+        worldCopyJump: true,
+        maxBoundsViscosity: 1.0,
+      }).setView([43.3209, 21.8958], 14);
+
+      L.tileLayer(
+        "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+        {
+          subdomains: "abcd",
+          maxZoom: 19,
+          minZoom: 2,
+          opacity: 0.9,
+          detectRetina: true,
+        }
+      ).addTo(map);
+
+      L.control
+        .attribution({
+          position: "bottomleft",
+          prefix: false,
+        })
+        .addAttribution("Leaflet | &copy; OpenStreetMap &copy; CARTO")
+        .addTo(map);
+
+      L.control
+        .zoom({
+          position: "topleft",
+        })
+        .addTo(map);
+
+      L.control
+        .fullscreen({
+          position: "topright",
+          title: "View Fullscreen",
+          titleCancel: "Exit Fullscreen",
+        })
+        .addTo(map);
+
+      L.control
+        .locate({
+          position: "topright",
+          flyTo: true,
+          strings: {
+            title: "Show me where I am",
+          },
+        })
+        .addTo(map);
+    </script>
+  </body>
+</html>

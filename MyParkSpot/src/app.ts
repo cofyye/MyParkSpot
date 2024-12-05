@@ -7,6 +7,9 @@ import homeRoutes from "./routes/homeRoutes";
 const app = express();
 const port = 3000;
 
+app.set("view engine", "ejs");
+app.set("views", join(__dirname, "views"));
+
 app.use(express.static(join(__dirname, "public")));
 
 app.use("/", homeRoutes);

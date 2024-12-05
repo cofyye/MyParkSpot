@@ -4,7 +4,11 @@ import mysqlConnection from "../config/mysql";
 import redisClient from "../config/redis";
 
 const getHome = async (req: Request, res: Response): Promise<void> => {
-  res.send("Welcome to the Home Page");
+  res.render("home");
+};
+
+const getMap = async (req: Request, res: Response): Promise<void> => {
+  res.render("map");
 };
 
 const getMysqlData = async (req: Request, res: Response): Promise<void> => {
@@ -28,4 +32,4 @@ const getRedisData = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export default { getHome, getMysqlData, getRedisData };
+export default { getHome, getMap, getMysqlData, getRedisData };
