@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <%- include('includes/meta') %> <%- include('includes/styles') %>
     <title>MyParkSpot - Mapa</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link
@@ -13,7 +12,17 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"
+    />
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap");
+
       body,
       html {
         height: 100%;
@@ -41,6 +50,40 @@
         text-decoration: none;
         margin-left: 50px;
       }
+      .custom-div-icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .marker-cluster div {
+        font-family: "Bebas Neue", sans-serif;
+        font-weight: 800;
+        font-size: large;
+      }
+
+      .marker-cluster span {
+        line-height: 32px;
+      }
+
+      .marker-cluster-small {
+        background-color: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(0, 0, 0, 0.2);
+      }
+      .marker-cluster-medium {
+        background-color: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(0, 0, 0, 0.2);
+      }
+
+      .marker-cluster-large {
+        background-color: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(0, 0, 0, 0.2);
+      }
+
+      .marker-cluster div {
+        background-color: rgb(120, 120, 120);
+        color: white;
+      }
     </style>
   </head>
   <body>
@@ -52,6 +95,7 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.fullscreen/Control.FullScreen.js"></script>
     <script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
     <script>
       const map = L.map("map", {
         attributionControl: false,
@@ -64,7 +108,7 @@
         "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
         {
           subdomains: "abcd",
-          maxZoom: 19,
+          maxZoom: 20,
           minZoom: 2,
           opacity: 0.9,
           detectRetina: true,
@@ -102,6 +146,66 @@
           },
         })
         .addTo(map);
+      const parkingIconHtml =
+        '<i class="fa-sharp-duotone fa-regular fa-circle-parking" style="font-size: 30px; color: #669c35;"></i>';
+      const reservedParkingIconHtml =
+        '<i class="fa-sharp-duotone fa-regular fa-circle-parking" style="font-size: 30px; color: red;"></i>';
+
+      const parkingIcon = L.divIcon({
+        html: parkingIconHtml,
+        className: "custom-div-icon",
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+        popupAnchor: [0, -30],
+      });
+
+      const reservedParkingIcon = L.divIcon({
+        html: reservedParkingIconHtml,
+        className: "custom-div-icon",
+        iconSize: [30, 30],
+        iconAnchor: [15, 30],
+        popupAnchor: [0, -30],
+      });
+
+      const parkingSpots = [
+        { name: "Parking Centar", type: "Free", lat: 43.3215, lng: 21.8954 },
+        { name: "Kalča Parking", type: "Reserved", lat: 43.3198, lng: 21.8962 },
+        { name: "Niška Tvrđava", type: "Free", lat: 43.321, lng: 21.9 },
+        {
+          name: "Zona II - Bulevar",
+          type: "Reserved",
+          lat: 43.3176,
+          lng: 21.9032,
+        },
+        { name: "Kej Parking", type: "Free", lat: 43.3242, lng: 21.8921 },
+        { name: "Čair Parking", type: "Free", lat: 43.3149, lng: 21.9058 },
+        { name: "Delta Planet", type: "Reserved", lat: 43.3132, lng: 21.9175 },
+        {
+          name: "Parking Železnička Stanica",
+          type: "Free",
+          lat: 43.3065,
+          lng: 21.8843,
+        },
+        {
+          name: "Parking Železnička Stanica 2",
+          type: "Free",
+          lat: 43.3068,
+          lng: 21.8843,
+        },
+        { name: "Medijana", type: "Reserved", lat: 43.3121, lng: 21.9178 },
+        { name: "Parking Pantelej", type: "Free", lat: 43.33, lng: 21.8974 },
+      ];
+
+      const markers = L.markerClusterGroup();
+
+      parkingSpots.forEach((spot) => {
+        const marker = L.marker([spot.lat, spot.lng], {
+          icon: spot.type === "Free" ? parkingIcon : reservedParkingIcon,
+        }).bindPopup(`<strong>${spot.name}</strong><br>Type: ${spot.type}`);
+        markers.addLayer(marker);
+      });
+
+      map.addLayer(markers);
     </script>
   </body>
 </html>
