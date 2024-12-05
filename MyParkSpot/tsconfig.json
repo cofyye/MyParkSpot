@@ -3,6 +3,8 @@
     "module": "commonjs",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "target": "es6",
     "noImplicitAny": true,
     "moduleResolution": "node",
@@ -13,6 +15,6 @@
       "*": ["node_modules/*", "src/types/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "tailwind.config.js", "postcss.config.js"],
   "exclude": ["node_modules"]
 }

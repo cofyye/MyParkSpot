@@ -1,19 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <%- include('includes/meta') %> <%- include('includes/styles') %>
     <title>MyParkSpot - Home</title>
+    <%- include('shared/includes/meta') %> <%- include('shared/includes/styles')
+    %>
   </head>
   <body>
-    <%- include('partials/header') %>
+    <%- include('shared/partials/header') %>
     <div class="center">
       <button id="findParking">Find Parking Spot</button>
       <div id="map" style="display: none"></div>
     </div>
-    <%- include('partials/footer') %>
+    <%- include('shared/partials/footer') %>
     <script>
-      document.getElementById("findParking").addEventListener("click", () => {
-        window.location.href = "/map";
+      document.getElementById('findParking').addEventListener('click', () => {
+        window.location.href = '/map';
       });
     </script>
   </body>

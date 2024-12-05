@@ -1,19 +1,37 @@
-import express from "express";
-import { join } from "path";
-import "dotenv/config";
+import 'dotenv/config';
+import express from 'express';
+import { join } from 'path';
+import { AppDataSource } from './config/data-source';
+import redisClient from './config/redis';
 
-import homeRoutes from "./routes/homeRoutes";
+import homeRoutes from './routes/homeRoutes';
+import authRoutes from './routes/authRoutes';
 
-const app = express();
-const port = 3000;
+const main = async (): Promise<void> => {
+  try {
+    await AppDataSource.initialize();
+    console.log('Database connection established!');
 
-app.set("view engine", "ejs");
-app.set("views", join(__dirname, "views"));
+    await redisClient.connect();
+    console.log('Connected to Redis');
 
-app.use(express.static(join(__dirname, "public")));
+    const app = express();
+    const port = 3000;
 
-app.use("/", homeRoutes);
+    app.set('view engine', 'ejs');
+    app.set('views', join(__dirname, 'views'));
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
+    app.use(express.static(join(__dirname, 'public')));
+
+    app.use('/', homeRoutes);
+    app.use('/auth', authRoutes);
+
+    app.listen(port, () => {
+      console.log(`Example app listening on port ${port}`);
+    });
+  } catch (error: unknown) {
+    console.error('Database connection error:', error);
+  }
+};
+
+main();

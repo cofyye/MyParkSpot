@@ -1,8 +1,10 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <%- include('includes/meta') %> <%- include('includes/styles') %> <%-
-    include('includes/leafletstyles') %>
+    <%- include('shared/includes/meta') %>
+    <%- include('shared/includes/styles') %>
+    <%-
+    include('shared/includes/leafletstyles') %>
     <title>MyParkSpot - Mapa</title>
   </head>
   <body>
@@ -11,7 +13,7 @@
       <a href="/">Home</a>
     </nav>
     <div id="map"></div>
-    <%- include('includes/leafletscripts') %>
+    <%- include('shared/includes/leafletscripts') %>
     <script>
       const map = L.map("map", {
         attributionControl: false,
@@ -28,7 +30,7 @@
           minZoom: 2,
           opacity: 0.9,
           detectRetina: true,
-        }
+        },
       ).addTo(map);
 
       L.control
