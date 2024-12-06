@@ -5,17 +5,29 @@
     <%- include('shared/includes/meta') %> <%- include('shared/includes/styles')
     %>
   </head>
-  <body>
+  <body class="bg-background">
     <%- include('shared/partials/header') %>
-    <div class="center">
-      <button id="findParking">Find Parking Spot</button>
-      <div id="map" style="display: none"></div>
-    </div>
+    <main>
+      <section
+        class="mb-32 mt-32 flex flex-col items-center justify-center p-4 md:p-6">
+        <h1 class="mb-4 font-serif text-5xl font-medium md:mb-6 md:text-8xl">
+          MyParkSpot.
+        </h1>
+        <h2
+          class="text-primary mb-2 text-center font-serif text-2xl font-bold md:text-4xl">
+          Your <span class="text-accent1">All-in-One</span> Parking Solution
+        </h2>
+        <p
+          class="text-secondary mb-4 text-center text-lg leading-relaxed md:mb-6 md:text-xl">
+          Easily find and reserve parking spots with our comprehensive tool.
+        </p>
+        <a
+          href="/map"
+          class="bg-primary hover:bg-hover mt-32 rounded-full border px-4 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105 sm:mt-0 md:px-6 md:py-3"
+          >Find Parking Spot
+        </a>
+      </section>
+    </main>
     <%- include('shared/partials/footer') %>
-    <script>
-      document.getElementById('findParking').addEventListener('click', () => {
-        window.location.href = '/map';
-      });
-    </script>
   </body>
 </html>

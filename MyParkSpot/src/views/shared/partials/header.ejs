@@ -1,1 +1,16 @@
-<header>Welcome to MyParkSpot.</header>
+<header class="bg-background flex items-center justify-between p-6 shadow-md">
+  <a class="text-primary flex items-center gap-2" href="/">
+    <p class="font-serif text-2xl font-medium">MyParkSpot</p>
+  </a>
+  <div class="hidden flex-1 items-center gap-12 px-16 md:flex">
+    <a class="link-hover link text-secondary hover:text-hover" href="/">Home</a>
+    <a class="link-hover link text-secondary hover:text-hover" href="/map"
+      >Find Parking</a
+    >
+  </div>
+  <a
+    href="/auth/login"
+    class="btn-sm btn transform rounded-full border px-6 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105">
+    Log in
+  </a>
+</header>
