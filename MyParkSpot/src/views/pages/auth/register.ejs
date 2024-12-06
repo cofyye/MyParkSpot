@@ -1,15 +1,114 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <title>MyParkSpot - Login</title>
-    <%- include('../../shared/includes/meta') %>
-    <%- include('../../shared/includes/styles') %>
+    <title>MyParkSpot - Register</title>
+    <%- include('../../shared/includes/meta') %> <%-
+    include('../../shared/includes/styles') %>
   </head>
   <body>
-    <form>
-      <input type="text" id="email" placeholder="Email" /> <br />
-      <input type="text" id="username" placeholder="Username" /> <br />
-      <button type="submit">Register</button>
-    </form>
+    <main class="flex min-h-screen items-center justify-center">
+      <section
+        class="flex h-fit w-fit flex-col items-center justify-center rounded-3xl border border-gray-300 px-6 py-10 shadow-lg sm:p-12">
+        <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">
+          <a href="/">MyParkSpot.</a>
+        </h1>
+        <h2 class="text-primary text-center font-serif text-2xl font-bold">
+          Create your account
+        </h2>
+        <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-sm">
+          <form class="space-y-6" action="#" method="POST">
+            <div class="flex space-x-4">
+              <div class="w-1/2">
+                <label
+                  for="first_name"
+                  class="block text-sm font-medium text-gray-900"
+                  >First Name</label
+                >
+                <div class="mt-2">
+                  <input
+                    name="first_name"
+                    type="text"
+                    required
+                    class="focus:border-primary focus:ring-primary outline-primary block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 sm:text-sm" />
+                </div>
+              </div>
+              <div class="w-1/2">
+                <label
+                  for="last_name"
+                  class="block text-sm font-medium text-gray-900"
+                  >Last Name</label
+                >
+                <div class="mt-2">
+                  <input
+                    name="last_name"
+                    type="text"
+                    required
+                    class="focus:border-primary focus:ring-primary outline-primary block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 sm:text-sm" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label
+                for="username"
+                class="block text-sm font-medium text-gray-900"
+                >Username</label
+              >
+              <div class="mt-2">
+                <input
+                  name="username"
+                  type="text"
+                  required
+                  class="focus:border-primary focus:ring-primary outline-primary block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 sm:text-sm" />
+              </div>
+            </div>
+            <div>
+              <label for="email" class="block text-sm font-medium text-gray-900"
+                >Email address</label
+              >
+              <div class="mt-2">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  required
+                  class="focus:border-primary focus:ring-primary outline-primary block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 sm:text-sm" />
+              </div>
+            </div>
+            <div>
+              <label
+                for="password"
+                class="block text-sm font-medium text-gray-900"
+                >Password</label
+              >
+              <div class="mt-2">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autocomplete="new-password"
+                  required
+                  class="focus:border-primary focus:ring-primary outline-primary block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 sm:text-sm" />
+              </div>
+            </div>
+            <div class="flex justify-center">
+              <button
+                type="submit"
+                class="bg-primary hover:bg-hover rounded-full border px-4 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-3">
+                Register
+              </button>
+            </div>
+          </form>
+          <p class="mt-4 text-center text-sm text-gray-600">
+            Already have an account?
+            <a
+              href="/auth/login"
+              class="text-primary font-medium hover:underline"
+              >Sign in</a
+            >
+          </p>
+        </div>
+      </section>
+    </main>
   </body>
 </html>
