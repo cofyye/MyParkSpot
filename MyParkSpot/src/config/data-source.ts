@@ -1,6 +1,8 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { User } from '../models/User';
+import { Car } from '../models/Car';
+import { ParkingSpot } from '../models/ParkingSpot';
 
 export const AppDataSource = new DataSource({
   type: 'mysql',
@@ -11,5 +13,5 @@ export const AppDataSource = new DataSource({
   database: process.env.MYSQL_DATABASE,
   synchronize: true,
   logging: false,
-  entities: [User],
+  entities: [User, Car, ParkingSpot],
 });

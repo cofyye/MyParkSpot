@@ -25,4 +25,8 @@ logs
 # Environment variables
 .env*
 
+# Mac generated
 .DS_Store
+
+# Ignore auto-generated CSS file built by Tailwind
+MyParkSpot/src/public/stylesheets/styles.css
