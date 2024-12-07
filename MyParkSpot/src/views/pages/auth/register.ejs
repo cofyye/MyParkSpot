@@ -12,38 +12,38 @@
         <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">
           <a href="/">MyParkSpot.</a>
         </h1>
-        <h2 class="text-primary text-center font-serif text-2xl font-bold">
+        <h2 class="text-center font-serif text-2xl font-bold text-primary">
           Create your account
         </h2>
         <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form class="space-y-6" action="#" method="POST">
+          <form class="space-y-6" action="/auth/register" method="POST">
             <div class="flex space-x-4">
               <div class="w-1/2">
                 <label
-                  for="first_name"
+                  for="firstName"
                   class="block text-sm font-medium text-gray-900"
                   >First Name</label
                 >
                 <div class="mt-2">
                   <input
-                    name="first_name"
+                    name="firstName"
                     type="text"
                     required
-                    class="focus:border-primary focus:ring-primary outline-primary block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 sm:text-sm" />
+                    class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 outline-primary focus:border-primary focus:ring-primary sm:text-sm" />
                 </div>
               </div>
               <div class="w-1/2">
                 <label
-                  for="last_name"
+                  for="lastName"
                   class="block text-sm font-medium text-gray-900"
                   >Last Name</label
                 >
                 <div class="mt-2">
                   <input
-                    name="last_name"
+                    name="lastName"
                     type="text"
                     required
-                    class="focus:border-primary focus:ring-primary outline-primary block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 sm:text-sm" />
+                    class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 outline-primary focus:border-primary focus:ring-primary sm:text-sm" />
                 </div>
               </div>
             </div>
@@ -58,7 +58,7 @@
                   name="username"
                   type="text"
                   required
-                  class="focus:border-primary focus:ring-primary outline-primary block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 sm:text-sm" />
+                  class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 outline-primary focus:border-primary focus:ring-primary sm:text-sm" />
               </div>
             </div>
             <div>
@@ -70,9 +70,8 @@
                   id="email"
                   name="email"
                   type="email"
-                  autocomplete="email"
                   required
-                  class="focus:border-primary focus:ring-primary outline-primary block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 sm:text-sm" />
+                  class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 outline-primary focus:border-primary focus:ring-primary sm:text-sm" />
               </div>
             </div>
             <div>
@@ -86,15 +85,14 @@
                   id="password"
                   name="password"
                   type="password"
-                  autocomplete="new-password"
                   required
-                  class="focus:border-primary focus:ring-primary outline-primary block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 sm:text-sm" />
+                  class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 outline-primary focus:border-primary focus:ring-primary sm:text-sm" />
               </div>
             </div>
             <div class="flex justify-center">
               <button
                 type="submit"
-                class="bg-primary hover:bg-hover rounded-full border px-4 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-3">
+                class="rounded-full border bg-primary px-4 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105 hover:bg-hover md:px-6 md:py-3">
                 Register
               </button>
             </div>
@@ -103,7 +101,7 @@
             Already have an account?
             <a
               href="/auth/login"
-              class="text-primary font-medium hover:underline"
+              class="font-medium text-primary hover:underline"
               >Sign in</a
             >
           </p>

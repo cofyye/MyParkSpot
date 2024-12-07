@@ -4,7 +4,7 @@ import { User } from '../models/User';
 import { Car } from '../models/Car';
 import { ParkingSpot } from '../models/ParkingSpot';
 
-export const AppDataSource = new DataSource({
+export const MysqlDataSource = new DataSource({
   type: 'mysql',
   host: process.env.MYSQL_HOST,
   port: parseInt(process.env.MYSQL_PORT || '3306'),

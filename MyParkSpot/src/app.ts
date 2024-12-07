@@ -1,7 +1,15 @@
 import 'dotenv/config';
 import express from 'express';
 import { join } from 'path';
-import { AppDataSource } from './config/data-source';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import hpp from 'hpp';
+import helmet from 'helmet';
+import flash from 'express-flash';
+import expressSession from 'express-session';
+import initPassport from './config/passport';
+import passport from 'passport';
+import { MysqlDataSource } from './config/data-source';
 import redisClient from './config/redis';
 
 import homeRoutes from './routes/homeRoutes';
@@ -9,28 +17,65 @@ import authRoutes from './routes/authRoutes';
 
 const main = async (): Promise<void> => {
   try {
-    await AppDataSource.initialize();
-    console.log('Database connection established!');
+    // Test MySQL Connection
+    await MysqlDataSource.initialize();
+    console.log('MySQL Database connection established!');
 
+    // Test Redis Connection
     await redisClient.connect();
-    console.log('Connected to Redis');
+    await redisClient.set('TEST_CONNECTION', 1);
+    console.log('Redis Database connection established!');
+    await redisClient.del('TEST_CONNECTION');
 
+    // App Initialization
     const app = express();
-    const port = 3000;
+    const port = process.env.PORT || 3000;
 
+    // Template Engine & Assets Settings
     app.set('view engine', 'ejs');
+    app.set('trust proxy', 1);
     app.set('views', join(__dirname, 'views'));
-
     app.use(express.static(join(__dirname, 'public')));
 
+    // Body settings & flush messages & sessions
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    app.use(flash());
+    app.use(
+      expressSession({
+        secret: process.env.SESSION_SECRET,
+        saveUninitialized: true,
+        resave: true,
+        cookie: {
+          secure: process.env.MODE === 'development' ? false : true,
+          sameSite: 'strict',
+          httpOnly: true,
+        },
+      })
+    );
+
+    // Initialization of Passport
+    initPassport(passport);
+    app.use(passport.initialize());
+    app.use(passport.session());
+
+    // Security
+    app.use(helmet());
+    app.use(hpp());
+    app.use(cors());
+    app.use(cookieParser());
+
+    // Initialization of Routes
     app.use('/', homeRoutes);
     app.use('/auth', authRoutes);
 
+    // Run the application
     app.listen(port, () => {
       console.log(`Example app listening on port ${port}`);
     });
   } catch (error: unknown) {
     console.error('Database connection error:', error);
+    process.exit();
   }
 };
 
