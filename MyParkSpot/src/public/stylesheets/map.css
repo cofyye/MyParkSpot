@@ -21,8 +21,8 @@ html {
 
 .marker-cluster div {
   font-family: 'Bebas Neue', sans-serif;
-  font-weight: 800;
-  font-size: large;
+  font-weight: 400;
+  font-size: 20px;
 }
 
 .marker-cluster span {
@@ -31,16 +31,13 @@ html {
 
 .marker-cluster-small {
   background-color: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 .marker-cluster-medium {
   background-color: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .marker-cluster-large {
   background-color: rgba(0, 0, 0, 0.2);
-  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .marker-cluster div {
