@@ -32,7 +32,38 @@ const main = async (): Promise<void> => {
     const port = process.env.PORT || 3000;
 
     // Security
-    app.use(helmet());
+    app.use(
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", 'https://unpkg.com', "'unsafe-inline'"],
+            styleSrc: [
+              "'self'",
+              'https://unpkg.com',
+              'https://fonts.googleapis.com',
+              'https://site-assets.fontawesome.com',
+              "'unsafe-inline'",
+            ],
+            fontSrc: [
+              "'self'",
+              'https://fonts.gstatic.com',
+              'https://site-assets.fontawesome.com',
+            ],
+            imgSrc: [
+              "'self'",
+              'data:',
+              'https://site-assets.fontawesome.com',
+              'https://a.basemaps.cartocdn.com',
+              'https://b.basemaps.cartocdn.com',
+              'https://c.basemaps.cartocdn.com',
+              'https://d.basemaps.cartocdn.com',
+              'https://unpkg.com',
+            ],
+          },
+        },
+      })
+    );
     app.use(hpp());
     app.use(cors());
     app.use(cookieParser());
