@@ -12,22 +12,23 @@
         <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">
           <a href="/">MyParkSpot.</a>
         </h1>
-        <h2 class="text-primary text-center font-serif text-2xl font-bold">
+        <h2 class="text-center font-serif text-2xl font-bold text-primary">
           Sign in to your account
         </h2>
         <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form class="space-y-6" action="#" method="POST">
+          <form class="space-y-6" action="/auth/login" method="POST">
             <div>
               <label for="email" class="block text-sm font-medium text-gray-900"
                 >Email address</label
               >
               <div class="mt-2">
                 <input
+                  id="email"
                   name="email"
                   type="email"
-                  autocomplete="email"
+                  autocomplete="false"
                   required
-                  class="focus:border-primary focus:ring-primary outline-primary block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 sm:text-sm" />
+                  class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 outline-primary focus:border-primary focus:ring-primary sm:text-sm" />
               </div>
             </div>
             <div>
@@ -38,17 +39,18 @@
               >
               <div class="mt-2">
                 <input
+                  id="password"
                   name="password"
                   type="password"
-                  autocomplete="current-password"
+                  autocomplete="false"
                   required
-                  class="focus:border-primary focus:ring-primary outline-primary block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 sm:text-sm" />
+                  class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 outline-primary focus:border-primary focus:ring-primary sm:text-sm" />
               </div>
             </div>
             <div class="flex justify-center">
               <button
                 type="submit"
-                class="bg-primary hover:bg-hover rounded-full border px-4 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-3">
+                class="rounded-full border bg-primary px-4 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105 hover:bg-hover md:px-6 md:py-3">
                 Sign in
               </button>
             </div>
@@ -57,12 +59,14 @@
             Don't have an account?
             <a
               href="/auth/register"
-              class="text-primary font-medium hover:underline"
+              class="font-medium text-primary hover:underline"
               >Register</a
             >
           </p>
         </div>
       </section>
     </main>
+
+    <%- include('../../shared/includes/scripts') %>
   </body>
 </html>

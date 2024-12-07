@@ -26,6 +26,7 @@
                 >
                 <div class="mt-2">
                   <input
+                    id="firstName"
                     name="firstName"
                     type="text"
                     required
@@ -40,6 +41,7 @@
                 >
                 <div class="mt-2">
                   <input
+                    id="lastName"
                     name="lastName"
                     type="text"
                     required
@@ -55,8 +57,10 @@
               >
               <div class="mt-2">
                 <input
+                  id="username"
                   name="username"
                   type="text"
+                  autocomplete="false"
                   required
                   class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 outline-primary focus:border-primary focus:ring-primary sm:text-sm" />
               </div>
@@ -70,6 +74,7 @@
                   id="email"
                   name="email"
                   type="email"
+                  autocomplete="false"
                   required
                   class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm outline-2 outline-primary focus:border-primary focus:ring-primary sm:text-sm" />
               </div>
@@ -108,5 +113,7 @@
         </div>
       </section>
     </main>
+
+    <%- include('../../shared/includes/scripts') %>
   </body>
 </html>

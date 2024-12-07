@@ -12,7 +12,8 @@ export function validateDto<T>(dtoClass: ClassConstructor<T>) {
         const firstErrorMessage = Object.values(
           firstError.constraints || {}
         )[0];
-        return res.status(400).json({ error: firstErrorMessage });
+        req.flash('error', firstErrorMessage);
+        return res.status(400).redirect(req.originalUrl);
       } else {
         req.body = dtoInstance;
         next();

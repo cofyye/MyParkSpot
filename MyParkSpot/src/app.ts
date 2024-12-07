@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { join } from 'path';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -31,6 +31,12 @@ const main = async (): Promise<void> => {
     const app = express();
     const port = process.env.PORT || 3000;
 
+    // Security
+    app.use(helmet());
+    app.use(hpp());
+    app.use(cors());
+    app.use(cookieParser());
+
     // Template Engine & Assets Settings
     app.set('view engine', 'ejs');
     app.set('trust proxy', 1);
@@ -59,11 +65,19 @@ const main = async (): Promise<void> => {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    // Security
-    app.use(helmet());
-    app.use(hpp());
-    app.use(cors());
-    app.use(cookieParser());
+    // Rest middlewares
+    app.use(
+      async (
+        req: Request,
+        res: Response,
+        next: NextFunction
+      ): Promise<void> => {
+        res.locals.session = req.session;
+        res.locals.user = req.user;
+
+        next();
+      }
+    );
 
     // Initialization of Routes
     app.use('/', homeRoutes);

@@ -33,7 +33,7 @@ const init = (passport: passport.PassportStatic) => {
           delete user.password;
 
           return done(null, user, {
-            message: 'You successfully logged in!',
+            message: 'You have successfully logged in.',
           });
         } catch (err: unknown) {
           return done(null, null, { message: 'Database Error. Try Again!' });
