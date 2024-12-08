@@ -35,6 +35,15 @@ export class ParkingSpot {
   @Column({ name: 'is_occupied', nullable: false, default: false })
   isOccupied: boolean;
 
+  @Column({
+    name: 'price',
+    nullable: false,
+    type: 'decimal',
+    precision: 7,
+    scale: 2,
+  })
+  price: number;
+
   // Relations
 
   @OneToOne(() => Car, car => car.parkingSpot, { nullable: true })

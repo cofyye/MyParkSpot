@@ -9,7 +9,52 @@
     <div class="relative z-10"><%- include('shared/partials/header') %></div>
     <div id="map" class="relative z-0"></div>
     <%- include('shared/includes/leafletscripts') %>
+    <div
+      id="parking-info"
+      class="shadow-custom fixed bottom-0 z-10 hidden w-full bg-white p-4 sm:p-6 md:px-10 xl:px-20">
+      <div
+        class="flex flex-col items-start justify-between sm:flex-row sm:items-center">
+        <div class="mb-2 sm:mb-0">
+          <h3 class="text-lg font-medium text-primary sm:text-xl">
+            Parking spot information
+          </h3>
+          <p id="parking-details" class="mt-2 text-secondary"></p>
+        </div>
+        <div class="flex items-center justify-center gap-2 sm:gap-4">
+          <button
+            id="pay-parking"
+            class="btn-sm btn transform rounded-full border bg-accent1 px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
+            Park Here
+          </button>
+          <button
+            id="close-info"
+            class="btn-sm btn transform rounded-full border px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
     <script>
+      function decodeHtmlEntities(text) {
+        const textArea = document.createElement('textarea');
+        textArea.innerHTML = text;
+        return textArea.value;
+      }
+
+      const rawParkingSpots = '<%= parkingSpots %>';
+      const decodedParkingSpots = decodeHtmlEntities(rawParkingSpots);
+      const parsedParkingSpots = JSON.parse(decodedParkingSpots);
+
+      const parkingSpots = parsedParkingSpots.map(spot => {
+        return {
+          lat: spot.latitude,
+          lng: spot.longitude,
+          isOccupied: spot.isOccupied,
+          price: spot.price,
+        };
+      });
+      console.log(parkingSpots);
+
       const map = L.map('map', {
         attributionControl: false,
         zoomControl: false,
@@ -30,7 +75,7 @@
 
       L.control
         .attribution({
-          position: 'bottomleft',
+          position: 'bottomright',
           prefix: false,
         })
         .addAttribution('Leaflet | &copy; OpenStreetMap &copy; CARTO')
@@ -81,47 +126,46 @@
         popupAnchor: [0, -30],
       });
 
-      const parkingSpots = [
-        { name: 'Parking Centar', type: 'Free', lat: 43.3215, lng: 21.8954 },
-        { name: 'Kalča Parking', type: 'Reserved', lat: 43.3198, lng: 21.8962 },
-        { name: 'Niška Tvrđava', type: 'Free', lat: 43.321, lng: 21.9 },
-        {
-          name: 'Zona II - Bulevar',
-          type: 'Reserved',
-          lat: 43.3176,
-          lng: 21.9032,
-        },
-        { name: 'Kej Parking', type: 'Free', lat: 43.3242, lng: 21.8921 },
-        { name: 'Čair Parking', type: 'Free', lat: 43.3149, lng: 21.9058 },
-        { name: 'Delta Planet', type: 'Reserved', lat: 43.3132, lng: 21.9175 },
-        {
-          name: 'Parking Železnička Stanica',
-          type: 'Free',
-          lat: 43.3065,
-          lng: 21.8843,
-        },
-        {
-          name: 'Parking Železnička Stanica 2',
-          type: 'Free',
-          lat: 43.3068,
-          lng: 21.8843,
-        },
-        { name: 'Medijana', type: 'Reserved', lat: 43.3121, lng: 21.9178 },
-        { name: 'Parking Pantelej', type: 'Free', lat: 43.33, lng: 21.8974 },
-      ];
-
       const markers = L.markerClusterGroup({
         showCoverageOnHover: false,
       });
 
       parkingSpots.forEach(spot => {
         const marker = L.marker([spot.lat, spot.lng], {
-          icon: spot.type === 'Free' ? parkingIcon : reservedParkingIcon,
-        }).bindPopup(`<strong>${spot.name}</strong><br>Type: ${spot.type}`);
+          icon: spot.isOccupied ? reservedParkingIcon : parkingIcon,
+        });
+
+        marker.on('click', () => {
+          document.getElementById('parking-info').classList.remove('hidden');
+          document.getElementById('parking-details').innerHTML = `
+            <p>Status: ${spot.isOccupied ? 'Occupied' : 'Available'}</p>
+            <p>Price: ${spot.price} EUR/hour</p>
+          `;
+          adjustMapHeight();
+        });
+
         markers.addLayer(marker);
       });
 
       map.addLayer(markers);
+
+      function adjustMapHeight() {
+        const parkingInfo = document.getElementById('parking-info');
+        const map = document.getElementById('map');
+        if (parkingInfo.classList.contains('hidden')) {
+          map.style.height = 'calc(100% - 90px)';
+        } else {
+          const parkingInfoHeight = parkingInfo.offsetHeight;
+          map.style.height = `calc(100% - 90px - ${parkingInfoHeight}px)`;
+        }
+      }
+
+      window.addEventListener('resize', adjustMapHeight);
+
+      document.getElementById('close-info').addEventListener('click', () => {
+        document.getElementById('parking-info').classList.add('hidden');
+        adjustMapHeight();
+      });
     </script>
 
     <%- include('shared/includes/scripts') %>

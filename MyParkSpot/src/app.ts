@@ -37,7 +37,12 @@ const main = async (): Promise<void> => {
         contentSecurityPolicy: {
           directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", 'https://unpkg.com', "'unsafe-inline'"],
+            scriptSrc: [
+              "'self'",
+              'https://unpkg.com',
+              'https://cdn.jsdelivr.net',
+              "'unsafe-inline'",
+            ],
             styleSrc: [
               "'self'",
               'https://unpkg.com',

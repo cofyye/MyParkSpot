@@ -1,4 +1,5 @@
-<header class="flex items-center justify-between bg-background p-6 shadow-md">
+<header
+  class="flex items-center justify-between bg-background p-6 shadow-md xl:px-20">
   <a class="flex items-center gap-2 text-primary" href="/">
     <p class="font-serif text-2xl font-medium">MyParkSpot</p>
   </a>
@@ -15,11 +16,16 @@
     class="btn-sm btn transform rounded-full border px-6 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105">
     Log in
   </a>
-  <% } else { %> Hello, <%= user.username %> <br />
-  <a
-    href="/client"
-    class="btn-sm btn transform rounded-full border px-6 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105">
-    Client Panel
-  </a>
+  <% } else { %>
+  <div class="flex items-center gap-4">
+    <span class="hidden text-secondary md:inline">
+      Hello, <%= user.username %></span
+    >
+    <a
+      href="/client"
+      class="btn-sm btn transform rounded-full border px-6 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105">
+      Profile
+    </a>
+  </div>
   <% } %>
 </header>
