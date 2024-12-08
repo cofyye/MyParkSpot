@@ -106,9 +106,9 @@
         .addTo(map);
 
       const parkingIconHtml =
-        '<i class="fa-sharp-duotone fa-regular fa-circle-parking" style="font-size: 30px; color: #669c35;"></i>';
+        '<i class="fa-sharp-duotone fa-solid fa-square-parking" style="font-size: 26px; color: #5c7687;"></i>';
       const reservedParkingIconHtml =
-        '<i class="fa-sharp-duotone fa-regular fa-circle-parking" style="font-size: 30px; color: red;"></i>';
+        '<i class="fa-sharp-duotone fa-solid fa-square-parking" style="font-size: 26px; color: silver;"></i>';
 
       const parkingIcon = L.divIcon({
         html: parkingIconHtml,
@@ -137,6 +137,11 @@
 
         marker.on('click', () => {
           document.getElementById('parking-info').classList.remove('hidden');
+          if (spot.isOccupied) {
+            document.getElementById('pay-parking').classList.add('hidden');
+          } else {
+            document.getElementById('pay-parking').classList.remove('hidden');
+          }
           document.getElementById('parking-details').innerHTML = `
             <p>Status: ${spot.isOccupied ? 'Occupied' : 'Available'}</p>
             <p>Price: ${spot.price} EUR/hour</p>
