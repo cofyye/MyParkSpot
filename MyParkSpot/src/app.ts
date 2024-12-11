@@ -14,6 +14,7 @@ import redisClient from './config/redis';
 
 import homeRoutes from './routes/homeRoutes';
 import authRoutes from './routes/authRoutes';
+import clientRoutes from './routes/clientRoutes';
 
 const main = async (): Promise<void> => {
   try {
@@ -118,6 +119,7 @@ const main = async (): Promise<void> => {
     // Initialization of Routes
     app.use('/', homeRoutes);
     app.use('/auth', authRoutes);
+    app.use('/client', clientRoutes);
 
     // Run the application
     app.listen(port, () => {

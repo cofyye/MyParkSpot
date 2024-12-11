@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>MyParkSpot - Profile</title>
+    <%- include('../../shared/includes/meta') %> <%-
+    include('../../shared/includes/styles') %>
+  </head>
+  <body class="bg-background">
+    <%- include('../../shared/partials/header') %>
+    <main class="min-h-screen p-0 sm:p-4">
+      <div class="mx-auto flex w-full max-w-5xl flex-col md:flex-row">
+        <aside class="rounded-lg p-2 md:w-3/12 md:py-6">
+          <ul class="flex w-full items-center md:flex-col md:space-y-2">
+            <li class="md:w-full">
+              <a
+                href="#account"
+                class="block px-4 py-2 text-center font-medium text-primary hover:bg-gray-100"
+                >Account</a
+              >
+            </li>
+            <li class="md:w-full">
+              <a
+                href="#payments"
+                class="block px-4 py-2 text-center font-medium text-primary hover:bg-gray-100"
+                >Payments</a
+              >
+            </li>
+            <li class="md:w-full">
+              <a
+                href="#settings"
+                class="block px-4 py-2 text-center font-medium text-primary hover:bg-gray-100"
+                >Settings</a
+              >
+            </li>
+            <li class="md:w-full">
+              <a
+                href="#logout"
+                class="block px-4 py-2 text-center font-medium text-primary hover:bg-gray-100"
+                >Log out</a
+              >
+            </li>
+          </ul>
+        </aside>
+        <section class="w-full p-6 md:w-9/12">
+          <div id="account" class="space-y-6">
+            <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">
+              Account
+            </h1>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-12">
+              <div class="col-span-6">
+                <label class="block text-sm font-medium text-gray-900"
+                  >Username</label
+                >
+                <div class="mt-2">
+                  <input
+                    type="text"
+                    value="<%= user.username %>"
+                    id="username"
+                    class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
+                </div>
+              </div>
+              <div class="col-span-6 col-start-1">
+                <label class="block text-sm font-medium text-gray-900"
+                  >First Name</label
+                >
+                <div class="mt-2">
+                  <input
+                    type="text"
+                    value="<%= user.firstName %>"
+                    id="firstName"
+                    class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
+                </div>
+              </div>
+              <div class="col-span-6">
+                <label class="block text-sm font-medium text-gray-900"
+                  >Last Name</label
+                >
+                <div class="mt-2">
+                  <input
+                    type="text"
+                    value="<%= user.lastName %>"
+                    id="lastName"
+                    class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-900"
+                >Email</label
+              >
+              <div class="mt-2">
+                <input
+                  type="email"
+                  value="<%= user.email %>"
+                  id="email"
+                  class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-900"
+                >Password</label
+              >
+              <div class="mt-2">
+                <input
+                  type="password"
+                  id="password"
+                  class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
+              </div>
+            </div>
+            <div class="flex justify-end">
+              <button
+                id="saveChangesButton"
+                class="btn-sm btn transform rounded-full border bg-primary px-6 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105 disabled:pointer-events-none disabled:bg-secondary"
+                disabled>
+                Save Changes
+              </button>
+            </div>
+          </div>
+          <div id="payments" class="hidden space-y-6">
+            <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">
+              Payments
+            </h1>
+            <div class="w-1/4 space-y-4">
+              <div class="flex flex-col items-center rounded-lg bg-white p-4">
+                <label class="block text-sm font-medium text-gray-900"
+                  >Current Balance</label
+                >
+                <p class="mt-2 text-xl font-semibold text-gray-900">$100.00</p>
+                <button
+                  class="btn-sm btn mt-2 w-fit transform rounded-full border bg-primary px-6 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105">
+                  Add Funds
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="settings" class="hidden space-y-6">
+            <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">
+              Settings
+            </h1>
+          </div>
+          <div id="logout" class="hidden space-y-6">
+            <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">
+              Log out
+            </h1>
+            <a
+              href="/auth/logout"
+              class="rounded-full border bg-primary px-4 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105 hover:bg-hover md:px-6 md:py-3"
+              >Log out</a
+            >
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <%- include('../../shared/includes/scripts') %>
+    <script>
+      document.querySelectorAll('aside a').forEach(link => {
+        link.addEventListener('click', function (event) {
+          event.preventDefault();
+          const currentSection = document.querySelector(
+            'section > div:not(.hidden)'
+          );
+          if (currentSection && currentSection.id === 'account') {
+            resetFormFields();
+          }
+          document
+            .querySelectorAll('section > div')
+            .forEach(div => div.classList.add('hidden'));
+          document
+            .querySelector(this.getAttribute('href'))
+            .classList.remove('hidden');
+        });
+      });
+
+      const initialData = {
+        username: '<%= user.username %>',
+        firstName: '<%= user.firstName %>',
+        lastName: '<%= user.lastName %>',
+        email: '<%= user.email %>',
+        password: '',
+      };
+
+      function checkForChanges() {
+        const username = document.getElementById('username').value;
+        const firstName = document.getElementById('firstName').value;
+        const lastName = document.getElementById('lastName').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        const hasChanges =
+          username !== initialData.username ||
+          firstName !== initialData.firstName ||
+          lastName !== initialData.lastName ||
+          email !== initialData.email ||
+          password !== initialData.password;
+
+        document.getElementById('saveChangesButton').disabled = !hasChanges;
+      }
+
+      function resetFormFields() {
+        document.getElementById('username').value = initialData.username;
+        document.getElementById('firstName').value = initialData.firstName;
+        document.getElementById('lastName').value = initialData.lastName;
+        document.getElementById('email').value = initialData.email;
+        document.getElementById('password').value = initialData.password;
+        document.getElementById('saveChangesButton').disabled = true;
+      }
+
+      document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', checkForChanges);
+      });
+    </script>
+  </body>
+</html>
