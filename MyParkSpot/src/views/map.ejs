@@ -11,7 +11,7 @@
     <%- include('shared/includes/leafletscripts') %>
     <div
       id="parking-info"
-      class="shadow-custom fixed bottom-0 z-10 hidden w-full bg-white p-4 sm:p-6 md:px-10 xl:px-20">
+      class="fixed bottom-0 z-10 hidden w-full bg-white p-4 shadow-custom sm:p-6 md:px-10 xl:px-20">
       <div
         class="flex flex-col items-start justify-between sm:flex-row sm:items-center">
         <div class="mb-2 sm:mb-0">
@@ -21,11 +21,15 @@
           <p id="parking-details" class="mt-2 text-secondary"></p>
         </div>
         <div class="flex items-center justify-center gap-2 sm:gap-4">
-          <button
-            id="pay-parking"
-            class="btn-sm btn transform rounded-full border bg-accent1 px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
-            Park Here
-          </button>
+          <form action="/pay-parking" method="POST">
+            <input type="hidden" name="amount" id="amount" value="" />
+            <button
+              type="submit"
+              id="pay-parking"
+              class="btn-sm btn transform rounded-full border bg-accent1 px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
+              Park Here
+            </button>
+          </form>
           <button
             id="close-info"
             class="btn-sm btn transform rounded-full border px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
@@ -141,6 +145,7 @@
             document.getElementById('pay-parking').classList.add('hidden');
           } else {
             document.getElementById('pay-parking').classList.remove('hidden');
+            document.getElementById('amount').value = spot.price;
           }
           document.getElementById('parking-details').innerHTML = `
             <p>Status: ${spot.isOccupied ? 'Occupied' : 'Available'}</p>

@@ -6,6 +6,8 @@ const router = express.Router();
 
 router.get("/", homeController.getHome);
 router.get("/map", homeController.getMap);
+router.post("/pay-parking", homeController.payParking);
+
 router.get("/mysql-data", homeController.getMysqlData);
 router.get("/redis-data", homeController.getRedisData);
 

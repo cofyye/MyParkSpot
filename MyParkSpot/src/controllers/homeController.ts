@@ -2,14 +2,19 @@ import { Request, Response } from 'express';
 import redisClient from '../config/redis';
 import { MysqlDataSource } from '../config/data-source';
 import { ParkingSpot } from '../models/ParkingSpot';
+import { User } from '../models/User';
 
 const getHome = async (req: Request, res: Response): Promise<void> => {
   res.render('home');
 };
 
-const getMap = async (req: Request, res: Response): Promise<void> => {
+const renderMap = async (req: Request, res: Response): Promise<void> => {
   const parkingSpots = await MysqlDataSource.getRepository(ParkingSpot).find();
   res.render('map', { parkingSpots: JSON.stringify(parkingSpots) });
+};
+
+const getMap = async (req: Request, res: Response): Promise<void> => {
+  await renderMap(req, res);
 };
 
 const getMysqlData = async (req: Request, res: Response): Promise<void> => {};
@@ -24,4 +29,28 @@ const getRedisData = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export default { getHome, getMap, getMysqlData, getRedisData };
+const payParking = async (req: Request, res: Response): Promise<void> => {
+  const user = req.user as User;
+  console.log(user);
+
+  if (!user) {
+    return res.status(200).render('pages/auth/login');
+  }
+
+  const amount = req.body.amount;
+  console.log(amount);
+
+  if (user.credit < amount) {
+    return res.status(200).render('pages/auth/login');
+  }
+
+  user.credit -= amount;
+  console.log(user.credit);
+
+  const userRepository = await MysqlDataSource.getRepository(User);
+  await userRepository.save(user);
+
+  await renderMap(req, res);
+};
+
+export default { getHome, getMap, getMysqlData, getRedisData, payParking };

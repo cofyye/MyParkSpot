@@ -29,6 +29,20 @@ export class User {
   @Column({ name: 'password', nullable: false, length: 100 })
   password: string;
 
+  @Column({
+    name: 'credit',
+    type: 'decimal',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    nullable: false,
+    transformer: {
+      to: (value: number) => value,
+      from: (value: string) => parseFloat(value),
+    },
+  })
+  credit: number;
+
   @CreateDateColumn({
     name: 'registration_date',
     type: 'datetime',
