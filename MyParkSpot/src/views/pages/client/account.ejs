@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>MyParkSpot - Profile</title>
+    <%- include('../../shared/includes/meta') %> <%-
+    include('../../shared/includes/styles') %>
+  </head>
+  <body class="bg-background">
+    <%- include('../../shared/partials/header') %>
+    <main class="min-h-screen p-0 sm:p-4">
+      <div class="mx-auto flex w-full max-w-5xl flex-col md:flex-row">
+        <%- include('./partials/aside.ejs') %>
+        <section class="w-full space-y-6 p-6 md:w-9/12">
+          <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">Account</h1>
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-12">
+            <div class="col-span-6">
+              <label class="block text-sm font-medium text-gray-900"
+                >Username</label
+              >
+              <div class="mt-2">
+                <input
+                  type="text"
+                  value="<%= user.username %>"
+                  id="username"
+                  class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
+              </div>
+            </div>
+            <div class="col-span-6 col-start-1">
+              <label class="block text-sm font-medium text-gray-900"
+                >First Name</label
+              >
+              <div class="mt-2">
+                <input
+                  type="text"
+                  value="<%= user.firstName %>"
+                  id="firstName"
+                  class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
+              </div>
+            </div>
+            <div class="col-span-6">
+              <label class="block text-sm font-medium text-gray-900"
+                >Last Name</label
+              >
+              <div class="mt-2">
+                <input
+                  type="text"
+                  value="<%= user.lastName %>"
+                  id="lastName"
+                  class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
+              </div>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-900">Email</label>
+            <div class="mt-2">
+              <input
+                type="email"
+                value="<%= user.email %>"
+                id="email"
+                class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-900"
+              >Password</label
+            >
+            <div class="mt-2">
+              <input
+                type="password"
+                id="password"
+                class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button
+              id="saveChangesButton"
+              class="btn-sm btn transform rounded-full border bg-primary px-6 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105 disabled:pointer-events-none disabled:bg-secondary"
+              disabled>
+              Save Changes
+            </button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <%- include('../../shared/includes/scripts') %>
+    <script>
+      const initialData = {
+        username: '<%= user.username %>',
+        firstName: '<%= user.firstName %>',
+        lastName: '<%= user.lastName %>',
+        email: '<%= user.email %>',
+        password: '',
+      };
+
+      function checkForChanges() {
+        const username = document.getElementById('username').value;
+        const firstName = document.getElementById('firstName').value;
+        const lastName = document.getElementById('lastName').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        const hasChanges =
+          username !== initialData.username ||
+          firstName !== initialData.firstName ||
+          lastName !== initialData.lastName ||
+          email !== initialData.email ||
+          password !== initialData.password;
+
+        document.getElementById('saveChangesButton').disabled = !hasChanges;
+      }
+
+      function resetFormFields() {
+        document.getElementById('username').value = initialData.username;
+        document.getElementById('firstName').value = initialData.firstName;
+        document.getElementById('lastName').value = initialData.lastName;
+        document.getElementById('email').value = initialData.email;
+        document.getElementById('password').value = initialData.password;
+        document.getElementById('saveChangesButton').disabled = true;
+      }
+
+      document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', checkForChanges);
+      });
+    </script>
+  </body>
+</html>
