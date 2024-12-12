@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
+import { RedisStore } from 'connect-redis';
 import { join } from 'path';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -86,6 +87,9 @@ const main = async (): Promise<void> => {
     app.use(flash());
     app.use(
       expressSession({
+        store: new RedisStore({
+          client: redisClient,
+        }),
         secret: process.env.SESSION_SECRET,
         saveUninitialized: true,
         resave: true,
