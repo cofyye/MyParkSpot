@@ -54,35 +54,37 @@
                     class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
                 </div>
               </div>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-900"
-                >Email</label
-              >
-              <div class="mt-2">
-                <input
-                  type="email"
-                  value="<%= user.email %>"
-                  id="email"
-                  name="email"
-                  class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
+              <div class="col-span-12">
+                <label class="block text-sm font-medium text-gray-900"
+                  >Email</label
+                >
+                <div class="mt-2">
+                  <input
+                    type="email"
+                    value="<%= user.email %>"
+                    id="email"
+                    name="email"
+                    class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
+                </div>
+              </div>
+              <div class="col-span-12">
+                <label class="block text-sm font-medium text-gray-900"
+                  >Password</label
+                >
+                <div class="mt-2">
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
+                </div>
               </div>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-900"
-                >Password (Leave empty if you don't want to change)</label
-              >
-              <div class="mt-2">
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm" />
-              </div>
-            </div>
-            <div class="flex justify-end">
+            <div class="mt-6 flex justify-end">
               <button
+                id="saveChangesButton"
                 type="submit"
+                disabled
                 class="btn-sm btn transform rounded-full border bg-primary px-6 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105 disabled:pointer-events-none disabled:bg-secondary">
                 Save Changes
               </button>
@@ -93,5 +95,36 @@
     </main>
 
     <%- include('../../shared/includes/scripts') %>
+    <script>
+      const initialData = {
+        username: '<%= user.username %>',
+        firstName: '<%= user.firstName %>',
+        lastName: '<%= user.lastName %>',
+        email: '<%= user.email %>',
+        password: '',
+      };
+      console.log(initialData);
+
+      function checkForChanges() {
+        const username = document.getElementById('username').value;
+        const firstName = document.getElementById('firstName').value;
+        const lastName = document.getElementById('lastName').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        console.log(username, firstName, lastName, email, password);
+        const hasChanges =
+          username !== initialData.username ||
+          firstName !== initialData.firstName ||
+          lastName !== initialData.lastName ||
+          email !== initialData.email ||
+          password !== initialData.password;
+
+        document.getElementById('saveChangesButton').disabled = !hasChanges;
+      }
+
+      document.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', checkForChanges);
+      });
+    </script>
   </body>
 </html>
