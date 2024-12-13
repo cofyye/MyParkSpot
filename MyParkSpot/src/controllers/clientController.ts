@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { UpdateAccountDto } from '../../src/dtos/client/update-account.dto';
 import { MysqlDataSource } from '../../src/config/data-source';
 import { User } from '../models/User';
+import { Car } from '../models/Car';
 import bcrypt from 'bcrypt';
 
 const getAccount = async (req: Request, res: Response): Promise<void> => {
@@ -60,4 +61,41 @@ const getSettings = async (req: Request, res: Response): Promise<void> => {
   return res.status(200).render('pages/client/settings');
 };
 
-export default { getAccount, postAccount, getPayments, getSettings };
+const getMyCars = async (req: Request, res: Response): Promise<void> => {
+  return res.status(200).render('pages/client/my-cars');
+};
+
+const getRegisterCar = async (req: Request, res: Response): Promise<void> => {
+  return res.status(200).render('pages/client/register-car');
+};
+
+const postRegisterCar = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const newCar = new Car();
+    const user = req.user as User;
+
+    newCar.user = user;
+    newCar.licensePlate = req.body.licensePlate;
+    newCar.manufacturer = req.body.manufacturer;
+    newCar.model = req.body.model;
+    newCar.year = req.body.year;
+
+    await MysqlDataSource.getRepository(Car).save(newCar);
+
+    req.flash('success', 'Car registered successfully.');
+    return res.status(201).redirect('/client/my-cars');
+  } catch (error: unknown) {
+    req.flash('error', 'An error occurred while registering the car.');
+    return res.status(500).redirect('/client/register-car');
+  }
+};
+
+export default {
+  getAccount,
+  getPayments,
+  getSettings,
+  getMyCars,
+  postAccount,
+  getRegisterCar,
+  postRegisterCar,
+};
