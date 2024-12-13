@@ -13,14 +13,21 @@
         <section class="w-full space-y-6 p-6 md:w-9/12">
           <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">My Cars</h1>
           <div class="grid grid-cols-1 gap-6 md:grid-cols-12">
-            <div class="col-span-6 rounded-lg border p-8">
-              <p class="text-xl font-semibold text-gray-900">BG1001VV</p>
-              <p class="font-serif text-sm text-gray-700">BMW M5 (2019)</p>
+            <% cars.forEach(function(car) { %>
+            <div class="group relative col-span-6 rounded-lg border p-8">
+              <a
+                href="/client/delete-car/<%= car.id %>"
+                class="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
+                <i class="fa-light fa-trash"></i>
+              </a>
+              <p class="text-xl font-semibold text-gray-900">
+                <%= car.licensePlate %>
+              </p>
+              <p class="font-serif text-sm text-gray-700">
+                <%= car.manufacturer %> <%= car.model %> (<%= car.year %>)
+              </p>
             </div>
-            <div class="col-span-6 rounded-lg border p-8">
-              <p class="text-xl font-semibold text-gray-900">PK078RY</p>
-              <p class="text-sm text-gray-700">Porsche 911 (2018)</p>
-            </div>
+            <% }); %>
           </div>
           <div class="mt-6 flex justify-end">
             <a

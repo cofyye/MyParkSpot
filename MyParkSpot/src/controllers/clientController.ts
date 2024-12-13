@@ -62,7 +62,18 @@ const getSettings = async (req: Request, res: Response): Promise<void> => {
 };
 
 const getMyCars = async (req: Request, res: Response): Promise<void> => {
-  return res.status(200).render('pages/client/my-cars');
+  try {
+    const user = req.user as User;
+
+    const cars = await MysqlDataSource.getRepository(Car).find({
+      where: { user: { id: user.id } },
+    });
+
+    return res.status(200).render('pages/client/my-cars', { cars });
+  } catch (error) {
+    req.flash('error', 'An error occurred while fetching your cars.');
+    return res.status(500).redirect('/client/my-cars');
+  }
 };
 
 const getRegisterCar = async (req: Request, res: Response): Promise<void> => {
@@ -90,6 +101,33 @@ const postRegisterCar = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+const getDeleteCar = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const carId = req.params.id;
+    const user = req.user as User;
+
+    const carRepository = MysqlDataSource.getRepository(Car);
+
+    const car = await carRepository.findOne({
+      where: { id: carId, user: { id: user.id } },
+    });
+
+    if (!car) {
+      req.flash('error', 'Car not found.');
+      return res.status(404).redirect('/client/my-cars');
+    }
+
+    await carRepository.remove(car);
+
+    req.flash('success', 'Car deleted successfully.');
+    return res.status(200).redirect('/client/my-cars');
+  } catch (error) {
+    console.error('Error deleting car:', error);
+    req.flash('error', 'An error occurred while deleting the car.');
+    return res.status(500).redirect('/client/my-cars');
+  }
+};
+
 export default {
   getAccount,
   getPayments,
@@ -98,4 +136,5 @@ export default {
   postAccount,
   getRegisterCar,
   postRegisterCar,
+  getDeleteCar,
 };

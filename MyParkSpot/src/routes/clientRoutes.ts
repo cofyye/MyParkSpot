@@ -13,6 +13,7 @@ router.get('/payments', clientController.getPayments);
 router.get('/settings', clientController.getSettings);
 router.get('/my-cars', clientController.getMyCars);
 router.get('/register-car', clientController.getRegisterCar);
+router.get('/delete-car/:id', clientController.getDeleteCar);
 
 // Post methods
 router.post(
