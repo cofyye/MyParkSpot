@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Car } from './Car';
+import { ParkingReservation } from './ParkingReservation';
 
 @Entity({
   name: 'users',
@@ -54,4 +55,7 @@ export class User {
 
   @OneToMany(() => Car, car => car.user)
   cars: Car[];
+
+  @OneToMany(() => ParkingReservation, reservation => reservation.user)
+  parkingReservations: ParkingReservation[];
 }

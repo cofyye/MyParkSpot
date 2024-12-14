@@ -1,14 +1,17 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsInt,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Max,
   MaxLength,
   Min,
   MinLength,
 } from 'class-validator';
+
+const currentYear = new Date().getFullYear();
 
 export class RegisterCarDto {
   @IsString()
@@ -25,26 +28,26 @@ export class RegisterCarDto {
   @IsNotEmpty({ message: 'The license plate field must not be empty.' })
   public readonly licensePlate: string;
 
+  @IsOptional()
   @IsString()
   @MaxLength(50, {
     message: 'The manufacturer field must contain a maximum of 50 characters.',
   })
-  @IsNotEmpty({ message: 'The manufacturer field must not be empty.' })
-  public readonly manufacturer: string;
+  public readonly manufacturer?: string;
 
+  @IsOptional()
   @IsString()
   @MaxLength(50, {
     message: 'The model field must contain a maximum of 50 characters.',
   })
-  @IsNotEmpty({ message: 'The model field must not be empty.' })
-  public readonly model: string;
+  public readonly model?: string;
 
-  @Type(() => Number)
+  @IsOptional()
+  @Transform(({ value }) => (value ? parseInt(value, 10) : undefined))
   @IsInt()
   @Min(1900, { message: 'The year field must not be less than 1900.' })
-  @Max(new Date().getFullYear(), {
-    message: 'The year field must not be greater than 2025.',
+  @Max(currentYear, {
+    message: `The year field must not be greater than ${currentYear}.`,
   })
-  @IsNotEmpty({ message: 'The year field must not be empty.' })
-  public readonly year: number;
+  public readonly year?: number;
 }

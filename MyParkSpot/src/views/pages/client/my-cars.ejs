@@ -23,8 +23,9 @@
               <p class="text-xl font-semibold text-gray-900">
                 <%= car.licensePlate %>
               </p>
-              <p class="font-serif text-sm text-gray-700">
-                <%= car.manufacturer %> <%= car.model %> (<%= car.year %>)
+              <p class="font-sans text-sm text-gray-700">
+                <%= car.manufacturer %> <%= car.model %> <% if (car.year) { %>
+                (<%= car.year %>) <% } %>
               </p>
             </div>
             <% }); %>

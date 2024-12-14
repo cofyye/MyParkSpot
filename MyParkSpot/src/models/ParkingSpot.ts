@@ -4,8 +4,10 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Car } from './Car';
+import { ParkingReservation } from './ParkingReservation';
 
 @Entity({
   name: 'parking_spots',
@@ -46,7 +48,9 @@ export class ParkingSpot {
 
   // Relations
 
-  @OneToOne(() => Car, car => car.parkingSpot, { nullable: true })
-  @JoinColumn()
-  car: Car;
+  @OneToMany(
+    () => ParkingReservation,
+    parkingReservation => parkingReservation.parkingSpot
+  )
+  parkingReservations: ParkingReservation[];
 }

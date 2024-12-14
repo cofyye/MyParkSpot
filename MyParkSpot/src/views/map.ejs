@@ -21,21 +21,95 @@
           <p id="parking-details" class="mt-2 text-secondary"></p>
         </div>
         <div class="flex items-center justify-center gap-2 sm:gap-4">
-          <form action="/pay-parking" method="POST">
-            <input type="hidden" name="amount" id="amount" value="" />
-            <button
-              type="submit"
-              id="pay-parking"
-              class="btn-sm btn transform rounded-full border bg-accent1 px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
-              Park Here
-            </button>
-          </form>
+          <button
+            type="submit"
+            id="pay-parking"
+            class="btn-sm btn transform rounded-full border bg-accent1 px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
+            Park Here
+          </button>
           <button
             id="close-info"
             class="btn-sm btn transform rounded-full border px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
             Close
           </button>
         </div>
+      </div>
+    </div>
+    <div
+      id="parkModal"
+      class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black bg-opacity-50">
+      <div
+        class="relative w-full max-w-sm rounded-xl bg-white px-6 py-8 shadow-xl">
+        <button
+          type="button"
+          id="closeModalButton"
+          class="absolute right-6 top-5 text-lg text-gray-500 hover:text-gray-700 focus:outline-none">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <h2 class="mb-4 text-xl font-semibold text-gray-800">
+          Reserve Parking
+        </h2>
+        <form action="/reserve-parking" method="POST" class="space-y-5">
+          <div class="space-y-2">
+            <label
+              for="parkingDuration"
+              class="block text-sm font-medium text-gray-700">
+              Parking Duration
+            </label>
+            <select
+              id="parkingDuration"
+              name="parkingDuration"
+              required
+              class="block w-full rounded-lg border border-gray-300 p-2.5 placeholder-gray-400 transition duration-150 ease-in-out focus:border-primary focus:ring-primary">
+              <option value="">-- Select Duration --</option>
+              <option value="1">1 hour</option>
+              <option value="2">2 hours</option>
+              <option value="3">3 hours</option>
+              <option value="24">Full Day</option>
+            </select>
+          </div>
+
+          <div class="space-y-2">
+            <label for="carId" class="block text-sm font-medium text-gray-700"
+              >Select Car</label
+            >
+            <select
+              id="carId"
+              name="carId"
+              required
+              class="block w-full rounded-lg border border-gray-300 p-2.5 placeholder-gray-400 transition duration-150 ease-in-out focus:border-primary focus:ring-primary">
+              <option value="">-- Select Your Car --</option>
+              <% cars.forEach(function(car) { %>
+              <option value="<%= car.id %>">
+                <%= car.licensePlate %> <% if (car.manufacturer || car.model ||
+                car.year) { %> - <% } %> <%= car.manufacturer %> <%= car.model
+                %> <%= car.year %>
+              </option>
+              <% }); %>
+            </select>
+          </div>
+
+          <div class="flex justify-end space-x-3">
+            <button
+              type="button"
+              id="cancelButton"
+              class="btn-sm btn transform rounded-full border px-6 py-2 font-semibold hover:bg-gray-100">
+              Cancel
+            </button>
+            <input type="hidden" name="amount" id="amount" value="" />
+            <input
+              type="hidden"
+              id="parkingSpot"
+              name="parkingSpotId"
+              value="" />
+            <button
+              type="submit"
+              class="btn-sm btn transform rounded-full border bg-primary px-6 py-2 font-medium text-white hover:bg-hover">
+              Park
+            </button>
+          </div>
+        </form>
       </div>
     </div>
     <script>
@@ -51,13 +125,13 @@
 
       const parkingSpots = parsedParkingSpots.map(spot => {
         return {
+          id: spot.id,
           lat: spot.latitude,
           lng: spot.longitude,
           isOccupied: spot.isOccupied,
           price: spot.price,
         };
       });
-      console.log(parkingSpots);
 
       const map = L.map('map', {
         attributionControl: false,
@@ -133,7 +207,7 @@
       const markers = L.markerClusterGroup({
         showCoverageOnHover: false,
       });
-
+      console.log(parkingSpots);
       parkingSpots.forEach(spot => {
         const marker = L.marker([spot.lat, spot.lng], {
           icon: spot.isOccupied ? reservedParkingIcon : parkingIcon,
@@ -146,6 +220,7 @@
           } else {
             document.getElementById('pay-parking').classList.remove('hidden');
             document.getElementById('amount').value = spot.price;
+            document.getElementById('parkingSpot').value = spot.id;
           }
           document.getElementById('parking-details').innerHTML = `
             <p>Status: ${spot.isOccupied ? 'Occupied' : 'Available'}</p>
@@ -175,6 +250,29 @@
       document.getElementById('close-info').addEventListener('click', () => {
         document.getElementById('parking-info').classList.add('hidden');
         adjustMapHeight();
+      });
+
+      const openModalButton = document.getElementById('pay-parking');
+      const closeModalButton = document.getElementById('closeModalButton');
+      const parkModal = document.getElementById('parkModal');
+      const cancelButton = document.getElementById('cancelButton');
+
+      openModalButton.addEventListener('click', () => {
+        parkModal.classList.remove('hidden');
+      });
+
+      closeModalButton.addEventListener('click', () => {
+        parkModal.classList.add('hidden');
+      });
+
+      parkModal.addEventListener('click', e => {
+        if (e.target === parkModal) {
+          parkModal.classList.add('hidden');
+        }
+      });
+
+      cancelButton.addEventListener('click', () => {
+        parkModal.classList.add('hidden');
       });
     </script>
 
