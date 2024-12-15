@@ -9,7 +9,7 @@ module.exports = {
         light: '#f3f3f3',
         background: '#ffffff',
         hover: '#2e2e2e',
-        accent1: '#829aaa',
+        accent: '#829aaa',
       },
       fontFamily: {
         sans: ['Helvetica Neue', 'Arial', 'sans-serif'],

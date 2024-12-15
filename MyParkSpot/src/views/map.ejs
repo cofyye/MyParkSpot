@@ -24,14 +24,14 @@
           <button
             type="submit"
             id="park-here"
-            class="btn-sm btn transform rounded-full border bg-accent1 px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
+            class="btn-sm btn bg-accent transform rounded-full border px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
             Park Here
           </button>
           <% } else { %>
           <button id="park-here" hidden></button>
           <a
             href="/auth/login"
-            class="btn-sm btn transform rounded-full border bg-accent1 px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
+            class="btn-sm btn bg-accent transform rounded-full border px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
             Park Here
           </a>
           <% } %>
@@ -102,7 +102,22 @@
             </h3>
             <% if (cars && cars.length > 0) { %>
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <% cars.forEach(function(car) { %>
+              <% cars.forEach(function(car) { %> <% if (car.isParked) { %>
+              <div
+                class="car-option relative transform cursor-not-allowed rounded-lg border border-gray-300 p-4 opacity-50">
+                <p class="text-md text-center font-semibold text-gray-800">
+                  <%= car.licensePlate %>
+                </p>
+                <p class="mt-1 text-center text-sm text-gray-600">
+                  <%= car.manufacturer %> <%= car.model %> <% if (car.year) { %>
+                  (<%= car.year %>) <% } %>
+                </p>
+                <span
+                  class="bg-accent absolute right-2 top-2 rounded px-2 py-1 text-xs text-white"
+                  >Parked</span
+                >
+              </div>
+              <% } else { %>
               <div
                 class="car-option transform cursor-pointer rounded-lg border border-gray-200 p-4 transition-transform hover:scale-105 focus:outline-none"
                 data-value="<%= car.id %>">
@@ -114,7 +129,7 @@
                   (<%= car.year %>) <% } %>
                 </p>
               </div>
-              <% }); %>
+              <% } %> <% }); %>
             </div>
             <% } else { %>
             <p class="text-sm text-gray-500">

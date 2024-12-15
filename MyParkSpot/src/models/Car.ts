@@ -29,6 +29,9 @@ export class Car {
   @Column({ name: 'year', nullable: true })
   year: number;
 
+  @Column({ default: false })
+  isParked: boolean;
+
   // Relations
 
   @ManyToOne(() => User, user => user.cars)

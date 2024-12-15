@@ -4,12 +4,11 @@ import homeController from '../controllers/homeController';
 
 const router = express.Router();
 
+// Get methods
 router.get('/', homeController.getHome);
 router.get('/map', homeController.getMap);
-router.post('/pay-parking', homeController.payParking);
-router.post('/reserve-parking', homeController.reserveParking);
 
-router.get('/mysql-data', homeController.getMysqlData);
-router.get('/redis-data', homeController.getRedisData);
+// Post methods
+router.post('/reserve-parking', homeController.reserveParking);
 
 export default router;

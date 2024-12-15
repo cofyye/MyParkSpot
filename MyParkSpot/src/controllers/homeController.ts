@@ -33,42 +33,6 @@ const getMap = async (req: Request, res: Response): Promise<void> => {
   await renderMap(req, res);
 };
 
-const getMysqlData = async (req: Request, res: Response): Promise<void> => {};
-
-const getRedisData = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const value = await redisClient.get('kljuc');
-    res.send(value);
-  } catch (error) {
-    console.error('Error getting data from Redis:', error);
-    res.status(500).send('Error getting data from Redis');
-  }
-};
-
-const payParking = async (req: Request, res: Response): Promise<void> => {
-  const user = req.user as User;
-  console.log(user);
-
-  if (!user) {
-    return res.status(200).render('pages/auth/login');
-  }
-
-  const amount = req.body.amount;
-  console.log(amount);
-
-  if (user.credit < amount) {
-    return res.status(200).render('pages/client/payments');
-  }
-
-  user.credit -= amount;
-  console.log(user.credit);
-
-  const userRepository = await MysqlDataSource.getRepository(User);
-  await userRepository.save(user);
-
-  await renderMap(req, res);
-};
-
 const reserveParking = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user as User;
@@ -99,6 +63,9 @@ const reserveParking = async (req: Request, res: Response): Promise<void> => {
       if (!car) {
         throw new Error('Car not found.');
       }
+
+      car.isParked = true;
+      await transactionalEntityManager.save(Car, car);
 
       const parkingSpot = await transactionalEntityManager.findOne(
         ParkingSpot,
@@ -149,8 +116,5 @@ const reserveParking = async (req: Request, res: Response): Promise<void> => {
 export default {
   getHome,
   getMap,
-  getMysqlData,
-  getRedisData,
-  payParking,
   reserveParking,
 };
