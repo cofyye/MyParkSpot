@@ -3,12 +3,10 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from './User';
-import { ParkingSpot } from './ParkingSpot';
-import { ParkingReservation } from './ParkingReservation';
+import { ParkingRental } from './ParkingRental';
 
 @Entity({
   name: 'cars',
@@ -37,6 +35,6 @@ export class Car {
   @ManyToOne(() => User, user => user.cars)
   user: User;
 
-  @OneToMany(() => ParkingReservation, reservation => reservation.car)
-  parkingReservations: ParkingReservation[];
+  @OneToMany(() => ParkingRental, rental => rental.car)
+  parkingRentals: ParkingRental[];
 }

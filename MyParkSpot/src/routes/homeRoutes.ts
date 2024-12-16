@@ -10,6 +10,6 @@ router.get('/map', homeController.getMap);
 router.get('/api/nearby-parking-spots', homeController.getNearbyParkingSpots);
 
 // Post methods
-router.post('/reserve-parking', homeController.reserveParking);
+router.post('/rent-parking-spot', homeController.rentParkingSpot);
 
 export default router;

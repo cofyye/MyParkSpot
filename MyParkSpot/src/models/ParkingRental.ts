@@ -9,18 +9,18 @@ import { User } from './User';
 import { ParkingSpot } from './ParkingSpot';
 import { Car } from './Car';
 
-@Entity({ name: 'parking_reservations' })
-export class ParkingReservation {
+@Entity({ name: 'parking_rental' })
+export class ParkingRental {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, user => user.parkingReservations)
+  @ManyToOne(() => User, user => user.parkingRentals)
   user: User;
 
-  @ManyToOne(() => ParkingSpot, parkingSpot => parkingSpot.parkingReservations)
+  @ManyToOne(() => ParkingSpot, parkingSpot => parkingSpot.parkingRentals)
   parkingSpot: ParkingSpot;
 
-  @ManyToOne(() => Car, car => car.parkingReservations)
+  @ManyToOne(() => Car, car => car.parkingRentals)
   car: Car;
 
   @Column()

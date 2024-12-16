@@ -1,13 +1,5 @@
-import {
-  Column,
-  Entity,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  JoinColumn,
-  OneToMany,
-} from 'typeorm';
-import { Car } from './Car';
-import { ParkingReservation } from './ParkingReservation';
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { ParkingRental } from './ParkingRental';
 
 @Entity({
   name: 'parking_spots',
@@ -48,9 +40,6 @@ export class ParkingSpot {
 
   // Relations
 
-  @OneToMany(
-    () => ParkingReservation,
-    parkingReservation => parkingReservation.parkingSpot
-  )
-  parkingReservations: ParkingReservation[];
+  @OneToMany(() => ParkingRental, rental => rental.parkingSpot)
+  parkingRentals: ParkingRental[];
 }

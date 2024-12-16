@@ -1,15 +1,15 @@
 import cron from 'node-cron';
 import { MysqlDataSource } from '../config/data-source';
-import { ParkingReservation } from '../models/ParkingReservation';
 import { Car } from '../models/Car';
 import { ParkingSpot } from '../models/ParkingSpot';
 import { LessThanOrEqual } from 'typeorm';
+import { ParkingRental } from '../models/ParkingRental';
 
 const releaseParkingSpots = async () => {
   const now = new Date();
 
-  const expiredReservations = await MysqlDataSource.getRepository(
-    ParkingReservation
+  const expiredRentals = await MysqlDataSource.getRepository(
+    ParkingRental
   ).find({
     where: {
       endTime: LessThanOrEqual(now),
@@ -17,9 +17,9 @@ const releaseParkingSpots = async () => {
     relations: ['car', 'parkingSpot'],
   });
 
-  for (const reservation of expiredReservations) {
-    const car = reservation.car;
-    const parkingSpot = reservation.parkingSpot;
+  for (const rental of expiredRentals) {
+    const car = rental.car;
+    const parkingSpot = rental.parkingSpot;
 
     car.isParked = false;
     parkingSpot.isOccupied = false;

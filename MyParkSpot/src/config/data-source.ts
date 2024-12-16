@@ -3,7 +3,7 @@ import { DataSource } from 'typeorm';
 import { User } from '../models/User';
 import { Car } from '../models/Car';
 import { ParkingSpot } from '../models/ParkingSpot';
-import { ParkingReservation } from '../models/ParkingReservation';
+import { ParkingRental } from '../models/ParkingRental';
 
 export const MysqlDataSource = new DataSource({
   type: 'mysql',
@@ -14,5 +14,5 @@ export const MysqlDataSource = new DataSource({
   database: process.env.MYSQL_DATABASE,
   synchronize: true,
   logging: false,
-  entities: [User, Car, ParkingSpot, ParkingReservation],
+  entities: [User, Car, ParkingSpot, ParkingRental],
 });

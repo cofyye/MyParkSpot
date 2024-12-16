@@ -56,9 +56,9 @@
         </button>
 
         <h2 class="mb-4 text-xl font-semibold text-gray-800">
-          Reserve Parking
+          Rent Parking Spot
         </h2>
-        <form action="/reserve-parking" method="POST" class="space-y-6">
+        <form action="/rent-parking-spot" method="POST" class="space-y-6">
           <div>
             <h3 class="text-md mb-2 font-medium text-gray-700">
               Parking Duration
@@ -133,7 +133,7 @@
             </div>
             <% } else { %>
             <p class="text-sm text-gray-500">
-              No cars available. Please add a car to reserve parking.
+              No cars available. Please add a car to rent parking.
             </p>
             <% } %>
           </div>
@@ -232,7 +232,7 @@
 
       const parkingIconHtml =
         '<i class="fa-sharp-duotone fa-solid fa-square-parking" style="font-size: 26px; color: #5c7687;"></i>';
-      const reservedParkingIconHtml =
+      const rentedParkingIconHtml =
         '<i class="fa-sharp-duotone fa-solid fa-square-parking" style="font-size: 26px; color: silver;"></i>';
 
       const parkingIcon = L.divIcon({
@@ -243,8 +243,8 @@
         popupAnchor: [0, -30],
       });
 
-      const reservedParkingIcon = L.divIcon({
-        html: reservedParkingIconHtml,
+      const rentedParkingIcon = L.divIcon({
+        html: rentedParkingIconHtml,
         className: 'custom-div-icon',
         iconSize: [30, 30],
         iconAnchor: [15, 30],
@@ -257,7 +257,7 @@
       console.log(parkingSpots);
       parkingSpots.forEach(spot => {
         const marker = L.marker([spot.lat, spot.lng], {
-          icon: spot.isOccupied ? reservedParkingIcon : parkingIcon,
+          icon: spot.isOccupied ? rentedParkingIcon : parkingIcon,
         });
 
         marker.on('click', () => {

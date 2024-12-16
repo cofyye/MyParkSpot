@@ -4,7 +4,7 @@ import { MysqlDataSource } from '../config/data-source';
 import { ParkingSpot } from '../models/ParkingSpot';
 import { User } from '../models/User';
 import { Car } from '../models/Car';
-import { ParkingReservation } from '../models/ParkingReservation';
+import { ParkingRental } from '../models/ParkingRental';
 import { GeoReplyWith } from 'redis';
 import { In } from 'typeorm';
 
@@ -63,7 +63,7 @@ const getNearbyParkingSpots = async (
   res.json(parkingSpots);
 };
 
-const reserveParking = async (req: Request, res: Response): Promise<void> => {
+const rentParkingSpot = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user as User;
     const { parkingDuration, carId, parkingSpotId } = req.body;
@@ -117,29 +117,28 @@ const reserveParking = async (req: Request, res: Response): Promise<void> => {
       user.credit -= amount;
       await transactionalEntityManager.save(User, user);
 
-      const reservation = new ParkingReservation();
-      reservation.user = user;
-      reservation.car = car;
-      reservation.parkingSpot = parkingSpot;
-      reservation.hours = hoursNumber;
-      reservation.startTime = new Date();
-      //reservation.endTime = new Date(Date.now() + hoursNumber * 60 * 60 * 1000);
-      reservation.endTime = new Date(Date.now() + 5 * 60 * 1000);
+      const rental = new ParkingRental();
+      rental.user = user;
+      rental.car = car;
+      rental.parkingSpot = parkingSpot;
+      rental.hours = hoursNumber;
+      rental.startTime = new Date();
+      rental.endTime = new Date(Date.now() + hoursNumber * 60 * 60 * 1000);
 
-      await transactionalEntityManager.save(ParkingReservation, reservation);
+      await transactionalEntityManager.save(ParkingRental, rental);
 
       parkingSpot.isOccupied = true;
       await transactionalEntityManager.save(ParkingSpot, parkingSpot);
     });
 
-    req.flash('success', 'Parking reserved successfully.');
+    req.flash('success', 'Parking spot rented successfully.');
     return res.status(201).redirect('/map');
   } catch (error) {
     if (error.message === 'Insufficient credit.') {
       return res.status(200).redirect('/client/payments');
     }
 
-    req.flash('error', 'An error occurred while reserving parking.');
+    req.flash('error', 'An error occurred while renting parking spot.');
     return res.status(500).redirect('/map');
   }
 };
@@ -147,6 +146,6 @@ const reserveParking = async (req: Request, res: Response): Promise<void> => {
 export default {
   getHome,
   getMap,
-  reserveParking,
+  rentParkingSpot,
   getNearbyParkingSpots,
 };
