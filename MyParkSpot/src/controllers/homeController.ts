@@ -5,15 +5,28 @@ import { ParkingSpot } from '../models/ParkingSpot';
 import { User } from '../models/User';
 import { Car } from '../models/Car';
 import { ParkingReservation } from '../models/ParkingReservation';
+import { GeoReplyWith } from 'redis';
+import { In } from 'typeorm';
 
 const getHome = async (req: Request, res: Response): Promise<void> => {
   res.render('home');
 };
 
-const renderMap = async (req: Request, res: Response): Promise<void> => {
+async function syncParkingSpotsToRedis(parkingSpots: ParkingSpot[]) {
+  for (const spot of parkingSpots) {
+    await redisClient.geoAdd('parkingSpots', {
+      longitude: spot.longitude,
+      latitude: spot.latitude,
+      member: spot.id,
+    });
+  }
+}
+
+const getMap = async (req: Request, res: Response): Promise<void> => {
   const user = req.user as User;
 
   const parkingSpots = await MysqlDataSource.getRepository(ParkingSpot).find();
+  syncParkingSpotsToRedis(parkingSpots);
 
   let cars: Car[] = [];
 
@@ -29,8 +42,25 @@ const renderMap = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
-const getMap = async (req: Request, res: Response): Promise<void> => {
-  await renderMap(req, res);
+const getNearbyParkingSpots = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const lat = parseFloat(req.query.lat as string);
+  const lng = parseFloat(req.query.lng as string);
+  const radius = parseFloat(req.query.radius as string);
+
+  const spots = await redisClient.geoSearchWith(
+    'parkingSpots',
+    { longitude: lng, latitude: lat },
+    { radius: radius, unit: 'km' },
+    [GeoReplyWith.COORDINATES]
+  );
+
+  const parkingSpots = await MysqlDataSource.getRepository(ParkingSpot).findBy({
+    id: In(spots.map(spot => spot.member)),
+  });
+  res.json(parkingSpots);
 };
 
 const reserveParking = async (req: Request, res: Response): Promise<void> => {
@@ -117,4 +147,5 @@ export default {
   getHome,
   getMap,
   reserveParking,
+  getNearbyParkingSpots,
 };

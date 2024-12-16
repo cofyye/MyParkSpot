@@ -7,6 +7,7 @@ const router = express.Router();
 // Get methods
 router.get('/', homeController.getHome);
 router.get('/map', homeController.getMap);
+router.get('/api/nearby-parking-spots', homeController.getNearbyParkingSpots);
 
 // Post methods
 router.post('/reserve-parking', homeController.reserveParking);

@@ -24,14 +24,14 @@
           <button
             type="submit"
             id="park-here"
-            class="btn-sm btn bg-accent transform rounded-full border px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
+            class="btn-sm btn transform rounded-full border bg-accent px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
             Park Here
           </button>
           <% } else { %>
           <button id="park-here" hidden></button>
           <a
             href="/auth/login"
-            class="btn-sm btn bg-accent transform rounded-full border px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
+            class="btn-sm btn transform rounded-full border bg-accent px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
             Park Here
           </a>
           <% } %>
@@ -113,7 +113,7 @@
                   (<%= car.year %>) <% } %>
                 </p>
                 <span
-                  class="bg-accent absolute right-2 top-2 rounded px-2 py-1 text-xs text-white"
+                  class="absolute right-2 top-2 rounded bg-accent px-2 py-1 text-xs text-white"
                   >Parked</span
                 >
               </div>
@@ -191,7 +191,7 @@
         'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
         {
           subdomains: 'abcd',
-          maxZoom: 20,
+          maxZoom: 22,
           minZoom: 2,
           opacity: 0.9,
           detectRetina: true,
