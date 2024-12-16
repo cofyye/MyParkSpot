@@ -123,7 +123,8 @@ const reserveParking = async (req: Request, res: Response): Promise<void> => {
       reservation.parkingSpot = parkingSpot;
       reservation.hours = hoursNumber;
       reservation.startTime = new Date();
-      reservation.endTime = new Date(Date.now() + hoursNumber * 60 * 60 * 1000);
+      //reservation.endTime = new Date(Date.now() + hoursNumber * 60 * 60 * 1000);
+      reservation.endTime = new Date(Date.now() + 5 * 60 * 1000);
 
       await transactionalEntityManager.save(ParkingReservation, reservation);
 

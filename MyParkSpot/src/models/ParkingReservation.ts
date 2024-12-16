@@ -1,4 +1,3 @@
-// ParkingReservation.ts
 import {
   Entity,
   PrimaryGeneratedColumn,

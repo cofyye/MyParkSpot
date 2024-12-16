@@ -3,6 +3,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import { RedisStore } from 'connect-redis';
 import { join } from 'path';
 import cookieParser from 'cookie-parser';
+import releaseParkingSpots from './jobs/releaseParkingSpots';
 import cors from 'cors';
 import hpp from 'hpp';
 import helmet from 'helmet';
@@ -28,6 +29,9 @@ const main = async (): Promise<void> => {
     await redisClient.set('TEST_CONNECTION', 1);
     console.log('Redis Database connection established!');
     await redisClient.del('TEST_CONNECTION');
+
+    // Cron Jobs
+    releaseParkingSpots();
 
     // App Initialization
     const app = express();
@@ -127,7 +131,7 @@ const main = async (): Promise<void> => {
 
     // Run the application
     app.listen(port, () => {
-      console.log(`Example app listening on port ${port}`);
+      console.log(`App listening on port ${port}`);
     });
   } catch (error: unknown) {
     console.error('Database connection error:', error);
