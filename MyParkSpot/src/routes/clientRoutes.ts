@@ -12,8 +12,8 @@ router.get('/account', clientController.getAccount);
 router.get('/payments', clientController.getPayments);
 router.get('/settings', clientController.getSettings);
 router.get('/my-cars', clientController.getMyCars);
-router.get('/register-car', clientController.getRegisterCar);
-router.get('/delete-car/:id', clientController.getDeleteCar);
+router.get('/cars/register', clientController.getRegisterCar);
+router.post('/cars/delete/:id', clientController.postDeleteCar);
 
 // Post methods
 router.post(
@@ -22,7 +22,7 @@ router.post(
   clientController.postAccount
 );
 router.post(
-  '/register-car',
+  '/cars/register',
   validateDto(RegisterCarDto),
   clientController.postRegisterCar
 );

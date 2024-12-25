@@ -1,7 +1,6 @@
 import {
   IsEmail,
   IsNotEmpty,
-  IsUUID,
   Matches,
   MaxLength,
   MinLength,
@@ -13,12 +12,6 @@ import {
 } from '../../utils/regex.constants';
 
 export class UpdateAccountDto {
-  @IsUUID('4', {
-    message: 'The user ID field is not valid.',
-  })
-  @IsNotEmpty({ message: 'The user ID field must not be empty.' })
-  public readonly userId: string;
-
   @Matches(ALPHABETS_AND_SPACE_REGEX, {
     message: 'The first name field must contain only characters.',
   })

@@ -2,7 +2,6 @@ import { Transform, Type } from 'class-transformer';
 import {
   IsInt,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
   Max,
@@ -14,10 +13,6 @@ import {
 const currentYear = new Date().getFullYear();
 
 export class RegisterCarDto {
-  @IsString()
-  @IsNotEmpty({ message: 'The user ID field must not be empty.' })
-  public readonly userId: string;
-
   @IsString()
   @MaxLength(10, {
     message: 'The license plate field must contain a maximum of 10 characters.',

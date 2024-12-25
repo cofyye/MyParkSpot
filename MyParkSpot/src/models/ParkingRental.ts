@@ -14,15 +14,6 @@ export class ParkingRental {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, user => user.parkingRentals)
-  user: User;
-
-  @ManyToOne(() => ParkingSpot, parkingSpot => parkingSpot.parkingRentals)
-  parkingSpot: ParkingSpot;
-
-  @ManyToOne(() => Car, car => car.parkingRentals)
-  car: Car;
-
   @Column()
   hours: number;
 
@@ -31,4 +22,15 @@ export class ParkingRental {
 
   @Column()
   endTime: Date;
+
+  // Relations
+
+  @ManyToOne(() => User, user => user.parkingRentals)
+  user: User;
+
+  @ManyToOne(() => ParkingSpot, parkingSpot => parkingSpot.parkingRentals)
+  parkingSpot: ParkingSpot;
+
+  @ManyToOne(() => Car, car => car.parkingRentals)
+  car: Car;
 }

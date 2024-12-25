@@ -4,6 +4,7 @@ import { MysqlDataSource } from '../../src/config/data-source';
 import { User } from '../models/User';
 import { Car } from '../models/Car';
 import bcrypt from 'bcrypt';
+import { RegisterCarDto } from '../dtos/client/register-car.dto';
 
 const getAccount = async (req: Request, res: Response): Promise<void> => {
   return res.status(200).render('pages/client/account');
@@ -16,7 +17,7 @@ const postAccount = async (
   try {
     const user = await MysqlDataSource.getRepository(User).findOne({
       where: {
-        id: req.body.userId,
+        id: (req.user as User).id,
       },
     });
 
@@ -80,7 +81,10 @@ const getRegisterCar = async (req: Request, res: Response): Promise<void> => {
   return res.status(200).render('pages/client/register-car');
 };
 
-const postRegisterCar = async (req: Request, res: Response): Promise<void> => {
+const postRegisterCar = async (
+  req: Request<{}, {}, RegisterCarDto>,
+  res: Response
+): Promise<void> => {
   try {
     const newCar = new Car();
     const user = req.user as User;
@@ -97,11 +101,11 @@ const postRegisterCar = async (req: Request, res: Response): Promise<void> => {
     return res.status(201).redirect('/client/my-cars');
   } catch (error: unknown) {
     req.flash('error', 'An error occurred while registering the car.');
-    return res.status(500).redirect('/client/register-car');
+    return res.status(500).redirect('/client/cars/register');
   }
 };
 
-const getDeleteCar = async (req: Request, res: Response): Promise<void> => {
+const postDeleteCar = async (req: Request, res: Response): Promise<void> => {
   try {
     const carId = req.params.id;
     const user = req.user as User;
@@ -136,5 +140,5 @@ export default {
   postAccount,
   getRegisterCar,
   postRegisterCar,
-  getDeleteCar,
+  postDeleteCar,
 };
