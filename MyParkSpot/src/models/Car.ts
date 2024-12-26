@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -14,6 +15,9 @@ import { ParkingRental } from './ParkingRental';
 export class Car {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ name: 'user_id', nullable: false })
+  public userId: string;
 
   @Column({ name: 'license_plate', nullable: false, unique: true, length: 15 })
   licensePlate: string;
@@ -32,7 +36,12 @@ export class Car {
 
   // Relations
 
-  @ManyToOne(() => User, user => user.cars)
+  @ManyToOne(() => User, user => user.cars, {
+    nullable: false,
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @OneToMany(() => ParkingRental, rental => rental.car)

@@ -4,6 +4,7 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
+  JoinColumn,
 } from 'typeorm';
 import { User } from './User';
 import { ParkingSpot } from './ParkingSpot';
@@ -13,6 +14,15 @@ import { Car } from './Car';
 export class ParkingRental {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column({ name: 'user_id', nullable: false })
+  public userId: string;
+
+  @Column({ name: 'car_id', nullable: false })
+  public carId: string;
+
+  @Column({ name: 'parking_spot_id', nullable: false })
+  public parkingSpotId: string;
 
   @Column()
   hours: number;
@@ -25,12 +35,27 @@ export class ParkingRental {
 
   // Relations
 
-  @ManyToOne(() => User, user => user.parkingRentals)
+  @ManyToOne(() => User, user => user.parkingRentals, {
+    nullable: false,
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @ManyToOne(() => ParkingSpot, parkingSpot => parkingSpot.parkingRentals)
+  @ManyToOne(() => ParkingSpot, parkingSpot => parkingSpot.parkingRentals, {
+    nullable: false,
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'parking_spot_id' })
   parkingSpot: ParkingSpot;
 
-  @ManyToOne(() => Car, car => car.parkingRentals)
+  @ManyToOne(() => Car, car => car.parkingRentals, {
+    nullable: false,
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'car_id' })
   car: Car;
 }
