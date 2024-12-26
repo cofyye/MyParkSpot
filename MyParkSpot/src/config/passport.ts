@@ -3,6 +3,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 import bcrypt from 'bcrypt';
 import { MysqlDataSource } from './data-source';
 import { User } from '../models/User';
+import redisClient from './redis';
 
 const init = (passport: passport.PassportStatic) => {
   passport.use(
@@ -51,11 +52,20 @@ const init = (passport: passport.PassportStatic) => {
   passport.deserializeUser(
     async (id: string, done: (err: unknown, user?: User) => void) => {
       try {
-        const user = await MysqlDataSource.getRepository(User).findOne({
-          where: {
-            id,
-          },
-        });
+        const userData = await redisClient.get(`user:${id}`);
+        let user: User = null;
+
+        if (userData) {
+          user = JSON.parse(userData);
+        } else {
+          user = await MysqlDataSource.getRepository(User).findOne({
+            where: {
+              id,
+            },
+          });
+
+          await redisClient.setEx(`user:${id}`, 3600, JSON.stringify(user));
+        }
         done(null, user);
       } catch (err: unknown) {
         done(err);

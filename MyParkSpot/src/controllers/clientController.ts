@@ -5,6 +5,7 @@ import { User } from '../models/User';
 import { Car } from '../models/Car';
 import bcrypt from 'bcrypt';
 import { RegisterCarDto } from '../dtos/client/register-car.dto';
+import redisClient from '../config/redis';
 
 const getAccount = async (req: Request, res: Response): Promise<void> => {
   return res.status(200).render('pages/client/account');
@@ -15,7 +16,7 @@ const postAccount = async (
   res: Response
 ): Promise<void> => {
   try {
-    const user = await MysqlDataSource.getRepository(User).findOne({
+    let user = await MysqlDataSource.getRepository(User).findOne({
       where: {
         id: (req.user as User).id,
       },
@@ -45,6 +46,17 @@ const postAccount = async (
           : {}),
       }
     );
+
+    // Sync with redis
+    const userData = await redisClient.get(`user:${user.id}`);
+    if (userData) {
+      user.firstName = req.body.firstName;
+      user.lastName = req.body.lastName;
+      user.email = req.body.email;
+      user.username = req.body.username;
+
+      await redisClient.setEx(`user:${user.id}`, 3600, JSON.stringify(user));
+    }
 
     req.flash('success', 'You have successfully updated your account.');
     return res.status(200).redirect('/client/account');
