@@ -12,24 +12,183 @@
         <%- include('./partials/aside.ejs') %>
         <section class="w-full space-y-6 p-6 md:w-9/12">
           <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">Payments</h1>
-          <div class="w-1/4 space-y-4">
-            <div class="flex flex-col items-center rounded-lg bg-white p-4">
-              <label class="block text-sm font-medium text-gray-900"
-                >Current Balance</label
-              >
-              <p class="mt-2 text-xl font-semibold text-gray-900">
-                <%= user.credit %> EUR
-              </p>
-              <button
-                class="btn-sm btn mt-2 w-max transform rounded-full border bg-primary px-6 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105">
-                Add Funds
-              </button>
+          <div class="grid grid-cols-12 gap-4">
+            <div class="col-span-8">
+              <div
+                class="w-full rounded-lg border border-gray-200 bg-white p-6">
+                <h2 class="text-md text-gray-900">Recent Transactions</h2>
+                <ul class="mt-4 space-y-4 text-sm">
+                  <li class="flex items-center justify-between border-b pb-2">
+                    <div class="flex items-center">
+                      <i class="fa-solid fa-parking mr-3 text-accent"></i>
+                      <div>
+                        <span>Parking Rental - 2 hours</span><br />
+                        <span class="text-xs text-gray-500"
+                          >2023-10-05 10:00 AM</span
+                        >
+                      </div>
+                    </div>
+                    <span class="font-semibold text-gray-600">- 2.00 EUR</span>
+                  </li>
+                  <li class="flex items-center justify-between border-b pb-2">
+                    <div class="flex items-center">
+                      <i
+                        class="fa-solid fa-plus-circle text-primary-100 mr-3"></i>
+                      <div>
+                        <span>Funds Added</span><br />
+                        <span class="text-xs text-gray-500"
+                          >2023-10-04 02:15 PM</span
+                        >
+                      </div>
+                    </div>
+                    <span class="font-semibold text-gray-600">+ 5.00 EUR</span>
+                  </li>
+                  <li class="flex items-center justify-between">
+                    <div class="flex items-center">
+                      <i class="fa-solid fa-parking mr-3 text-accent"></i>
+                      <div>
+                        <span>Parking Rental - 1 hour</span><br />
+                        <span class="text-xs text-gray-500"
+                          >2023-10-03 09:30 AM</span
+                        >
+                      </div>
+                    </div>
+                    <span class="font-semibold text-gray-600">- 1.00 EUR</span>
+                  </li>
+                </ul>
+                <div class="mt-6 text-right">
+                  <a
+                    href="/client/payments/transactions"
+                    class="hover:scale-102 inline-block rounded-full border px-4 py-2 text-sm font-bold transition duration-300 ease-in-out">
+                    View All Transactions
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="col-span-4">
+              <div
+                class="flex w-full flex-col items-center rounded-lg border border-gray-200 p-6">
+                <label class="text-md block text-gray-900"
+                  >Current Balance</label
+                >
+                <p class="mt-4 text-xl font-semibold text-gray-900">
+                  <%= user.credit %> EUR
+                </p>
+                <form action="/client/payments/funds/add">
+                  <button
+                    class="btn-sm btn hover:scale-102 mt-4 transform rounded-full border bg-primary px-6 py-2 font-medium text-white transition duration-300 ease-in-out">
+                    Add Funds
+                  </button>
+                </form>
+              </div>
+            </div>
+            <div class="col-span-10">
+              <div
+                class="w-full rounded-lg border border-gray-200 bg-white p-6 shadow-md">
+                <h2 class="text-md text-gray-900">Spending Over Time</h2>
+                <div class="mt-4 flex space-x-4">
+                  <button
+                    id="last7Days"
+                    class="hover:scale-102 rounded-full border px-4 py-2 text-sm font-bold transition duration-300 ease-in-out">
+                    Last 7 Days
+                  </button>
+                  <button
+                    id="last30Days"
+                    class="hover:scale-102 rounded-full border px-4 py-2 text-sm font-bold transition duration-300 ease-in-out">
+                    Last 30 Days
+                  </button>
+                </div>
+                <div class="mt-6">
+                  <canvas id="spendingChart" class="h-64 w-full"></canvas>
+                </div>
+              </div>
             </div>
           </div>
         </section>
       </div>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      const ctx = document.getElementById('spendingChart').getContext('2d');
 
+      // Sample data for Last 7 Days
+      const data7Days = {
+        labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+        datasets: [
+          {
+            label: 'Spending (EUR)',
+            data: [5, 3, 4, 7, 2, 6, 4],
+            backgroundColor: 'black',
+            borderColor: 'black',
+            borderWidth: 1,
+          },
+        ],
+      };
+
+      // Sample data for Last 30 Days
+      const data30Days = {
+        labels: Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`),
+        datasets: [
+          {
+            label: 'Spending (EUR)',
+            data: Array.from(
+              { length: 30 },
+              () => Math.floor(Math.random() * 10) + 1
+            ),
+            backgroundColor: 'black',
+            borderColor: 'black',
+            borderWidth: 1,
+          },
+        ],
+      };
+
+      // Initial chart with Last 7 Days data
+      let spendingChart = new Chart(ctx, {
+        type: 'bar',
+        data: data7Days,
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false,
+            },
+            tooltip: {
+              enabled: true,
+            },
+          },
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'Days',
+              },
+            },
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'EUR',
+              },
+            },
+          },
+        },
+      });
+
+      // Function to update chart data
+      function updateChart(data) {
+        spendingChart.data = data;
+        spendingChart.update();
+      }
+
+      // Event listeners for buttons
+      document.getElementById('last7Days').addEventListener('click', () => {
+        updateChart(data7Days);
+      });
+
+      document.getElementById('last30Days').addEventListener('click', () => {
+        updateChart(data30Days);
+      });
+    </script>
     <%- include('../../shared/includes/scripts') %>
   </body>
 </html>

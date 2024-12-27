@@ -11,6 +11,9 @@ module.exports = {
         hover: '#2e2e2e',
         accent: '#829aaa',
       },
+      scale: {
+        '102': '1.02',
+      },
       fontFamily: {
         sans: ['Helvetica Neue', 'Arial', 'sans-serif'],
         serif: ['Georgia', 'serif'],

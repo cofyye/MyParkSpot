@@ -70,6 +70,10 @@ const getPayments = async (req: Request, res: Response): Promise<void> => {
   return res.status(200).render('pages/client/payments');
 };
 
+const getAddFunds = async (req: Request, res: Response): Promise<void> => {
+  return res.status(200).render('pages/client/add-funds');
+};
+
 const getSettings = async (req: Request, res: Response): Promise<void> => {
   return res.status(200).render('pages/client/settings');
 };
@@ -147,6 +151,7 @@ const postDeleteCar = async (req: Request, res: Response): Promise<void> => {
 export default {
   getAccount,
   getPayments,
+  getAddFunds,
   getSettings,
   getMyCars,
   postAccount,
