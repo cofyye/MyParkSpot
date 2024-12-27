@@ -6,8 +6,15 @@ import { Car } from '../models/Car';
 import bcrypt from 'bcrypt';
 import { RegisterCarDto } from '../dtos/client/register-car.dto';
 import redisClient from '../config/redis';
+import { Stripe } from 'stripe';
+import { AddFundsDto } from '../dtos/client/add-funds.dto';
+import { PaymentMethod } from '../enums/payment-method.enum';
+import { CompletePaymentDto } from '../dtos/client/complete-payment.dto';
 
-const getAccount = async (req: Request, res: Response): Promise<void> => {
+// Init stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+const getAccount = async (_req: Request, res: Response): Promise<void> => {
   return res.status(200).render('pages/client/account');
 };
 
@@ -66,12 +73,80 @@ const postAccount = async (
   }
 };
 
-const getPayments = async (req: Request, res: Response): Promise<void> => {
+const getPayments = async (_req: Request, res: Response): Promise<void> => {
   return res.status(200).render('pages/client/payments');
 };
 
-const getAddFunds = async (req: Request, res: Response): Promise<void> => {
+const getAddFunds = async (_req: Request, res: Response): Promise<void> => {
   return res.status(200).render('pages/client/add-funds');
+};
+
+const getCompletePayments = async (
+  req: Request<{}, {}, {}, CompletePaymentDto>,
+  res: Response
+): Promise<void> => {
+  try {
+    if (req.query.payment_method === PaymentMethod.PAYPAL) {
+      req.flash('error', 'PayPal is currently unavailable for payments.');
+      return res.status(503).redirect('/client/payments/funds/add');
+    } else {
+      const session = await stripe.checkout.sessions.retrieve(
+        req.query.session_id
+      );
+
+      // To be continued...
+      console.log(session);
+
+      res.status(200).send('ok');
+    }
+  } catch (err: unknown) {
+    req.flash('error', 'An error occurred while completing the payment.');
+    return res.status(500).redirect('/client/payments/funds/add');
+  }
+};
+
+const getCancelPayments = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  res.status(200).send('cancel payments...');
+};
+
+const postAddFunds = async (
+  req: Request<{}, {}, AddFundsDto>,
+  res: Response
+): Promise<void> => {
+  try {
+    if (req.body.paymentMethod === PaymentMethod.PAYPAL) {
+      req.flash('error', 'PayPal is currently unavailable for payments.');
+      return res.status(503).redirect('/client/payments/funds/add');
+    } else {
+      const session = await stripe.checkout.sessions.create({
+        line_items: [
+          {
+            quantity: 1,
+            price_data: {
+              currency: 'EUR',
+              product_data: {
+                name: `MyParkSpot - Add ${req.body.amount} €`,
+                description:
+                  'Easily add funds to your MyParkSpot account to ensure uninterrupted access to parking reservations and exclusive features. This secure payment will be instantly credited to your account balance, allowing you to enjoy seamless parking services whenever you need them.',
+              },
+              unit_amount: req.body.amount * 100,
+            },
+          },
+        ],
+        mode: 'payment',
+        success_url: `${process.env.BASE_URL}/client/payments/complete?payment_method=${req.body.paymentMethod}&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${process.env.BASE_URL}/client/payments/cancel`,
+      });
+
+      return res.status(200).redirect(session.url);
+    }
+  } catch (err: unknown) {
+    req.flash('error', 'An error occurred while adding funds.');
+    return res.status(500).redirect('/client/payments/funds/add');
+  }
 };
 
 const getSettings = async (req: Request, res: Response): Promise<void> => {
@@ -151,7 +226,10 @@ const postDeleteCar = async (req: Request, res: Response): Promise<void> => {
 export default {
   getAccount,
   getPayments,
+  getCompletePayments,
+  getCancelPayments,
   getAddFunds,
+  postAddFunds,
   getSettings,
   getMyCars,
   postAccount,
