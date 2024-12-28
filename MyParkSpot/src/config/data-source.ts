@@ -14,6 +14,7 @@ export const MysqlDataSource = new DataSource({
   password: process.env.MYSQL_PASSWORD,
   database: process.env.MYSQL_DATABASE,
   synchronize: true,
+  timezone: 'Z',
   logging: false,
   entities: [User, Car, ParkingSpot, ParkingRental, Transaction],
 });

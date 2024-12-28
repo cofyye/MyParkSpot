@@ -31,7 +31,7 @@ export class Car {
   @Column({ name: 'year', nullable: true })
   year: number;
 
-  @Column({ default: false })
+  @Column({ name: 'is_parked', nullable: false, default: false })
   isParked: boolean;
 
   // Relations
@@ -39,7 +39,7 @@ export class Car {
   @ManyToOne(() => User, user => user.cars, {
     nullable: false,
     onUpdate: 'CASCADE',
-    onDelete: 'CASCADE',
+    onDelete: 'RESTRICT',
   })
   @JoinColumn({ name: 'user_id' })
   user: User;

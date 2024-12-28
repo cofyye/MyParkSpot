@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { Car } from './Car';
 import { ParkingRental } from './ParkingRental';
+import { Transaction } from './Transaction';
 
 @Entity({
   name: 'users',
@@ -37,10 +38,6 @@ export class User {
     scale: 2,
     default: 0,
     nullable: false,
-    transformer: {
-      to: (value: number) => value,
-      from: (value: string) => parseFloat(value),
-    },
   })
   credit: number;
 
@@ -58,4 +55,7 @@ export class User {
 
   @OneToMany(() => ParkingRental, rental => rental.user)
   parkingRentals: ParkingRental[];
+
+  @OneToMany(() => Transaction, transaction => transaction.user)
+  transactions: Transaction[];
 }

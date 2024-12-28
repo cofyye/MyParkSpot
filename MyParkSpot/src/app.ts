@@ -17,6 +17,7 @@ import redisClient from './config/redis';
 import homeRoutes from './routes/homeRoutes';
 import authRoutes from './routes/authRoutes';
 import clientRoutes from './routes/clientRoutes';
+import moment from 'moment-timezone';
 
 const main = async (): Promise<void> => {
   try {
@@ -119,6 +120,7 @@ const main = async (): Promise<void> => {
       ): Promise<void> => {
         res.locals.session = req.session;
         res.locals.user = req.user;
+        res.locals.moment = moment;
 
         next();
       }

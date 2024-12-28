@@ -24,13 +24,13 @@ export class ParkingRental {
   @Column({ name: 'parking_spot_id', nullable: false })
   public parkingSpotId: string;
 
-  @Column()
-  hours: number;
+  @Column({ name: 'minutes', nullable: false })
+  minutes: number;
 
-  @CreateDateColumn()
+  @Column({ name: 'start_time', nullable: false, type: 'datetime' })
   startTime: Date;
 
-  @Column()
+  @Column({ name: 'end_time', nullable: false, type: 'datetime' })
   endTime: Date;
 
   // Relations

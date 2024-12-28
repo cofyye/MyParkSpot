@@ -78,7 +78,7 @@ const getPayments = async (req: Request, res: Response): Promise<void> => {
   const user = req.user as User;
   const transactions = await MysqlDataSource.getRepository(Transaction).find({
     where: { userId: user.id },
-    order: { dateCreated: 'DESC' },
+    order: { createdAt: 'DESC' },
     take: 3,
   });
   return res

@@ -9,6 +9,7 @@ import { GeoReplyWith } from 'redis';
 import { In } from 'typeorm';
 import { Transaction } from '../models/Transaction';
 import { TransactionType } from '../enums/transaction-type.enum';
+import moment from 'moment-timezone';
 
 const getHome = async (req: Request, res: Response): Promise<void> => {
   res.render('home');
@@ -69,7 +70,6 @@ const rentParkingSpot = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user as User;
     const { parkingDuration, carId, parkingSpotId } = req.body;
-    console.log(user, parkingDuration, carId, parkingSpotId);
 
     if (!parkingSpotId) {
       req.flash('error', 'Parking spot not found.');
@@ -123,9 +123,9 @@ const rentParkingSpot = async (req: Request, res: Response): Promise<void> => {
       rental.user = user;
       rental.car = car;
       rental.parkingSpot = parkingSpot;
-      rental.hours = hoursNumber;
-      rental.startTime = new Date();
-      rental.endTime = new Date(Date.now() + hoursNumber * 60 * 60 * 1000);
+      rental.minutes = hoursNumber;
+      rental.startTime = moment().utc().toDate();
+      rental.endTime = moment().utc().add(rental.minutes, 'minutes').toDate();
 
       await transactionalEntityManager.save(ParkingRental, rental);
 
@@ -139,10 +139,23 @@ const rentParkingSpot = async (req: Request, res: Response): Promise<void> => {
       await transactionalEntityManager.save(Transaction, newTransaction);
     });
 
+    // Sync with redis
+    const userData = await redisClient.get(`user:${user.id}`);
+    if (userData) {
+      const tmpUser = JSON.parse(userData) as User;
+
+      tmpUser.credit = user.credit;
+
+      await redisClient.setEx(`user:${user.id}`, 3600, JSON.stringify(tmpUser));
+    }
+
     req.flash('success', 'Parking spot rented successfully.');
     return res.status(201).redirect('/map');
-  } catch (error) {
-    if (error.message === 'Insufficient credit.') {
+  } catch (error: unknown) {
+    const err = error as Error;
+
+    if (err.message === 'Insufficient credit.') {
+      req.flash('error', 'Insufficient credit.');
       return res.status(200).redirect('/client/payments');
     }
 

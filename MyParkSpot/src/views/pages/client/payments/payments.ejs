@@ -28,8 +28,8 @@
                       <div>
                         <span>Parking Rental</span><br />
                         <span class="text-xs text-gray-500"
-                          ><%= new
-                          Date(transaction.dateCreated).toLocaleString()
+                          ><%=
+                          moment(transaction.createdAt).tz(moment.tz.guess()).format("LLLL")
                           %></span
                         >
                       </div>

@@ -4,15 +4,14 @@ import { Car } from '../models/Car';
 import { ParkingSpot } from '../models/ParkingSpot';
 import { LessThanOrEqual } from 'typeorm';
 import { ParkingRental } from '../models/ParkingRental';
+import moment from 'moment-timezone';
 
 const releaseParkingSpots = async () => {
-  const now = new Date();
-
   const expiredRentals = await MysqlDataSource.getRepository(
     ParkingRental
   ).find({
     where: {
-      endTime: LessThanOrEqual(now),
+      endTime: LessThanOrEqual(moment().utc().toDate()),
     },
     relations: ['car', 'parkingSpot'],
   });
