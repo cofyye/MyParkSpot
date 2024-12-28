@@ -10,6 +10,7 @@ import { Stripe } from 'stripe';
 import { AddFundsDto } from '../dtos/client/add-funds.dto';
 import { PaymentMethod } from '../enums/payment-method.enum';
 import { CompletePaymentDto } from '../dtos/client/complete-payment.dto';
+import { Transaction } from '../models/Transaction';
 
 // Init stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -73,12 +74,20 @@ const postAccount = async (
   }
 };
 
-const getPayments = async (_req: Request, res: Response): Promise<void> => {
-  return res.status(200).render('pages/client/payments');
+const getPayments = async (req: Request, res: Response): Promise<void> => {
+  const user = req.user as User;
+  const transactions = await MysqlDataSource.getRepository(Transaction).find({
+    where: { userId: user.id },
+    order: { dateCreated: 'DESC' },
+    take: 3,
+  });
+  return res
+    .status(200)
+    .render('pages/client/payments/payments', { transactions });
 };
 
 const getAddFunds = async (_req: Request, res: Response): Promise<void> => {
-  return res.status(200).render('pages/client/add-funds');
+  return res.status(200).render('pages/client/payments/add-funds');
 };
 
 const getCompletePayments = async (
@@ -97,7 +106,8 @@ const getCompletePayments = async (
       // To be continued...
       console.log(session);
 
-      res.status(200).send('ok');
+      req.flash('success', 'Funds successfully added.');
+      return res.redirect('/client/payments');
     }
   } catch (err: unknown) {
     req.flash('error', 'An error occurred while completing the payment.');
@@ -109,7 +119,8 @@ const getCancelPayments = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  res.status(200).send('cancel payments...');
+  req.flash('error', 'Payment canceled.');
+  return res.redirect('/client/payments');
 };
 
 const postAddFunds = async (
@@ -229,11 +240,11 @@ export default {
   getCompletePayments,
   getCancelPayments,
   getAddFunds,
-  postAddFunds,
   getSettings,
   getMyCars,
-  postAccount,
   getRegisterCar,
+  postAddFunds,
+  postAccount,
   postRegisterCar,
   postDeleteCar,
 };

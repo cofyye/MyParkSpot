@@ -2,14 +2,14 @@
 <html lang="en">
   <head>
     <title>MyParkSpot - Add Funds</title>
-    <%- include('../../shared/includes/meta') %> <%-
-    include('../../shared/includes/styles') %>
+    <%- include('../../../shared/includes/meta') %> <%-
+    include('../../../shared/includes/styles') %>
   </head>
   <body class="bg-background">
-    <%- include('../../shared/partials/header') %>
+    <%- include('../../../shared/partials/header') %>
     <main class="min-h-screen p-0 sm:p-4">
       <div class="mx-auto flex w-full max-w-5xl flex-col md:flex-row">
-        <%- include('./partials/aside.ejs') %>
+        <%- include('../partials/aside.ejs') %>
         <section class="w-full space-y-6 p-6 md:w-9/12">
           <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">
             Add Funds
@@ -21,14 +21,14 @@
               class="w-full space-y-4">
               <div>
                 <h2 class="block text-sm font-medium text-gray-900">
-                  Choose your payment method
+                  Choose payment method
                 </h2>
                 <div class="mt-1 grid grid-cols-2 gap-4">
                   <div
                     class="payment-option flex transform cursor-pointer flex-col justify-center rounded-lg border border-gray-300 p-4 text-center shadow-sm transition-transform hover:scale-102"
                     data-value="stripe">
                     <img
-                      src="https://hostbillapp.com/appstore/payment_stripe/images/thumbnails/m_logo.png"
+                      src="/images/stripe.png"
                       class="mx-auto w-20"
                       alt="Stripe" />
                   </div>
@@ -36,7 +36,7 @@
                     class="payment-option flex transform cursor-pointer flex-col justify-center rounded-lg border border-gray-300 p-4 text-center shadow-sm transition-transform hover:scale-102"
                     data-value="paypal">
                     <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Paypal_2014_logo.png"
+                      src="/images/paypal.png"
                       class="mx-auto w-20"
                       alt="PayPal" />
                   </div>
@@ -56,7 +56,7 @@
                     id="amount"
                     name="amount"
                     min="5"
-                    max="1000000"
+                    max="1000"
                     required
                     class="text-md block w-full rounded-full border border-gray-300 py-2 pl-4 pr-8 shadow-sm" />
                   <div
@@ -89,6 +89,6 @@
         });
       });
     </script>
-    <%- include('../../shared/includes/scripts') %>
+    <%- include('../../../shared/includes/scripts') %>
   </body>
 </html>

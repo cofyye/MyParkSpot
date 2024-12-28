@@ -7,6 +7,8 @@ import { Car } from '../models/Car';
 import { ParkingRental } from '../models/ParkingRental';
 import { GeoReplyWith } from 'redis';
 import { In } from 'typeorm';
+import { Transaction } from '../models/Transaction';
+import { TransactionType } from '../enums/transaction-type.enum';
 
 const getHome = async (req: Request, res: Response): Promise<void> => {
   res.render('home');
@@ -129,6 +131,12 @@ const rentParkingSpot = async (req: Request, res: Response): Promise<void> => {
 
       parkingSpot.isOccupied = true;
       await transactionalEntityManager.save(ParkingSpot, parkingSpot);
+
+      const newTransaction = new Transaction();
+      newTransaction.userId = user.id;
+      newTransaction.transactionType = TransactionType.PARKING_RENTAL;
+      newTransaction.amount = amount;
+      await transactionalEntityManager.save(Transaction, newTransaction);
     });
 
     req.flash('success', 'Parking spot rented successfully.');

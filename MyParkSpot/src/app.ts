@@ -70,8 +70,6 @@ const main = async (): Promise<void> => {
               'https://c.basemaps.cartocdn.com',
               'https://d.basemaps.cartocdn.com',
               'https://unpkg.com',
-              'https://upload.wikimedia.org', // to be removed
-              'https://hostbillapp.com', // to be removed
             ],
           },
         },

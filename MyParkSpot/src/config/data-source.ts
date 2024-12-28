@@ -4,6 +4,7 @@ import { User } from '../models/User';
 import { Car } from '../models/Car';
 import { ParkingSpot } from '../models/ParkingSpot';
 import { ParkingRental } from '../models/ParkingRental';
+import { Transaction } from '../models/Transaction';
 
 export const MysqlDataSource = new DataSource({
   type: 'mysql',
@@ -14,5 +15,5 @@ export const MysqlDataSource = new DataSource({
   database: process.env.MYSQL_DATABASE,
   synchronize: true,
   logging: false,
-  entities: [User, Car, ParkingSpot, ParkingRental],
+  entities: [User, Car, ParkingSpot, ParkingRental, Transaction],
 });
