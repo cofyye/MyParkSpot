@@ -75,15 +75,22 @@ const postAccount = async (
 };
 
 const getPayments = async (req: Request, res: Response): Promise<void> => {
-  const user = req.user as User;
-  const transactions = await MysqlDataSource.getRepository(Transaction).find({
-    where: { userId: user.id },
-    order: { createdAt: 'DESC' },
-    take: 3,
-  });
-  return res
-    .status(200)
-    .render('pages/client/payments/payments', { transactions });
+  try {
+    const user = req.user as User;
+
+    const transactions = await MysqlDataSource.getRepository(Transaction).find({
+      where: { userId: user.id },
+      order: { createdAt: 'DESC' },
+      take: 3,
+    });
+
+    return res
+      .status(200)
+      .render('pages/client/payments/payments', { transactions });
+  } catch (error) {
+    req.flash('error', 'An error occurred while fetching your transactions.');
+    return res.status(500).redirect('/client/payments');
+  }
 };
 
 const getAddFunds = async (_req: Request, res: Response): Promise<void> => {
@@ -228,7 +235,6 @@ const postDeleteCar = async (req: Request, res: Response): Promise<void> => {
     req.flash('success', 'Car deleted successfully.');
     return res.status(200).redirect('/client/my-cars');
   } catch (error) {
-    console.error('Error deleting car:', error);
     req.flash('error', 'An error occurred while deleting the car.');
     return res.status(500).redirect('/client/my-cars');
   }

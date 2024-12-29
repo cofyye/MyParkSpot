@@ -10,6 +10,8 @@ import { In } from 'typeorm';
 import { Transaction } from '../models/Transaction';
 import { TransactionType } from '../enums/transaction-type.enum';
 import moment from 'moment-timezone';
+import { NearbyParkingSpotsDto } from '../dtos/client/nearby-parking-spots.dto';
+import { RentParkingSpotDto } from '../dtos/client/rent-parking-spot.dto';
 
 const getHome = async (req: Request, res: Response): Promise<void> => {
   res.render('home');
@@ -46,12 +48,12 @@ const getMap = async (req: Request, res: Response): Promise<void> => {
 };
 
 const getNearbyParkingSpots = async (
-  req: Request,
+  req: Request<{}, {}, {}, NearbyParkingSpotsDto>,
   res: Response
 ): Promise<void> => {
-  const lat = parseFloat(req.query.lat as string);
-  const lng = parseFloat(req.query.lng as string);
-  const radius = parseFloat(req.query.radius as string);
+  const lat = req.query.lat;
+  const lng = req.query.lng;
+  const radius = req.query.radius;
 
   const spots = await redisClient.geoSearchWith(
     'parkingSpots',
@@ -66,7 +68,10 @@ const getNearbyParkingSpots = async (
   res.json(parkingSpots);
 };
 
-const rentParkingSpot = async (req: Request, res: Response): Promise<void> => {
+const rentParkingSpot = async (
+  req: Request<{}, {}, RentParkingSpotDto>,
+  res: Response
+): Promise<void> => {
   try {
     const user = req.user as User;
     const { parkingDuration, carId, parkingSpotId } = req.body;
@@ -78,12 +83,6 @@ const rentParkingSpot = async (req: Request, res: Response): Promise<void> => {
 
     if (!carId) {
       req.flash('error', 'Car not found.');
-      return res.status(400).redirect('/map');
-    }
-
-    const hoursNumber = parseInt(parkingDuration, 10);
-    if (isNaN(hoursNumber) || hoursNumber < 1) {
-      req.flash('error', 'Please enter a valid number of hours.');
       return res.status(400).redirect('/map');
     }
 
@@ -110,7 +109,7 @@ const rentParkingSpot = async (req: Request, res: Response): Promise<void> => {
         throw new Error('Parking spot not available.');
       }
 
-      const amount = parkingSpot.price * hoursNumber;
+      const amount = parkingSpot.price * parkingDuration;
 
       if (user.credit < amount) {
         throw new Error('Insufficient credit.');
@@ -123,7 +122,7 @@ const rentParkingSpot = async (req: Request, res: Response): Promise<void> => {
       rental.user = user;
       rental.car = car;
       rental.parkingSpot = parkingSpot;
-      rental.minutes = hoursNumber;
+      rental.minutes = parkingDuration;
       rental.startTime = moment().utc().toDate();
       rental.endTime = moment().utc().add(rental.minutes, 'minutes').toDate();
 
@@ -155,7 +154,7 @@ const rentParkingSpot = async (req: Request, res: Response): Promise<void> => {
     const err = error as Error;
 
     if (err.message === 'Insufficient credit.') {
-      req.flash('error', 'Insufficient credit.');
+      req.flash('error', err.message);
       return res.status(200).redirect('/client/payments');
     }
 
