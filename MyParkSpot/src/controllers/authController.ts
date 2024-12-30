@@ -117,4 +117,24 @@ const postRegister = async (
   }
 };
 
-export default { getLogin, postLogin, getRegister, postRegister };
+const postLogout = async (req: Request, res: Response): Promise<void> => {
+  req.logOut(err => {
+    if (err) {
+      console.log('err', err);
+      req.flash('error', 'An error occurred during logout.');
+      return res.status(500).redirect('/client/profile');
+    }
+
+    req.session.destroy(sessionErr => {
+      if (sessionErr) {
+        console.log('sessionErr', sessionErr);
+        req.flash('error', 'An error occurred during logout.');
+        return res.status(500).redirect('/client/profile');
+      }
+
+      return res.status(200).redirect('/');
+    });
+  });
+};
+
+export default { getLogin, postLogin, getRegister, postRegister, postLogout };

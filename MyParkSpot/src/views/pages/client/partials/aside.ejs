@@ -29,10 +29,12 @@
       >
     </li>
     <li class="md:w-full">
-      <a
-        class="block px-4 py-2 text-center font-medium text-primary hover:bg-gray-100"
-        >Log out</a
-      >
+      <form
+        action="/auth/logout"
+        method="POST"
+        class="block cursor-pointer px-4 py-2 text-center font-medium text-primary hover:bg-gray-100">
+        <button class="w-full">Log out</button>
+      </form>
     </li>
   </ul>
 </aside>

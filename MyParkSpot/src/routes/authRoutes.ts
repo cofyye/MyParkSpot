@@ -13,6 +13,7 @@ router.get('/register', authController.getRegister);
 
 // Post methods
 router.post('/login', validateDto(LoginUserDto), authController.postLogin);
+router.post('/logout', authController.postLogout);
 router.post(
   '/register',
   validateDto(CreateUserDto),
