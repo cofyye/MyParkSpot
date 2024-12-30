@@ -4,7 +4,7 @@ import { ZoneType } from '../enums/zone-type.enum';
 
 type minutes = number;
 
-@Entity()
+@Entity({ name: 'zones' })
 export class Zone {
   @PrimaryGeneratedColumn('uuid')
   public id: string;

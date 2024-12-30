@@ -20,24 +20,19 @@
           <p id="parking-details" class="mt-2 text-secondary"></p>
         </div>
         <div class="flex items-center justify-center gap-2 sm:gap-4">
-          <% if (user) { %>
           <button
-            type="submit"
             id="park-here"
-            class="btn-sm btn transform rounded-full border bg-accent px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
+            class="btn-sm btn transform cursor-pointer rounded-full border bg-accent px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
             Park Here
           </button>
-          <% } else { %>
-          <button id="park-here" hidden></button>
-          <a
-            href="/auth/login"
-            class="btn-sm btn transform rounded-full border bg-accent px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
-            Park Here
-          </a>
-          <% } %>
+          <button
+            id="zone-info"
+            class="btn-sm btn transform cursor-pointer rounded-full border px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
+            Zone Info
+          </button>
           <button
             id="close-info"
-            class="btn-sm btn transform rounded-full border px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
+            class="btn-sm btn transform cursor-pointer rounded-full border px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
             Close
           </button>
         </div>
@@ -158,14 +153,90 @@
         </form>
       </div>
     </div>
+    <div
+      id="zone-info-modal"
+      class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black bg-opacity-50">
+      <div
+        class="relative w-full max-w-sm rounded-xl bg-white px-6 py-8 shadow-xl">
+        <button
+          type="button"
+          id="close-zone-info-modal"
+          class="absolute right-6 top-5 text-lg text-gray-500 hover:text-gray-700 focus:outline-none">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <h2 class="mb-4 text-xl font-semibold text-gray-800">Zone Info</h2>
+        <div class="space-y-6">
+          <div id="zone-info-content" class="text-sm text-gray-700">
+            <h3 class="mb-4 text-center text-lg text-gray-800">
+              Zone D (Green)
+            </h3>
+            <div class="flex flex-col gap-2">
+              <div class="flex justify-between">
+                <p>Max Parking Duration:</p>
+                <p>180 minutes</p>
+              </div>
+              <div class="flex justify-between">
+                <p>Base Cost:</p>
+                <p>0.4 EUR</p>
+              </div>
+              <div class="flex justify-between">
+                <p>Extension Duration:</p>
+                <p>60 minutes</p>
+              </div>
+              <div class="flex justify-between">
+                <p>Extension Cost:</p>
+                <p>1.2 EUR</p>
+              </div>
+              <div class="flex justify-between">
+                <p>Daily Pass Cost:</p>
+                <p>N/A</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button
+              id="close-zone-info-modal"
+              class="btn-sm btn transform rounded-full border px-6 py-2 font-semibold hover:bg-gray-100">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
     <%- include('shared/includes/leafletscripts') %>
     <script>
+      // Functions
+      function capitalizeFirstLetter(val) {
+        return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+      }
       function decodeHtmlEntities(text) {
         const textArea = document.createElement('textarea');
         textArea.innerHTML = text;
         return textArea.value;
       }
+      function adjustMapHeight() {
+        const parkingInfo = document.getElementById('parking-info');
+        const map = document.getElementById('map');
+        if (parkingInfo.classList.contains('hidden')) {
+          map.style.height = 'calc(100% - 90px)';
+        } else {
+          const parkingInfoHeight = parkingInfo.offsetHeight;
+          map.style.height = `calc(100% - 90px - ${parkingInfoHeight}px)`;
+        }
+      }
 
+      // Check for unauthorized user
+      const user = '<%= user %>';
+
+      const parkBtn = document.getElementById('park-here');
+      if (!user) {
+        parkBtn.addEventListener('click', e => {
+          e.preventDefault();
+          window.location.href = '/auth/login';
+        });
+      }
+
+      // Preparing parking spots data for map
       const rawParkingSpots = '<%= parkingSpots %>';
       const decodedParkingSpots = decodeHtmlEntities(rawParkingSpots);
       const parsedParkingSpots = JSON.parse(decodedParkingSpots);
@@ -176,10 +247,12 @@
           lat: spot.latitude,
           lng: spot.longitude,
           isOccupied: spot.isOccupied,
-          price: spot.price,
+          zone: spot.zone,
         };
       });
+      console.log(parkingSpots);
 
+      // Leaflet Map
       const map = L.map('map', {
         attributionControl: false,
         zoomControl: false,
@@ -254,7 +327,8 @@
       const markers = L.markerClusterGroup({
         showCoverageOnHover: false,
       });
-      console.log(parkingSpots);
+
+      let zone;
       parkingSpots.forEach(spot => {
         const marker = L.marker([spot.lat, spot.lng], {
           icon: spot.isOccupied ? rentedParkingIcon : parkingIcon,
@@ -269,9 +343,10 @@
             document.getElementById('parkingSpot').value = spot.id;
           }
           document.getElementById('parking-details').innerHTML = `
-            <p>Status: ${spot.isOccupied ? 'Occupied' : 'Available'}</p>
-            <p>Price: ${spot.price} EUR/hour</p>
-          `;
+              <p>Status: ${spot.isOccupied ? 'Occupied' : 'Available'}</p>
+              <p>Zone: ${capitalizeFirstLetter(spot.zone.type)}</p>
+            `;
+          zone = spot.zone;
           adjustMapHeight();
         });
 
@@ -280,19 +355,9 @@
 
       map.addLayer(markers);
 
-      function adjustMapHeight() {
-        const parkingInfo = document.getElementById('parking-info');
-        const map = document.getElementById('map');
-        if (parkingInfo.classList.contains('hidden')) {
-          map.style.height = 'calc(100% - 90px)';
-        } else {
-          const parkingInfoHeight = parkingInfo.offsetHeight;
-          map.style.height = `calc(100% - 90px - ${parkingInfoHeight}px)`;
-        }
-      }
-
       window.addEventListener('resize', adjustMapHeight);
 
+      // Park Here Modal
       document.getElementById('close-info').addEventListener('click', () => {
         document.getElementById('parking-info').classList.add('hidden');
         adjustMapHeight();
@@ -309,9 +374,11 @@
       const carIdInput = document.getElementById('carId');
       const submitParkBtn = document.getElementById('submitParkBtn');
 
-      openParkModal.addEventListener('click', () => {
-        parkModal.classList.remove('hidden');
-      });
+      if (user) {
+        openParkModal.addEventListener('click', () => {
+          parkModal.classList.remove('hidden');
+        });
+      }
 
       parkModal.addEventListener('click', e => {
         if (e.target === parkModal) {
@@ -387,9 +454,29 @@
         submitParkBtn.disabled = true;
       }
 
+      // Zone Info Modal
+      const zoneInfoBtn = document.getElementById('zone-info');
+      const zoneInfoModal = document.getElementById('zone-info-modal');
+      const zoneInfoContent = document.getElementById('zone-info-content');
+      const closeZoneInfoBtn = document.getElementById('close-zone-info-modal');
+
+      zoneInfoBtn.addEventListener('click', () => {
+        // Display zone info
+
+        zoneInfoModal.classList.remove('hidden');
+      });
+
+      zoneInfoModal.addEventListener('click', e => {
+        if (e.target === zoneInfoModal) {
+          zoneInfoModal.classList.add('hidden');
+        }
+      });
+
+      closeZoneInfoBtn.addEventListener('click', () => {
+        zoneInfoModal.classList.add('hidden');
+      });
+
       toggleSubmitButton();
     </script>
-
-    <%- include('shared/includes/scripts') %>
   </body>
 </html>

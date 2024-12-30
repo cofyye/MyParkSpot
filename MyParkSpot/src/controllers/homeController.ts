@@ -30,7 +30,10 @@ async function syncParkingSpotsToRedis(parkingSpots: ParkingSpot[]) {
 const getMap = async (req: Request, res: Response): Promise<void> => {
   const user = req.user as User;
 
-  const parkingSpots = await MysqlDataSource.getRepository(ParkingSpot).find();
+  const parkingSpots = await MysqlDataSource.getRepository(ParkingSpot).find({
+    relations: ['zone'],
+  });
+
   syncParkingSpotsToRedis(parkingSpots);
 
   let cars: Car[] = [];

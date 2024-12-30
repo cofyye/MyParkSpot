@@ -3,15 +3,13 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  CreateDateColumn,
   JoinColumn,
-  RelationId,
 } from 'typeorm';
 import { User } from './User';
 import { ParkingSpot } from './ParkingSpot';
 import { Car } from './Car';
 
-@Entity({ name: 'parking_rental' })
+@Entity({ name: 'parking_rentals' })
 export class ParkingRental {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -27,13 +25,13 @@ export class ParkingRental {
 
   // Relation Ids
 
-  @RelationId((parkingRental: ParkingRental) => parkingRental.user)
+  @Column({ name: 'user_id', nullable: false })
   userId: string;
 
-  @RelationId((parkingRental: ParkingRental) => parkingRental.parkingSpot)
+  @Column({ name: 'parking_spot_id', nullable: false })
   parkingSpotId: string;
 
-  @RelationId((parkingRental: ParkingRental) => parkingRental.car)
+  @Column({ name: 'car_id', nullable: false })
   carId: string;
 
   // Relations

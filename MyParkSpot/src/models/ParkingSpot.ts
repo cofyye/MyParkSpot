@@ -5,7 +5,6 @@ import {
   OneToMany,
   ManyToOne,
   JoinColumn,
-  RelationId,
 } from 'typeorm';
 import { ParkingRental } from './ParkingRental';
 import { Zone } from './Zone';
@@ -40,7 +39,7 @@ export class ParkingSpot {
 
   // Relation Ids
 
-  @RelationId((parkingSpot: ParkingSpot) => parkingSpot.zone)
+  @Column({ name: 'zone_id', nullable: false })
   zoneId: string;
 
   // Relations

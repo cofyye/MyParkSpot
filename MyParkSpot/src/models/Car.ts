@@ -5,7 +5,6 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  RelationId,
 } from 'typeorm';
 import { User } from './User';
 import { ParkingRental } from './ParkingRental';
@@ -34,7 +33,7 @@ export class Car {
 
   // Relation Ids
 
-  @RelationId((car: Car) => car.user)
+  @Column({ name: 'user_id', nullable: false })
   userId: string;
 
   // Relations

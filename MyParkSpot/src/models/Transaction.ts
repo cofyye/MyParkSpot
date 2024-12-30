@@ -6,11 +6,10 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
-  RelationId,
 } from 'typeorm';
 import { User } from './User';
 
-@Entity()
+@Entity({ name: 'transactions' })
 export class Transaction {
   @PrimaryGeneratedColumn('uuid')
   id: number;
@@ -39,11 +38,11 @@ export class Transaction {
 
   // Relation Ids
 
-  @RelationId((transaction: Transaction) => transaction.user)
+  @Column({ name: 'user_id', nullable: false })
   userId: string;
 
   // Relations
-  
+
   @ManyToOne(() => User, user => user.transactions, {
     nullable: false,
     onUpdate: 'CASCADE',
