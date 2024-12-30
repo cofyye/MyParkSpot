@@ -160,36 +160,35 @@
         class="relative w-full max-w-sm rounded-xl bg-white px-6 py-8 shadow-xl">
         <button
           type="button"
-          id="close-zone-info-modal"
+          id="close-zone-info-modal-icon"
           class="absolute right-6 top-5 text-lg text-gray-500 hover:text-gray-700 focus:outline-none">
           <i class="fa-solid fa-xmark"></i>
         </button>
-        <h2 class="mb-4 text-xl font-semibold text-gray-800">Zone Info</h2>
+        <h2 class="mb-4 text-xl font-semibold text-gray-800">
+          Zone Info - <span id="zone-info-type"></span>
+        </h2>
         <div class="space-y-6">
           <div id="zone-info-content" class="text-sm text-gray-700">
-            <h3 class="mb-4 text-center text-lg text-gray-800">
-              Zone D (Green)
-            </h3>
-            <div class="flex flex-col gap-2">
+            <div class="flex flex-col gap-3">
               <div class="flex justify-between">
                 <p>Max Parking Duration:</p>
-                <p>180 minutes</p>
+                <p id="zone-info-max-parking"></p>
               </div>
               <div class="flex justify-between">
                 <p>Base Cost:</p>
-                <p>0.4 EUR</p>
+                <p id="zone-info-base-cost"></p>
               </div>
               <div class="flex justify-between">
-                <p>Extension Duration:</p>
-                <p>60 minutes</p>
+                <p>Max Extension Duration:</p>
+                <p id="zone-info-extension-duration"></p>
               </div>
               <div class="flex justify-between">
                 <p>Extension Cost:</p>
-                <p>1.2 EUR</p>
+                <p id="zone-info-extension-cost"></p>
               </div>
               <div class="flex justify-between">
                 <p>Daily Pass Cost:</p>
-                <p>N/A</p>
+                <p id="zone-info-daily-cost"></p>
               </div>
             </div>
           </div>
@@ -223,6 +222,33 @@
           const parkingInfoHeight = parkingInfo.offsetHeight;
           map.style.height = `calc(100% - 90px - ${parkingInfoHeight}px)`;
         }
+      }
+      function getZoneColor(zoneType) {
+        const zoneColors = {
+          purple: '#8A2BE2',
+          red: '#FF0800',
+          yellow: '#ffd800',
+          green: '#66FF00',
+          blue: '#00BFFF',
+        };
+        return zoneColors[zoneType];
+      }
+      function createParkingIcon(zoneType, isOccupied) {
+        const color = getZoneColor(zoneType);
+
+        return L.divIcon({
+          html: `
+          <i class="fa-sharp-duotone fa-solid fa-square-parking"
+            style="font-size: 26px; color: transparent;
+            background: radial-gradient(circle at top,${isOccupied ? 'silver' : '#5c7687'} 60%, ${isOccupied ? 'silver' : color} 95%);
+            -webkit-background-clip: text;">
+          </i>
+        `,
+          className: 'custom-div-icon',
+          iconSize: [30, 30],
+          iconAnchor: [15, 30],
+          popupAnchor: [0, -30],
+        });
       }
 
       // Check for unauthorized user
@@ -303,27 +329,6 @@
         })
         .addTo(map);
 
-      const parkingIconHtml =
-        '<i class="fa-sharp-duotone fa-solid fa-square-parking" style="font-size: 26px; color: #5c7687;"></i>';
-      const rentedParkingIconHtml =
-        '<i class="fa-sharp-duotone fa-solid fa-square-parking" style="font-size: 26px; color: silver;"></i>';
-
-      const parkingIcon = L.divIcon({
-        html: parkingIconHtml,
-        className: 'custom-div-icon',
-        iconSize: [30, 30],
-        iconAnchor: [15, 30],
-        popupAnchor: [0, -30],
-      });
-
-      const rentedParkingIcon = L.divIcon({
-        html: rentedParkingIconHtml,
-        className: 'custom-div-icon',
-        iconSize: [30, 30],
-        iconAnchor: [15, 30],
-        popupAnchor: [0, -30],
-      });
-
       const markers = L.markerClusterGroup({
         showCoverageOnHover: false,
       });
@@ -331,7 +336,7 @@
       let zone;
       parkingSpots.forEach(spot => {
         const marker = L.marker([spot.lat, spot.lng], {
-          icon: spot.isOccupied ? rentedParkingIcon : parkingIcon,
+          icon: createParkingIcon(spot.zone.type, spot.isOccupied),
         });
 
         marker.on('click', () => {
@@ -343,9 +348,9 @@
             document.getElementById('parkingSpot').value = spot.id;
           }
           document.getElementById('parking-details').innerHTML = `
-              <p>Status: ${spot.isOccupied ? 'Occupied' : 'Available'}</p>
-              <p>Zone: ${capitalizeFirstLetter(spot.zone.type)}</p>
-            `;
+                <p>Status: ${spot.isOccupied ? 'Occupied' : 'Available'}</p>
+                <p>Zone: ${capitalizeFirstLetter(spot.zone.type)}</p>
+              `;
           zone = spot.zone;
           adjustMapHeight();
         });
@@ -459,21 +464,77 @@
       const zoneInfoModal = document.getElementById('zone-info-modal');
       const zoneInfoContent = document.getElementById('zone-info-content');
       const closeZoneInfoBtn = document.getElementById('close-zone-info-modal');
+      const closeZoneInfoIcon = document.getElementById(
+        'close-zone-info-modal-icon'
+      );
 
       zoneInfoBtn.addEventListener('click', () => {
-        // Display zone info
+        if (zone.maxExtensionDuration == null) {
+          document
+            .getElementById('zone-info-extension-duration')
+            .parentElement.classList.add('hidden');
+          document
+            .getElementById('zone-info-extension-cost')
+            .parentElement.classList.add('hidden');
+        }
+        if (zone.dailyPassCost == null) {
+          document
+            .getElementById('zone-info-daily-cost')
+            .parentElement.classList.add('hidden');
+        }
+        if (zone.maxParkingDuration == null) {
+          document.getElementById('zone-info-max-parking').textContent =
+            'Unlimited';
+        } else {
+          document.getElementById('zone-info-max-parking').textContent =
+            `${zone.maxParkingDuration} minutes`;
+        }
+        document.getElementById('zone-info-type').textContent =
+          capitalizeFirstLetter(zone.type);
+        if (zone.type == 'purple') {
+          document.getElementById('zone-info-base-cost').textContent =
+            `${zone.baseCost / 2} EUR`;
+        } else {
+          document.getElementById('zone-info-base-cost').textContent =
+            `${zone.baseCost} EUR/hour`;
+        }
+        document.getElementById('zone-info-extension-duration').textContent =
+          `${zone.maxExtensionDuration} minutes`;
+        document.getElementById('zone-info-extension-cost').textContent =
+          `${zone.extensionCost} EUR/hour`;
+        document.getElementById('zone-info-daily-cost').textContent =
+          `${zone.dailyPassCost} EUR/day`;
 
         zoneInfoModal.classList.remove('hidden');
       });
 
+      function resetVisibilityZoneInfo() {
+        document
+          .getElementById('zone-info-extension-duration')
+          .parentElement.classList.remove('hidden');
+        document
+          .getElementById('zone-info-extension-cost')
+          .parentElement.classList.remove('hidden');
+        document
+          .getElementById('zone-info-daily-cost')
+          .parentElement.classList.remove('hidden');
+      }
+
       zoneInfoModal.addEventListener('click', e => {
         if (e.target === zoneInfoModal) {
           zoneInfoModal.classList.add('hidden');
+          resetVisibilityZoneInfo();
         }
+      });
+
+      closeZoneInfoIcon.addEventListener('click', () => {
+        zoneInfoModal.classList.add('hidden');
+        resetVisibilityZoneInfo();
       });
 
       closeZoneInfoBtn.addEventListener('click', () => {
         zoneInfoModal.classList.add('hidden');
+        resetVisibilityZoneInfo();
       });
 
       toggleSubmitButton();

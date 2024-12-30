@@ -30,12 +30,12 @@ export class Zone {
   public maxParkingDuration?: minutes;
 
   @Column({
-    name: 'extension_duration',
+    name: 'max_extension_duration',
     type: 'int',
     nullable: true,
     default: null,
   })
-  public extensionDuration?: minutes;
+  public maxExtensionDuration?: minutes;
 
   @Column({
     name: 'base_cost',
