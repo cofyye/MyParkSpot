@@ -5,6 +5,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  RelationId,
 } from 'typeorm';
 import { User } from './User';
 import { ParkingRental } from './ParkingRental';
@@ -15,9 +16,6 @@ import { ParkingRental } from './ParkingRental';
 export class Car {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
-  @Column({ name: 'user_id', nullable: false })
-  public userId: string;
 
   @Column({ name: 'license_plate', nullable: false, unique: true, length: 15 })
   licensePlate: string;
@@ -34,6 +32,11 @@ export class Car {
   @Column({ name: 'is_parked', nullable: false, default: false })
   isParked: boolean;
 
+  // Relation Ids
+
+  @RelationId((car: Car) => car.user)
+  userId: string;
+
   // Relations
 
   @ManyToOne(() => User, user => user.cars, {
@@ -41,7 +44,9 @@ export class Car {
     onUpdate: 'CASCADE',
     onDelete: 'RESTRICT',
   })
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({
+    name: 'user_id',
+  })
   user: User;
 
   @OneToMany(() => ParkingRental, rental => rental.car)

@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  RelationId,
 } from 'typeorm';
 import { User } from './User';
 
@@ -13,9 +14,6 @@ import { User } from './User';
 export class Transaction {
   @PrimaryGeneratedColumn('uuid')
   id: number;
-
-  @Column({ name: 'user_id', nullable: false })
-  userId: string;
 
   @Column({
     type: 'enum',
@@ -39,7 +37,13 @@ export class Transaction {
   })
   createdAt: Date;
 
+  // Relation Ids
+
+  @RelationId((transaction: Transaction) => transaction.user)
+  userId: string;
+
   // Relations
+  
   @ManyToOne(() => User, user => user.transactions, {
     nullable: false,
     onUpdate: 'CASCADE',

@@ -109,7 +109,8 @@ const rentParkingSpot = async (
         throw new Error('Parking spot not available.');
       }
 
-      const amount = parkingSpot.price * parkingDuration;
+      //const amount = parkingSpot.price * parkingDuration;
+      const amount = 3 * parkingDuration;
 
       if (user.credit < amount) {
         throw new Error('Insufficient credit.');

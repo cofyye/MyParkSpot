@@ -5,6 +5,7 @@ import {
   ManyToOne,
   CreateDateColumn,
   JoinColumn,
+  RelationId,
 } from 'typeorm';
 import { User } from './User';
 import { ParkingSpot } from './ParkingSpot';
@@ -15,15 +16,6 @@ export class ParkingRental {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'user_id', nullable: false })
-  public userId: string;
-
-  @Column({ name: 'car_id', nullable: false })
-  public carId: string;
-
-  @Column({ name: 'parking_spot_id', nullable: false })
-  public parkingSpotId: string;
-
   @Column({ name: 'minutes', nullable: false })
   minutes: number;
 
@@ -32,6 +24,17 @@ export class ParkingRental {
 
   @Column({ name: 'end_time', nullable: false, type: 'datetime' })
   endTime: Date;
+
+  // Relation Ids
+
+  @RelationId((parkingRental: ParkingRental) => parkingRental.user)
+  userId: string;
+
+  @RelationId((parkingRental: ParkingRental) => parkingRental.parkingSpot)
+  parkingSpotId: string;
+
+  @RelationId((parkingRental: ParkingRental) => parkingRental.car)
+  carId: string;
 
   // Relations
 
