@@ -14,7 +14,7 @@ router.get('/account', clientController.getAccount);
 router.get('/payments', clientController.getPayments);
 router.get(
   '/payments/complete',
-  validateDto(CompletePaymentDto, 'query'),
+  // validateDto(CompletePaymentDto, 'query'),
   clientController.getCompletePayments
 );
 router.get('/payments/cancel', clientController.getCancelPayments);

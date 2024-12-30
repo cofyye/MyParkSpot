@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start:dev": "concurrently \"npx tailwindcss -i ./src/public/stylesheets/_styles.css -o ./src/public/stylesheets/styles.css --watch\" \"nodemon --watch src --ext ts --exec ts-node ./src/app.ts\""
+    "start:dev": "concurrently \"npx tailwindcss -i ./src/public/stylesheets/_styles.css -o ./src/public/stylesheets/styles.css --watch\" \"cross-env NODE_ENV=development nodemon --watch src --ext ts --exec ts-node ./src/app.ts\""
   },
   "author": "",
   "license": "ISC",

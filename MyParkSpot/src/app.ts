@@ -96,10 +96,10 @@ const main = async (): Promise<void> => {
           client: redisClient,
         }),
         secret: process.env.SESSION_SECRET,
-        saveUninitialized: true,
+        saveUninitialized: false,
         resave: true,
         cookie: {
-          secure: process.env.MODE === 'development' ? false : true,
+          secure: process.env.NODE_ENV === 'production',
           sameSite: 'strict',
           httpOnly: true,
         },

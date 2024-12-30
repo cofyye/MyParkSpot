@@ -11,6 +11,7 @@ import { AddFundsDto } from '../dtos/client/add-funds.dto';
 import { PaymentMethod } from '../enums/payment-method.enum';
 import { CompletePaymentDto } from '../dtos/client/complete-payment.dto';
 import { Transaction } from '../models/Transaction';
+import { TransactionType } from '../enums/transaction-type.enum';
 
 // Init stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -102,6 +103,8 @@ const getCompletePayments = async (
   res: Response
 ): Promise<void> => {
   try {
+    const user = req.user as User;
+
     if (req.query.payment_method === PaymentMethod.PAYPAL) {
       req.flash('error', 'PayPal is currently unavailable for payments.');
       return res.status(503).redirect('/client/payments/funds/add');
@@ -110,13 +113,43 @@ const getCompletePayments = async (
         req.query.session_id
       );
 
-      // To be continued...
-      console.log(session);
+      await MysqlDataSource.transaction(async transaction => {
+        await transaction.getRepository(Transaction).save({
+          userId: user.id,
+          transactionType: TransactionType.FUNDS_ADDED,
+          amount: Number(session.amount_total) / 100,
+        });
 
-      req.flash('success', 'Funds successfully added.');
-      return res.redirect('/client/payments');
+        await transaction.getRepository(User).update(
+          {
+            id: user.id,
+          },
+          {
+            credit: Number(user.credit) + Number(session.amount_total) / 100,
+          }
+        );
+      });
+
+      // Sync with redis
+      const userData = await redisClient.get(`user:${user.id}`);
+      if (userData) {
+        const tmpUser = JSON.parse(userData) as User;
+
+        tmpUser.credit =
+          Number(tmpUser.credit) + Number(session.amount_total) / 100;
+
+        await redisClient.setEx(
+          `user:${user.id}`,
+          3600,
+          JSON.stringify(tmpUser)
+        );
+      }
     }
+
+    req.flash('success', 'Funds successfully added.');
+    return res.status(200).redirect('/client/payments');
   } catch (err: unknown) {
+    console.log(err);
     req.flash('error', 'An error occurred while completing the payment.');
     return res.status(500).redirect('/client/payments/funds/add');
   }

@@ -49,7 +49,7 @@
                           <span>Funds Added</span><br />
                           <span class="text-xs text-gray-500"
                             ><%= new
-                            Date(transaction.dateCreated).toLocaleString()
+                            moment(transaction.createdAt).tz(moment.tz.guess()).format("LLLL")
                             %></span
                           >
                         </div>
@@ -88,7 +88,7 @@
                   >
                   <p
                     class="mt-4 text-center text-2xl font-semibold text-gray-900">
-                    <%= user.credit %> EUR
+                    <%= Number(user.credit).toFixed(2) %> EUR
                   </p>
                 </div>
                 <div class="flex w-full flex-col items-center">
