@@ -224,14 +224,27 @@
         };
         return zoneColors[zoneType];
       }
-      function createParkingIcon(zoneType, isOccupied) {
-        const color = getZoneColor(zoneType);
+      function createParkingIcon(zoneType, isOccupied, userRentals, spotId) {
+        let firstColor;
+        let secondColor;
+
+        const userRental = userRentals.find(
+          rental => rental.parkingSpotId === spotId
+        );
+        if (userRental) {
+          firstColor = secondColor = '#01010d';
+        } else if (isOccupied) {
+          firstColor = secondColor = 'silver';
+        } else {
+          firstColor = '#5c7687';
+          secondColor = getZoneColor(zoneType);
+        }
 
         return L.divIcon({
           html: `
             <i class="fa-sharp-duotone fa-solid fa-square-parking"
               style="font-size: 26px; color: transparent;
-              background: radial-gradient(circle at top,${isOccupied ? 'silver' : '#5c7687'} 60%, ${isOccupied ? 'silver' : color} 95%);
+              background: radial-gradient(circle at top,${firstColor} 60%, ${secondColor} 95%);
               -webkit-background-clip: text;">
             </i>
           `,
@@ -252,6 +265,10 @@
           window.location.href = '/auth/login';
         });
       }
+      // Preparing parking rentals by user
+      const rawRentals = '<%= userRentals %>';
+      const decodedRentals = decodeHtmlEntities(rawRentals);
+      const userRentals = JSON.parse(decodedRentals);
 
       // Preparing parking spots data for map
       const rawParkingSpots = '<%= parkingSpots %>';
@@ -327,7 +344,12 @@
       let zone;
       parkingSpots.forEach(spot => {
         const marker = L.marker([spot.lat, spot.lng], {
-          icon: createParkingIcon(spot.zone.type, spot.isOccupied),
+          icon: createParkingIcon(
+            spot.zone.type,
+            spot.isOccupied,
+            userRentals,
+            spot.id
+          ),
         });
 
         marker.on('click', () => {

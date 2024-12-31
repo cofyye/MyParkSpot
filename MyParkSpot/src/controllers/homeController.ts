@@ -6,7 +6,7 @@ import { User } from '../models/User';
 import { Car } from '../models/Car';
 import { ParkingRental } from '../models/ParkingRental';
 import { GeoReplyWith } from 'redis';
-import { In } from 'typeorm';
+import { In, LessThan, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { Transaction } from '../models/Transaction';
 import { TransactionType } from '../enums/transaction-type.enum';
 import moment from 'moment-timezone';
@@ -37,15 +37,26 @@ const getMap = async (req: Request, res: Response): Promise<void> => {
   syncParkingSpotsToRedis(parkingSpots);
 
   let cars: Car[] = [];
+  let userRentals: ParkingRental[] = [];
 
   if (user) {
     cars = await MysqlDataSource.getRepository(Car).find({
       where: { user: { id: user.id } },
     });
+
+    userRentals = await MysqlDataSource.getRepository(ParkingRental).find({
+      where: {
+        user: { id: user.id },
+        startTime: LessThanOrEqual(moment.utc().toDate()),
+        endTime: MoreThanOrEqual(moment.utc().toDate()),
+      },
+      select: ['parkingSpotId'],
+    });
   }
 
   return res.render('map', {
     parkingSpots: JSON.stringify(parkingSpots),
+    userRentals: JSON.stringify(userRentals),
     cars,
   });
 };
@@ -65,8 +76,11 @@ const getNearbyParkingSpots = async (
     [GeoReplyWith.COORDINATES]
   );
 
-  const parkingSpots = await MysqlDataSource.getRepository(ParkingSpot).findBy({
-    id: In(spots.map(spot => spot.member)),
+  const parkingSpots = await MysqlDataSource.getRepository(ParkingSpot).find({
+    where: {
+      id: In(spots.map(spot => spot.member)),
+    },
+    relations: ['zone'],
   });
   res.json(parkingSpots);
 };
