@@ -8,6 +8,7 @@ import {
 import { Car } from './Car';
 import { ParkingRental } from './ParkingRental';
 import { Transaction } from './Transaction';
+import { ColumnDecimalTransformer } from '../utils/decimal.transformer';
 
 @Entity({
   name: 'users',
@@ -38,6 +39,7 @@ export class User {
     scale: 2,
     default: 0,
     nullable: false,
+    transformer: new ColumnDecimalTransformer(),
   })
   credit: number;
 

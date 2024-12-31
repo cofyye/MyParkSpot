@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { ParkingSpot } from './ParkingSpot';
 import { ZoneType } from '../enums/zone-type.enum';
+import { ColumnDecimalTransformer } from '../utils/decimal.transformer';
 
 type minutes = number;
 
@@ -43,6 +44,7 @@ export class Zone {
     precision: 7,
     scale: 2,
     nullable: false,
+    transformer: new ColumnDecimalTransformer(),
   })
   public baseCost: number;
 
@@ -52,6 +54,7 @@ export class Zone {
     precision: 7,
     scale: 2,
     nullable: true,
+    transformer: new ColumnDecimalTransformer(),
   })
   public extensionCost?: number;
 
@@ -61,6 +64,7 @@ export class Zone {
     precision: 7,
     scale: 2,
     nullable: true,
+    transformer: new ColumnDecimalTransformer(),
   })
   public dailyPassCost?: number;
 

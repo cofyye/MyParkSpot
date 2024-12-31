@@ -20,12 +20,11 @@ const releaseParkingSpots = async () => {
     const car = rental.car;
     const parkingSpot = rental.parkingSpot;
 
-    car.isParked = false;
-    parkingSpot.isOccupied = false;
-
     await MysqlDataSource.transaction(async transactionalEntityManager => {
-      await transactionalEntityManager.save(Car, car);
-      await transactionalEntityManager.save(ParkingSpot, parkingSpot);
+      await transactionalEntityManager.update(Car, car.id, { isParked: false });
+      await transactionalEntityManager.update(ParkingSpot, parkingSpot.id, {
+        isOccupied: false,
+      });
     });
   }
 };

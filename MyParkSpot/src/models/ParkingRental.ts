@@ -8,6 +8,7 @@ import {
 import { User } from './User';
 import { ParkingSpot } from './ParkingSpot';
 import { Car } from './Car';
+import { ColumnDecimalTransformer } from '../utils/decimal.transformer';
 
 @Entity({ name: 'parking_rentals' })
 export class ParkingRental {
@@ -33,6 +34,16 @@ export class ParkingRental {
 
   @Column({ name: 'car_id', nullable: false })
   carId: string;
+
+  @Column({
+    name: 'total_cost',
+    nullable: false,
+    type: 'decimal',
+    precision: 7,
+    scale: 2,
+    transformer: new ColumnDecimalTransformer(),
+  })
+  totalCost: number;
 
   // Relations
 

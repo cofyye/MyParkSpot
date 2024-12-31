@@ -1,0 +1,40 @@
+<aside class="rounded-lg p-2 md:w-2/12 md:py-6">
+  <ul class="flex w-full items-center md:flex-col md:space-y-2">
+    <li class="md:w-full">
+      <a
+        href="/admin/dashboard"
+        class="block px-4 py-2 text-center font-medium text-primary hover:bg-gray-100">
+        Dashboard
+      </a>
+    </li>
+    <li class="md:w-full">
+      <a
+        href="/admin/manage-zones"
+        class="block px-4 py-2 text-center font-medium text-primary hover:bg-gray-100">
+        Manage Zones
+      </a>
+    </li>
+    <li class="md:w-full">
+      <a
+        href="/admin/manage-spots"
+        class="block px-4 py-2 text-center font-medium text-primary hover:bg-gray-100">
+        Manage Parking Spots
+      </a>
+    </li>
+    <li class="md:w-full">
+      <a
+        href="/admin/users"
+        class="block px-4 py-2 text-center font-medium text-primary hover:bg-gray-100">
+        Users
+      </a>
+    </li>
+    <li class="md:w-full">
+      <form
+        action="/auth/logout"
+        method="POST"
+        class="block cursor-pointer px-4 py-2 text-center font-medium text-primary hover:bg-gray-100">
+        <button class="w-full">Log out</button>
+      </form>
+    </li>
+  </ul>
+</aside>

@@ -95,6 +95,10 @@ const rentParkingSpot = async (
       where: { id: userId },
     });
 
+    Object.entries(user).forEach(([key, value]) => {
+      console.log(`Property: ${key}, Value: ${value}, Type: ${typeof value}`);
+    });
+
     const { parkingDuration, carId, parkingSpotId } = req.body;
 
     const parkingHours = parkingDuration / 60;
@@ -112,15 +116,15 @@ const rentParkingSpot = async (
 
     await MysqlDataSource.transaction(async transactionalEntityManager => {
       const car = await transactionalEntityManager.findOne(Car, {
-        where: { id: carId, user: { id: user.id } },
+        where: { id: carId, userId: userId },
       });
+      console.log('Car:', car);
 
       if (!car) {
         throw new Error('Car not found.');
       }
 
-      car.isParked = true;
-      await transactionalEntityManager.save(Car, car);
+      await transactionalEntityManager.update(Car, car.id, { isParked: true });
 
       const parkingSpot = await transactionalEntityManager.findOne(
         ParkingSpot,
@@ -145,23 +149,27 @@ const rentParkingSpot = async (
       }
 
       user.credit -= amount;
-      await transactionalEntityManager.save(User, user);
+      await transactionalEntityManager.update(User, user.id, {
+        credit: user.credit - amount,
+      });
 
       const rental = new ParkingRental();
       rental.user = user;
       rental.car = car;
       rental.parkingSpot = parkingSpot;
       rental.minutes = parkingMinutes;
+      rental.totalCost = amount;
       rental.startTime = moment().utc().toDate();
       rental.endTime = moment().utc().add(rental.minutes, 'minutes').toDate();
 
       await transactionalEntityManager.save(ParkingRental, rental);
 
-      parkingSpot.isOccupied = true;
-      await transactionalEntityManager.save(ParkingSpot, parkingSpot);
+      await transactionalEntityManager.update(ParkingSpot, parkingSpot.id, {
+        isOccupied: true,
+      });
 
       const newTransaction = new Transaction();
-      newTransaction.userId = user.id;
+      newTransaction.user = user;
       newTransaction.transactionType = TransactionType.PARKING_RENTAL;
       newTransaction.amount = amount;
       await transactionalEntityManager.save(Transaction, newTransaction);

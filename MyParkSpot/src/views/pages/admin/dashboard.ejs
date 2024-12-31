@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>MyParkSpot - Admin Dashboard</title>
+    <%- include('../../shared/includes/meta') %> <%-
+    include('../../shared/includes/styles') %>
+  </head>
+  <body class="bg-background">
+    <%- include('../../shared/partials/header') %>
+    <main class="min-h-screen p-0 sm:p-4">
+      <div class="mx-auto flex w-full max-w-7xl flex-col md:flex-row">
+        <!-- ASIDE NAVIGATION -->
+        <%- include('./partials/aside.ejs') %>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <section class="w-full space-y-6 p-6 md:w-10/12">
+          <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">
+            Admin Dashboard
+          </h1>
+
+          <!-- Quick Stats -->
+          <div class="grid grid-cols-12 gap-4 text-center text-lg">
+            <div class="col-span-6 md:col-span-3">
+              <div
+                class="flex h-full w-full flex-col justify-center rounded-lg border border-gray-200 p-4">
+                <h2 class="font-semibold">Total Zones</h2>
+                <p class="mt-2"><%= totalZones %></p>
+              </div>
+            </div>
+            <div class="col-span-6 md:col-span-3">
+              <div
+                class="flex h-full w-full flex-col justify-center rounded-lg border border-gray-200 p-4">
+                <h2 class="font-semibold">Total Spots</h2>
+                <p class="mt-2"><%= totalSpots %></p>
+              </div>
+            </div>
+            <div class="col-span-6 md:col-span-3">
+              <div
+                class="flex h-full w-full flex-col justify-center rounded-lg border border-gray-200 p-4">
+                <h2 class="font-semibold">Occupied Spots</h2>
+                <p class="mt-2"><%= occupiedSpots %></p>
+              </div>
+            </div>
+            <div class="col-span-6 md:col-span-3">
+              <div
+                class="flex h-full w-full flex-col justify-center rounded-lg border border-gray-200 p-4">
+                <h2 class="font-semibold">Free Spots</h2>
+                <p class="mt-2"><%= freeSpots %></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats & Analytics -->
+          <div class="rounded-lg border border-gray-200 bg-white p-6">
+            <div>
+              <h3 class="mb-4 text-lg font-medium text-gray-800">
+                Daily Metrics
+              </h3>
+              <div class="grid grid-cols-12 gap-4 text-center text-lg">
+                <div
+                  class="col-span-12 rounded-lg border border-gray-200 p-4 sm:col-span-4">
+                  <h4 class="text-md font-semibold text-gray-700">
+                    Rentals Today
+                  </h4>
+                  <p class="mt-2"><%= dailyRentalsCount %></p>
+                </div>
+                <div
+                  class="col-span-12 rounded-lg border border-gray-200 p-4 sm:col-span-4">
+                  <h4 class="text-md font-semibold text-gray-700">
+                    Revenue Today
+                  </h4>
+                  <p class="mt-2"><%= dailyRentalsRevenue %> EUR</p>
+                </div>
+                <div
+                  class="col-span-12 rounded-lg border border-gray-200 p-4 sm:col-span-4">
+                  <h4 class="text-md font-semibold text-gray-700">
+                    Peak Rental Hour
+                  </h4>
+                  <p class="mt-2"><%= peakRentalHour %></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-lg border border-gray-200 bg-white p-6">
+            <div class="mb-8 text-lg">
+              <div
+                class="mb-6 flex flex-col items-center justify-between sm:mb-4 sm:flex-row">
+                <h3 class="text-lg font-medium text-gray-800">
+                  Monthly Metrics
+                </h3>
+                <input
+                  type="month"
+                  class="rounded-lg border border-gray-300 px-2 py-1"
+                  id="monthPicker"
+                  value="<%= currentMonth %>" />
+              </div>
+              <div class="grid grid-cols-1 gap-4 text-center sm:grid-cols-3">
+                <div class="rounded-lg border border-gray-200 p-4">
+                  <h4 class="text-md font-semibold text-gray-700">
+                    Total Rentals This Month
+                  </h4>
+                  <p class="mt-2"><%= monthlyRentalsCount %></p>
+                </div>
+                <div class="rounded-lg border border-gray-200 p-4">
+                  <h4 class="text-md font-semibold text-gray-700">
+                    Revenue This Month
+                  </h4>
+                  <p class="mt-2"><%= monthlyRentalsRevenue %> EUR</p>
+                </div>
+                <div class="rounded-lg border border-gray-200 p-4">
+                  <h4 class="text-md font-semibold text-gray-700">
+                    Average Revenue per Rental
+                  </h4>
+                  <p class="mt-2">
+                    <%= monthlyRentalsCount > 0 ? (monthlyRentalsRevenue /
+                    monthlyRentalsCount) : 0 %> EUR
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="mb-4 text-lg font-medium text-gray-800">
+                Revenue by Zone
+              </h3>
+              <div
+                class="overflow-x-auto rounded-lg border border-gray-200 p-4">
+                <table class="min-w-full text-center text-gray-700">
+                  <thead>
+                    <tr class="border-b">
+                      <th class="px-4 py-2">Zone</th>
+                      <th class="px-4 py-2">Monthly Revenue (EUR)</th>
+                      <th class="px-4 py-2">Monthly Rentals</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (revenueByZone.length > 0) { %> <%
+                    revenueByZone.forEach(zone => { %>
+                    <tr class="hover:bg-gray-100">
+                      <td class="px-4 py-2"><%= zone.zoneName %></td>
+                      <td class="px-4 py-2"><%= zone.totalRevenue %> EUR</td>
+                      <td class="px-4 py-2"><%= zone.rentalCount %></td>
+                    </tr>
+                    <% }) %> <% } else { %>
+                    <tr>
+                      <td colspan="3" class="m-2 px-4 py-2">
+                        No data available for the current month.
+                      </td>
+                    </tr>
+                    <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <%- include('../../shared/includes/scripts') %>
+    <script>
+      document
+        .getElementById('monthPicker')
+        .addEventListener('change', function () {
+          const selectedMonth = this.value;
+          const url = new URL(window.location.href);
+          url.searchParams.set('month', selectedMonth);
+          window.location.href = url.toString();
+        });
+    </script>
+  </body>
+</html>

@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { ParkingRental } from './ParkingRental';
 import { Zone } from './Zone';
+import { ColumnDecimalTransformer } from '../utils/decimal.transformer';
 
 @Entity({
   name: 'parking_spots',
@@ -22,6 +23,7 @@ export class ParkingSpot {
     type: 'decimal',
     precision: 10,
     scale: 7,
+    transformer: new ColumnDecimalTransformer(),
   })
   longitude: number;
 
@@ -31,6 +33,7 @@ export class ParkingSpot {
     type: 'decimal',
     precision: 10,
     scale: 7,
+    transformer: new ColumnDecimalTransformer(),
   })
   latitude: number;
 
