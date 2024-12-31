@@ -58,31 +58,9 @@
             <h3 class="text-md mb-2 font-medium text-gray-700">
               Parking Duration
             </h3>
-            <div class="grid grid-cols-1 gap-6 sm:grid-cols-1 md:grid-cols-2">
-              <div
-                class="duration-option transform cursor-pointer rounded-lg border border-gray-300 p-6 text-center transition-transform hover:scale-105 focus:outline-none"
-                data-value="1">
-                <p class="text-sm font-semibold text-gray-800">1 Hour</p>
-              </div>
-
-              <div
-                class="duration-option transform cursor-pointer rounded-lg border border-gray-300 p-6 text-center transition-transform hover:scale-105 focus:outline-none"
-                data-value="2">
-                <p class="text-sm font-semibold text-gray-800">2 Hours</p>
-              </div>
-
-              <div
-                class="duration-option transform cursor-pointer rounded-lg border border-gray-300 p-6 text-center transition-transform hover:scale-105 focus:outline-none"
-                data-value="3">
-                <p class="text-sm font-semibold text-gray-800">3 Hours</p>
-              </div>
-
-              <div
-                class="duration-option transform cursor-pointer rounded-lg border border-gray-300 p-6 text-center transition-transform hover:scale-105 focus:outline-none"
-                data-value="24">
-                <p class="text-sm font-semibold text-gray-800">Full Day</p>
-              </div>
-            </div>
+            <div
+              id="parking-duration-options"
+              class="grid grid-cols-1 gap-6 sm:grid-cols-1 md:grid-cols-2"></div>
           </div>
 
           <input
@@ -208,6 +186,19 @@
       function capitalizeFirstLetter(val) {
         return String(val).charAt(0).toUpperCase() + String(val).slice(1);
       }
+      function convertToMinutes(option) {
+        if (option.includes('hour')) {
+          const hours = parseInt(option);
+          return hours * 60;
+        }
+        if (option.includes('minutes')) {
+          return parseInt(option);
+        }
+        if (option === 'Full Day') {
+          return -1;
+        }
+        return 0;
+      }
       function decodeHtmlEntities(text) {
         const textArea = document.createElement('textarea');
         textArea.innerHTML = text;
@@ -238,12 +229,12 @@
 
         return L.divIcon({
           html: `
-          <i class="fa-sharp-duotone fa-solid fa-square-parking"
-            style="font-size: 26px; color: transparent;
-            background: radial-gradient(circle at top,${isOccupied ? 'silver' : '#5c7687'} 60%, ${isOccupied ? 'silver' : color} 95%);
-            -webkit-background-clip: text;">
-          </i>
-        `,
+            <i class="fa-sharp-duotone fa-solid fa-square-parking"
+              style="font-size: 26px; color: transparent;
+              background: radial-gradient(circle at top,${isOccupied ? 'silver' : '#5c7687'} 60%, ${isOccupied ? 'silver' : color} 95%);
+              -webkit-background-clip: text;">
+            </i>
+          `,
           className: 'custom-div-icon',
           iconSize: [30, 30],
           iconAnchor: [15, 30],
@@ -348,9 +339,9 @@
             document.getElementById('parkingSpot').value = spot.id;
           }
           document.getElementById('parking-details').innerHTML = `
-                <p>Status: ${spot.isOccupied ? 'Occupied' : 'Available'}</p>
-                <p>Zone: ${capitalizeFirstLetter(spot.zone.type)}</p>
-              `;
+                  <p>Status: ${spot.isOccupied ? 'Occupied' : 'Available'}</p>
+                  <p>Zone: ${capitalizeFirstLetter(spot.zone.type)}</p>
+                `;
           zone = spot.zone;
           adjustMapHeight();
         });
@@ -373,15 +364,76 @@
       const cancelParkModalBtn = document.getElementById('cancelParkModal');
       const openParkModal = document.getElementById('park-here');
 
-      const durationOptions = document.querySelectorAll('.duration-option');
+      let durationOptions;
       const carOptions = document.querySelectorAll('.car-option');
       const parkingDurationInput = document.getElementById('parkingDuration');
       const carIdInput = document.getElementById('carId');
       const submitParkBtn = document.getElementById('submitParkBtn');
 
+      let selectedDuration = null;
+      let selectedCarId = null;
+
       if (user) {
         openParkModal.addEventListener('click', () => {
           parkModal.classList.remove('hidden');
+          const durationOptionsContainer = document.getElementById(
+            'parking-duration-options'
+          );
+          durationOptionsContainer.innerHTML = '';
+
+          const durationOptionsValues = [];
+
+          if (zone.maxParkingDuration === null) {
+            durationOptionsValues.push(
+              '1 hour',
+              '2 hours',
+              '3 hours',
+              'Full Day'
+            );
+          } else {
+            if (zone.maxParkingDuration) {
+              if (zone.maxParkingDuration % 60 === 0) {
+                const hours = zone.maxParkingDuration / 60;
+                for (let i = 1; i <= hours; i++) {
+                  durationOptionsValues.push(`${i} hour${i > 1 ? 's' : ''}`);
+                }
+              } else {
+                durationOptionsValues.push(
+                  `${zone.maxParkingDuration} minutes`
+                );
+              }
+            }
+          }
+
+          durationOptionsValues.forEach(option => {
+            const optionDiv = document.createElement('div');
+            optionDiv.className =
+              'duration-option transform cursor-pointer rounded-lg border border-gray-300 p-6 text-center transition-transform hover:scale-105 focus:outline-none';
+            optionDiv.dataset.value = convertToMinutes(option);
+
+            const optionText = document.createElement('p');
+            optionText.className = 'text-sm font-semibold text-gray-800';
+            optionText.textContent = option;
+
+            optionDiv.appendChild(optionText);
+            durationOptionsContainer.appendChild(optionDiv);
+          });
+
+          durationOptions = document.querySelectorAll('.duration-option');
+          durationOptions.forEach(option => {
+            option.addEventListener('click', () => {
+              if (!option.dataset.value) return;
+
+              durationOptions.forEach(opt =>
+                opt.classList.remove('border-gray-200', 'border-primary')
+              );
+
+              option.classList.add('border-primary');
+              selectedDuration = option.getAttribute('data-value');
+              parkingDurationInput.value = selectedDuration;
+              toggleSubmitButton();
+            });
+          });
         });
       }
 
@@ -392,28 +444,8 @@
         }
       });
 
-      let selectedDuration = null;
-      let selectedCarId = null;
-
-      durationOptions.forEach(option => {
-        option.addEventListener('click', () => {
-          if (!option.dataset.value) return;
-
-          durationOptions.forEach(opt =>
-            opt.classList.remove('border-gray-200', 'border-primary')
-          );
-
-          option.classList.add('border-primary');
-          selectedDuration = option.getAttribute('data-value');
-          parkingDurationInput.value = selectedDuration;
-          toggleSubmitButton();
-        });
-      });
-
       carOptions.forEach(option => {
         option.addEventListener('click', () => {
-          if (!option.dataset.value) return;
-
           carOptions.forEach(opt =>
             opt.classList.remove('border-gray-200', 'border-primary')
           );

@@ -76,8 +76,15 @@ const rentParkingSpot = async (
   res: Response
 ): Promise<void> => {
   try {
-    const user = req.user as User;
+    const userId = (req.user as User).id;
+    const user = await MysqlDataSource.getRepository(User).findOne({
+      where: { id: userId },
+    });
+
     const { parkingDuration, carId, parkingSpotId } = req.body;
+
+    const parkingHours = parkingDuration / 60;
+    const parkingMinutes = parkingDuration;
 
     if (!parkingSpotId) {
       req.flash('error', 'Parking spot not found.');
@@ -105,6 +112,7 @@ const rentParkingSpot = async (
         ParkingSpot,
         {
           where: { id: parkingSpotId, isOccupied: false },
+          relations: ['zone'],
         }
       );
 
@@ -112,9 +120,12 @@ const rentParkingSpot = async (
         throw new Error('Parking spot not available.');
       }
 
-      //const amount = parkingSpot.price * parkingDuration;
-      const amount = 3 * parkingDuration;
-
+      let amount;
+      if (parkingMinutes === -1) {
+        amount = parkingSpot.zone.dailyPassCost;
+      } else {
+        amount = parkingHours * parkingSpot.zone.baseCost;
+      }
       if (user.credit < amount) {
         throw new Error('Insufficient credit.');
       }
@@ -126,7 +137,7 @@ const rentParkingSpot = async (
       rental.user = user;
       rental.car = car;
       rental.parkingSpot = parkingSpot;
-      rental.minutes = parkingDuration;
+      rental.minutes = parkingMinutes;
       rental.startTime = moment().utc().toDate();
       rental.endTime = moment().utc().add(rental.minutes, 'minutes').toDate();
 
@@ -143,14 +154,7 @@ const rentParkingSpot = async (
     });
 
     // Sync with redis
-    const userData = await redisClient.get(`user:${user.id}`);
-    if (userData) {
-      const tmpUser = JSON.parse(userData) as User;
-
-      tmpUser.credit = user.credit;
-
-      await redisClient.setEx(`user:${user.id}`, 3600, JSON.stringify(tmpUser));
-    }
+    await redisClient.setEx(`user:${user.id}`, 3600, JSON.stringify(user));
 
     req.flash('success', 'Parking spot rented successfully.');
     return res.status(201).redirect('/map');

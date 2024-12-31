@@ -1,13 +1,11 @@
-import { Transform } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsPositive, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
 
 type minutes = number;
 
 export class RentParkingSpotDto {
-  @Transform(({ value }) => parseInt(value, 10))
-  @IsInt()
-  @IsPositive()
-  @IsNotEmpty({ message: 'Parking duration is required.' })
+  @Type(() => Number)
+  @IsInt({ message: 'Parking duration must be an integer.' })
   public readonly parkingDuration: minutes;
 
   @IsString()
