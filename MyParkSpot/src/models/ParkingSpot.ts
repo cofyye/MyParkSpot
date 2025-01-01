@@ -40,6 +40,14 @@ export class ParkingSpot {
   @Column({ name: 'is_occupied', nullable: false, default: false })
   isOccupied: boolean;
 
+  @Column({
+    name: 'is_deleted',
+    type: 'boolean',
+    nullable: false,
+    default: false,
+  })
+  isDeleted: boolean;
+
   // Relation Ids
 
   @Column({ name: 'zone_id', nullable: false })

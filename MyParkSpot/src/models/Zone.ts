@@ -1,6 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { ParkingSpot } from './ParkingSpot';
-import { ZoneType } from '../enums/zone-type.enum';
 import { ColumnDecimalTransformer } from '../utils/decimal.transformer';
 
 type minutes = number;
@@ -15,12 +14,11 @@ export class Zone {
 
   @Column({
     name: 'type',
-    type: 'enum',
-    enum: ZoneType,
     nullable: false,
     unique: true,
+    length: 20,
   })
-  public type: ZoneType;
+  public type: string;
 
   @Column({
     name: 'max_parking_duration',
@@ -67,6 +65,14 @@ export class Zone {
     transformer: new ColumnDecimalTransformer(),
   })
   public dailyPassCost?: number;
+
+  @Column({
+    name: 'is_deleted',
+    type: 'boolean',
+    nullable: false,
+    default: false,
+  })
+  public isDeleted: boolean;
 
   // Relations
 

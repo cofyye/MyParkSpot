@@ -6,18 +6,24 @@ import { ParkingRental } from '../models/ParkingRental';
 import { LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import moment from 'moment-timezone';
 import { AdminDashboardDto } from '../dtos/admin/admin-dashboard.dto';
+import { plainToInstance } from 'class-transformer';
+import { CreateZoneDto } from '../dtos/admin/create-zone.dto';
 
 const getAdminDashboard = async (
   req: Request<{}, {}, {}, AdminDashboardDto>,
   res: Response
-) => {
+): Promise<void> => {
   const currentMonth =
     req.query.month ?? moment().utc().tz(moment.tz.guess()).format('YYYY-MM');
 
-  const totalZones = await MysqlDataSource.getRepository(Zone).count();
-  const totalSpots = await MysqlDataSource.getRepository(ParkingSpot).count();
+  const totalZones = await MysqlDataSource.getRepository(Zone).count({
+    where: { isDeleted: false },
+  });
+  const totalSpots = await MysqlDataSource.getRepository(ParkingSpot).count({
+    where: { isDeleted: false },
+  });
   const occupiedSpots = await MysqlDataSource.getRepository(ParkingSpot).count({
-    where: { isOccupied: true },
+    where: { isOccupied: true, isDeleted: false },
   });
   const freeSpots = totalSpots - occupiedSpots;
 
@@ -91,8 +97,8 @@ const getAdminDashboard = async (
     const zone = rental.parkingSpot.zone;
 
     const zoneId = zone.id;
-    const zoneName =
-      zone.name + ' (' + zone.type[0].toUpperCase() + zone.type.slice(1) + ')';
+    const zoneName = zone.name; // testing purposes
+    // zone.name + ' (' + zone.type[0].toUpperCase() + zone.type.slice(1) + ')';
 
     if (!revenueAndRentalsPerZone[zoneId]) {
       revenueAndRentalsPerZone[zoneId] = {
@@ -128,4 +134,89 @@ const getAdminDashboard = async (
     currentMonth,
   });
 };
-export default { getAdminDashboard };
+
+const getManageZones = async (req: Request, res: Response): Promise<void> => {
+  const zones = await MysqlDataSource.getRepository(Zone).find({
+    relations: ['parkingSpots'],
+    order: { name: 'ASC' },
+    where: { isDeleted: false },
+  });
+
+  return res.status(200).render('pages/admin/manage-zones', { zones });
+};
+
+const deleteZone = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    await MysqlDataSource.transaction(async transactionalEntityManager => {
+      const zone = await MysqlDataSource.getRepository(Zone).findOne({
+        where: { id, isDeleted: false },
+        relations: ['parkingSpots', 'parkingSpots.parkingRentals'],
+      });
+
+      if (!zone) {
+        req.flash('error', 'Zone not found');
+        return res.status(404).redirect('/admin/manage/zones');
+      }
+
+      const hasActiveRentals = zone.parkingSpots.some(spot => {
+        return spot.parkingRentals.some(rental => {
+          return rental.endTime > moment().utc().toDate();
+        });
+      });
+
+      for (const spot of zone.parkingSpots) {
+        await MysqlDataSource.getRepository(ParkingSpot).update(spot.id, {
+          isDeleted: true,
+        });
+      }
+
+      if (hasActiveRentals) {
+        req.flash('error', 'Cannot delete zone with active parking rentals');
+        return res.status(400).redirect('/admin/manage/zones');
+      }
+
+      await MysqlDataSource.getRepository(Zone).update(zone.id, {
+        isDeleted: true,
+      });
+
+      req.flash('success', 'Zone deleted successfully');
+      return res.status(200).redirect('/admin/manage/zones');
+    });
+  } catch (error: unknown) {
+    req.flash('error', 'An error occurred while deleting the zone');
+    return res.status(404).redirect('/admin/manage/zones');
+  }
+};
+
+const getCreateZone = async (req: Request, res: Response): Promise<void> => {
+  return res.status(200).render('pages/admin/create-zone');
+};
+
+const postCreateZone = async (
+  req: Request<{}, {}, CreateZoneDto>,
+  res: Response
+): Promise<void> => {
+  try {
+    const zone: Zone = plainToInstance(CreateZoneDto, req.body) as Zone;
+
+    console.log(zone);
+
+    await MysqlDataSource.getRepository(Zone).save(zone);
+
+    req.flash('success', 'Zone created successfully');
+    return res.status(200).redirect('/admin/manage/zones');
+  } catch (error: unknown) {
+    req.flash('error', 'An error occurred while creating the zone');
+    return res.status(404).redirect('/admin/zones/add');
+  }
+};
+
+export default {
+  getAdminDashboard,
+  getManageZones,
+  deleteZone,
+  getCreateZone,
+  postCreateZone,
+};

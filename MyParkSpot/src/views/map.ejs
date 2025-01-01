@@ -222,7 +222,7 @@
           green: '#66FF00',
           blue: '#00BFFF',
         };
-        return zoneColors[zoneType];
+        return zoneColors[zoneType] ?? 'pink';
       }
       function createParkingIcon(zoneType, isOccupied, userRentals, spotId) {
         let firstColor;

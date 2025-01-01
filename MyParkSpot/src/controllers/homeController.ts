@@ -31,6 +31,7 @@ const getMap = async (req: Request, res: Response): Promise<void> => {
   const user = req.user as User;
 
   const parkingSpots = await MysqlDataSource.getRepository(ParkingSpot).find({
+    where: { isDeleted: false },
     relations: ['zone'],
   });
 
@@ -79,6 +80,7 @@ const getNearbyParkingSpots = async (
   const parkingSpots = await MysqlDataSource.getRepository(ParkingSpot).find({
     where: {
       id: In(spots.map(spot => spot.member)),
+      isDeleted: false,
     },
     relations: ['zone'],
   });
