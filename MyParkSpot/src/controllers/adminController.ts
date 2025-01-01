@@ -12,6 +12,7 @@ import { User } from '../models/User';
 import { UserRole } from '../enums/user-role.enum';
 import { CreateUserDto } from '../dtos/admin/create-user.dto';
 import bcrypt from 'bcrypt';
+import redisClient from '../config/redis';
 
 const getAdminDashboard = async (
   req: Request<{}, {}, {}, AdminDashboardDto>,
@@ -223,6 +224,7 @@ const getUsers = async (_req: Request, res: Response): Promise<void> => {
     order: {
       registrationDate: 'DESC',
     },
+    where: { isDeleted: false },
   });
   return res.status(200).render('pages/admin/users', { users });
 };
@@ -239,7 +241,7 @@ const postCreateUser = async (
 ): Promise<void> => {
   try {
     let user = await MysqlDataSource.getRepository(User).findOne({
-      where: [{ email: req.body.email }, { username: req.body.username }],
+      where: { email: req.body.email, username: req.body.username },
     });
 
     if (user?.email === req.body.email) {
@@ -265,15 +267,44 @@ const postCreateUser = async (
 
     user.password = password;
 
-    await MysqlDataSource.getRepository(User).save(
-      MysqlDataSource.getRepository(User).create(user)
-    );
+    await MysqlDataSource.getRepository(User).save(user);
 
     req.flash('success', 'You have successfully created a user.');
-    return res.status(201).redirect('/admin/users/create');
+    return res.status(201).redirect('/admin/users');
   } catch (error: unknown) {
     req.flash('error', 'An error occurred during creating a user.');
     return res.status(500).redirect('/admin/users/create');
+  }
+};
+
+const deleteUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    await MysqlDataSource.transaction(async transactionalEntityManager => {
+      const user = await transactionalEntityManager
+        .getRepository(User)
+        .findOne({
+          where: { id, isDeleted: false },
+        });
+
+      if (!user) {
+        req.flash('error', 'User not found');
+        return res.status(404).redirect('/admin/users');
+      }
+
+      await transactionalEntityManager
+        .getRepository(User)
+        .update(user.id, { isDeleted: true });
+
+      await redisClient.del(`user:${user.id}`);
+
+      req.flash('success', 'User deleted successfully');
+      return res.status(200).redirect('/admin/users');
+    });
+  } catch (error: unknown) {
+    req.flash('error', 'An error occurred while deleting the user');
+    return res.status(404).redirect('/admin/users');
   }
 };
 
@@ -286,4 +317,5 @@ export default {
   getUsers,
   getCreateUser,
   postCreateUser,
+  deleteUser,
 };

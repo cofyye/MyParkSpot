@@ -18,6 +18,7 @@ const init = (passport: passport.PassportStatic) => {
           const user = await MysqlDataSource.getRepository(User).findOne({
             where: {
               email,
+              isDeleted: false,
             },
           });
 
@@ -61,6 +62,7 @@ const init = (passport: passport.PassportStatic) => {
           user = await MysqlDataSource.getRepository(User).findOne({
             where: {
               id,
+              isDeleted: false,
             },
           });
 

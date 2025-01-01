@@ -18,16 +18,6 @@
 
           <!-- Users Table -->
           <div class="w-full">
-            <div class="mb-4 flex flex-wrap items-center justify-between">
-              <h3 class="text-lg font-medium text-gray-800">
-                Neki info text za usere...
-              </h3>
-              <a
-                href="/admin/users/create"
-                class="btn-sm btn transform rounded-full border px-6 py-2">
-                Create User
-              </a>
-            </div>
             <div class="overflow-x-auto rounded-lg border border-gray-200 p-4">
               <table class="min-w-full text-center text-gray-700">
                 <thead>
@@ -85,6 +75,13 @@
                   <% } %>
                 </tbody>
               </table>
+            </div>
+            <div class="mt-4 flex items-center justify-end">
+              <a
+                href="/admin/users/create"
+                class="flex items-center rounded-full bg-primary px-4 py-2 text-white transition duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary">
+                Create User
+              </a>
             </div>
           </div>
         </section>

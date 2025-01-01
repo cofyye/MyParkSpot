@@ -30,5 +30,6 @@ router.post(
   validateDto(CreateUserDto),
   adminController.postCreateUser
 );
+router.post('/users/delete/:id', adminController.deleteUser);
 
 export default router;

@@ -60,6 +60,14 @@ export class User {
   })
   registrationDate: Date;
 
+  @Column({
+    name: 'is_deleted',
+    type: 'boolean',
+    nullable: false,
+    default: false,
+  })
+  isDeleted: boolean;
+
   // Relations
 
   @OneToMany(() => Car, car => car.user)

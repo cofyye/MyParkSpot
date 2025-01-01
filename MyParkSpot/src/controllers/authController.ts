@@ -17,7 +17,7 @@ const postLogin = async (
 ): Promise<void> => {
   try {
     const user = await MysqlDataSource.getRepository(User).findOne({
-      where: [{ email: req.body.email }],
+      where: { email: req.body.email, isDeleted: false },
     });
 
     if (!user) {
@@ -80,7 +80,11 @@ const postRegister = async (
 ): Promise<void> => {
   try {
     let user = await MysqlDataSource.getRepository(User).findOne({
-      where: [{ email: req.body.email }, { username: req.body.username }],
+      where: {
+        email: req.body.email,
+        username: req.body.username,
+        isDeleted: false,
+      },
     });
 
     if (user?.email === req.body.email) {
