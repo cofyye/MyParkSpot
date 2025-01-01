@@ -97,10 +97,6 @@ const rentParkingSpot = async (
       where: { id: userId },
     });
 
-    Object.entries(user).forEach(([key, value]) => {
-      console.log(`Property: ${key}, Value: ${value}, Type: ${typeof value}`);
-    });
-
     const { parkingDuration, carId, parkingSpotId } = req.body;
 
     const parkingHours = parkingDuration / 60;
@@ -120,7 +116,6 @@ const rentParkingSpot = async (
       const car = await transactionalEntityManager.findOne(Car, {
         where: { id: carId, userId: userId },
       });
-      console.log('Car:', car);
 
       if (!car) {
         throw new Error('Car not found.');

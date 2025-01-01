@@ -3,7 +3,7 @@ import { MysqlDataSource } from '../config/data-source';
 import { Zone } from '../models/Zone';
 import { ParkingSpot } from '../models/ParkingSpot';
 import { ParkingRental } from '../models/ParkingRental';
-import { LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { LessThanOrEqual, MoreThanOrEqual, Not } from 'typeorm';
 import moment from 'moment-timezone';
 import { AdminDashboardDto } from '../dtos/admin/admin-dashboard.dto';
 import { plainToInstance } from 'class-transformer';
@@ -13,6 +13,8 @@ import { UserRole } from '../enums/user-role.enum';
 import { CreateUserDto } from '../dtos/admin/create-user.dto';
 import bcrypt from 'bcrypt';
 import redisClient from '../config/redis';
+import { EditUserDto } from '../dtos/admin/edit-user.dto';
+import { CreateSpotDto } from '../dtos/admin/create-spot.dto';
 
 const getAdminDashboard = async (
   req: Request<{}, {}, {}, AdminDashboardDto>,
@@ -207,8 +209,6 @@ const postCreateZone = async (
   try {
     const zone: Zone = plainToInstance(CreateZoneDto, req.body) as Zone;
 
-    console.log(zone);
-
     await MysqlDataSource.getRepository(Zone).save(zone);
 
     req.flash('success', 'Zone created successfully');
@@ -308,6 +308,171 @@ const deleteUser = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+const getEditUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const user = await MysqlDataSource.getRepository(User).findOne({
+      where: { id, isDeleted: false },
+    });
+
+    if (!user) {
+      req.flash('error', 'User not found');
+      return res.status(404).redirect('/admin/users');
+    }
+
+    return res.status(200).render('pages/admin/edit-user', {
+      user,
+      roles: Object.values(UserRole),
+    });
+  } catch (error: unknown) {
+    req.flash('error', 'An error occurred while fetching the user');
+    return res.status(404).redirect('/admin/users');
+  }
+};
+
+const postEditUser = async (
+  req: Request<{ id: string }, {}, EditUserDto>,
+  res: Response
+): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const { firstName, lastName, username, email, password, role } = req.body;
+
+    const user = await MysqlDataSource.getRepository(User).findOne({
+      where: { id, isDeleted: false },
+    });
+
+    if (!user) {
+      req.flash('error', 'User not found');
+      return res.status(404).redirect('/admin/users');
+    }
+
+    const existingEmailUser = await MysqlDataSource.getRepository(User).findOne(
+      {
+        where: { email, isDeleted: false, id: Not(id) },
+      }
+    );
+
+    if (existingEmailUser) {
+      req.flash('error', 'A user with this email address already exists.');
+      return res.status(409).redirect(`/admin/users/edit/${id}`);
+    }
+
+    const existingUsernameUser = await MysqlDataSource.getRepository(
+      User
+    ).findOne({
+      where: { username, isDeleted: false, id: Not(id) },
+    });
+
+    if (existingUsernameUser) {
+      req.flash('error', 'A user with this username already exists.');
+      return res.status(409).redirect(`/admin/users/edit/${id}`);
+    }
+
+    user.firstName = firstName;
+    user.lastName = lastName;
+    user.username = username;
+    user.email = email;
+    user.role = role;
+
+    if (password && password.trim() !== '') {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
+    }
+
+    await MysqlDataSource.getRepository(User).save(user);
+    await redisClient.del(`user:${user.id}`);
+
+    req.flash('success', 'User updated successfully.');
+    return res.status(200).redirect('/admin/users');
+  } catch (error: unknown) {
+    req.flash('error', 'An error occurred while updating the user.');
+    return res.status(500).redirect(`/admin/users/edit/${req.params.id}`);
+  }
+};
+
+const getManageSpots = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const parkingSpots = await MysqlDataSource.getRepository(ParkingSpot).find({
+      where: { isDeleted: false },
+      relations: ['zone'],
+      order: { id: 'ASC' },
+    });
+
+    const zones = await MysqlDataSource.getRepository(Zone).find({
+      where: { isDeleted: false },
+      order: { name: 'ASC' },
+    });
+
+    return res.render('pages/admin/manage-spots', {
+      parkingSpots: JSON.stringify(parkingSpots),
+      zones,
+    });
+  } catch (error: unknown) {
+    req.flash('error', 'Error retrieving parking spots.');
+    return res.redirect('/admin/dashboard');
+  }
+};
+
+const deleteSpot = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const spot = await MysqlDataSource.getRepository(ParkingSpot).findOne({
+      where: { id, isDeleted: false },
+      relations: ['parkingRentals'],
+    });
+
+    if (!spot) {
+      req.flash('error', 'Spot not found');
+      return res.status(404).redirect('/admin/manage/spots');
+    }
+
+    const hasActiveRentals = spot.parkingRentals.some(rental => {
+      return rental.endTime > moment().utc().toDate();
+    });
+
+    if (hasActiveRentals) {
+      req.flash(
+        'error',
+        'Cannot delete parking spot with active parking rentals'
+      );
+      return res.status(400).redirect('/admin/manage/spots');
+    }
+
+    await MysqlDataSource.getRepository(ParkingSpot).update(spot.id, {
+      isDeleted: true,
+    });
+
+    req.flash('success', 'Parking spot deleted successfully');
+    return res.status(200).redirect('/admin/manage/spots');
+  } catch (error: unknown) {
+    req.flash('error', 'An error occurred while deleting the spot');
+    return res.status(404).redirect('/admin/manage/spots');
+  }
+};
+
+const postCreateSpot = async (
+  req: Request<{}, {}, CreateSpotDto>,
+  res: Response
+): Promise<void> => {
+  try {
+    const spot: ParkingSpot = plainToInstance(
+      CreateSpotDto,
+      req.body
+    ) as ParkingSpot;
+
+    await MysqlDataSource.getRepository(ParkingSpot).save(spot);
+
+    req.flash('success', 'Parking spot created successfully');
+    return res.status(200).redirect('/admin/manage/spots');
+  } catch (error: unknown) {
+    req.flash('error', 'An error occurred while creating the spot');
+    return res.status(404).redirect('/admin/manage/spots');
+  }
+};
+
 export default {
   getAdminDashboard,
   getManageZones,
@@ -318,4 +483,9 @@ export default {
   getCreateUser,
   postCreateUser,
   deleteUser,
+  getEditUser,
+  postEditUser,
+  getManageSpots,
+  deleteSpot,
+  postCreateSpot,
 };

@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <%- include('../../shared/includes/meta') %> <%-
+    include('../../shared/includes/styles') %> <%-
+    include('../../shared/includes/leafletstyles') %>
+    <title>MyParkSpot - Manage Parking Spots</title>
+  </head>
+  <body class="bg-background">
+    <%- include('../../shared/partials/header') %>
+    <main class="min-h-screen p-0 sm:p-4">
+      <div class="mx-auto flex w-full max-w-7xl flex-col md:flex-row">
+        <%- include('./partials/aside.ejs') %>
+
+        <section class="w-full space-y-6 p-6 md:w-10/12">
+          <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">
+            Manage Parking Spots
+          </h1>
+          <div
+            id="manageMap"
+            class="h-96 w-full rounded-lg border border-gray-300"></div>
+          <div class="mb-6 flex justify-end">
+            <button
+              id="toggleAddMode"
+              class="flex items-center rounded-full border bg-primary px-4 py-2 text-white transition duration-300 ease-in-out">
+              Enable Add Spots
+            </button>
+          </div>
+
+          <form id="deleteSpotForm" action="/admin/spots/delete/" method="post">
+            <div
+              id="manageSpotPanel"
+              class="hidden w-full max-w-md rounded-lg border border-gray-300 p-4">
+              <h2 class="mb-4 text-lg font-medium text-gray-800">
+                Manage Spot
+              </h2>
+              <p id="spotInfo" class="text-sm text-gray-700"></p>
+              <div class="mt-6 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  id="cancelManage"
+                  class="btn-sm btn transform rounded-full border px-6 py-2 font-medium text-black transition duration-300 ease-in-out hover:scale-105">
+                  Cancel
+                </button>
+                <button
+                  class="btn-sm btn transform rounded-full border bg-primary px-6 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div
+            id="createSpotSection"
+            class="hidden w-full max-w-md rounded-lg border border-gray-300 p-4">
+            <h2 class="mb-4 text-lg font-medium text-gray-800">
+              Create New Spot
+            </h2>
+            <form id="createSpotForm" action="/admin/spots/add" method="POST">
+              <input type="hidden" id="spotLat" name="latitude" />
+              <input type="hidden" id="spotLng" name="longitude" />
+
+              <label
+                for="zoneId"
+                class="block pl-1 text-sm font-medium text-gray-700">
+                Zone:
+              </label>
+
+              <div class="relative mt-1">
+                <select
+                  name="zoneId"
+                  id="zoneId"
+                  class="block w-full appearance-none rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm"
+                  required>
+                  <option value="0" selected disabled>Select a zone</option>
+                  <% zones.forEach(zone => { %>
+                  <option value="<%= zone.id %>"><%= zone.name %></option>
+                  <% }) %>
+                </select>
+
+                <div
+                  class="pointer-events-none absolute inset-y-0 right-1 flex items-center px-2 text-sm text-gray-700">
+                  <i class="fas fa-chevron-down"></i>
+                </div>
+              </div>
+
+              <div class="mt-6 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  id="cancelCreate"
+                  class="btn-sm btn transform rounded-full border px-6 py-2 font-medium text-black transition duration-300 ease-in-out hover:scale-105">
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="btn-sm btn transform rounded-full border bg-primary px-6 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105">
+                  Create
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <%- include('../../shared/includes/scripts') %> <%-
+    include('../../shared/includes/leafletscripts') %>
+
+    <script>
+      function decodeHtmlEntities(text) {
+        const textArea = document.createElement('textarea');
+        textArea.innerHTML = text;
+        return textArea.value;
+      }
+      function getZoneColor(zoneType) {
+        const zoneColors = {
+          purple: '#8A2BE2',
+          red: '#FF0800',
+          yellow: '#ffd800',
+          green: '#66FF00',
+          blue: '#00BFFF',
+        };
+        return zoneColors[zoneType] ?? 'pink';
+      }
+      function createParkingIcon(zoneType, isOccupied, spotId) {
+        let firstColor;
+        let secondColor;
+
+        if (isOccupied) {
+          firstColor = secondColor = 'silver';
+        } else {
+          firstColor = '#5c7687';
+          secondColor = getZoneColor(zoneType);
+        }
+
+        return L.divIcon({
+          html: `
+            <i class="fa-solid fa-parking"
+            style="font-size: 26px; color: transparent;
+                    background: radial-gradient(circle at top, ${firstColor} 60%, ${secondColor} 95%);
+                    -webkit-background-clip: text;">
+            </i>
+        `,
+          className: 'custom-div-icon',
+          iconSize: [30, 30],
+          iconAnchor: [15, 30],
+          popupAnchor: [0, -30],
+        });
+      }
+
+      let addMode = false;
+      const toggleAddModeBtn = document.getElementById('toggleAddMode');
+      toggleAddModeBtn.addEventListener('click', () => {
+        addMode = !addMode;
+        if (addMode) {
+          toggleAddModeBtn.textContent = 'Disable Adding Spots';
+          toggleAddModeBtn.classList.remove('bg-primary');
+          toggleAddModeBtn.classList.remove('text-white');
+          toggleAddModeBtn.classList.add('text-black');
+          toggleAddModeBtn.classList.add('border-gray-300');
+          toggleAddModeBtn.classList.remove('border-background');
+        } else if (!addMode) {
+          toggleAddModeBtn.textContent = 'Enable Adding Spots';
+          toggleAddModeBtn.classList.add('bg-primary');
+          toggleAddModeBtn.classList.remove('text-black');
+          toggleAddModeBtn.classList.add('text-white');
+          toggleAddModeBtn.classList.remove('border-gray-300');
+          toggleAddModeBtn.classList.add('border-background');
+          document.getElementById('createSpotSection').classList.add('hidden');
+        }
+      });
+
+      const rawParkingSpots = '<%= parkingSpots %>';
+      const decodedParkingSpots = decodeHtmlEntities(rawParkingSpots);
+      const parsedParkingSpots = JSON.parse(decodedParkingSpots);
+
+      const parkingSpots = parsedParkingSpots.map(spot => {
+        return {
+          id: spot.id,
+          lat: spot.latitude,
+          lng: spot.longitude,
+          isOccupied: spot.isOccupied,
+          zone: spot.zone,
+        };
+      });
+
+      const map = L.map('manageMap', {
+        attributionControl: false,
+        zoomControl: false,
+        worldCopyJump: true,
+        maxBoundsViscosity: 1.0,
+      }).setView([43.3209, 21.8958], 14);
+
+      L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        {
+          subdomains: 'abcd',
+          maxZoom: 22,
+          minZoom: 2,
+          opacity: 0.9,
+          detectRetina: true,
+        }
+      ).addTo(map);
+
+      L.control
+        .attribution({
+          position: 'bottomright',
+          prefix: false,
+        })
+        .addAttribution('Leaflet | &copy; OpenStreetMap &copy; CARTO')
+        .addTo(map);
+
+      L.control
+        .zoom({
+          position: 'topleft',
+        })
+        .addTo(map);
+
+      L.control
+        .fullscreen({
+          position: 'topright',
+          title: 'View Fullscreen',
+          titleCancel: 'Exit Fullscreen',
+        })
+        .addTo(map);
+
+      L.control
+        .locate({
+          position: 'topright',
+          flyTo: true,
+          strings: {
+            title: 'Show me where I am',
+          },
+        })
+        .addTo(map);
+
+      const markers = L.markerClusterGroup({
+        showCoverageOnHover: false,
+      });
+
+      // Spot management references
+      const manageSpotPanel = document.getElementById('manageSpotPanel');
+      const spotInfo = document.getElementById('spotInfo');
+      const cancelManageBtn = document.getElementById('cancelManage');
+      const deleteSpotForm = document.getElementById('deleteSpotForm');
+
+      // Create spot references
+      const createSpotSection = document.getElementById('createSpotSection');
+      const spotLatField = document.getElementById('spotLat');
+      const spotLngField = document.getElementById('spotLng');
+      const cancelCreateBtn = document.getElementById('cancelCreate');
+
+      parkingSpots.forEach(spot => {
+        const marker = L.marker([spot.lat, spot.lng], {
+          icon: createParkingIcon(spot.zone.type, spot.isOccupied, spot.id),
+        });
+
+        marker.on('click', () => {
+          document.getElementById('createSpotSection').classList.add('hidden');
+
+          deleteSpotForm.action = `/admin/spots/delete/${spot.id}`;
+
+          manageSpotPanel.classList.remove('hidden');
+          spotInfo.innerHTML = `Spot #${spot.id}<br>Zone: ${spot.zone.name}`;
+        });
+
+        markers.addLayer(marker);
+      });
+
+      map.on('click', e => {
+        if (!addMode) {
+          return;
+        }
+
+        document.getElementById('manageSpotPanel').classList.add('hidden');
+
+        const { lat, lng } = e.latlng;
+
+        spotLatField.value = lat.toFixed(7);
+        spotLngField.value = lng.toFixed(7);
+
+        createSpotSection.classList.remove('hidden');
+      });
+
+      cancelCreateBtn.addEventListener('click', () => {
+        createSpotSection.classList.add('hidden');
+      });
+
+      cancelManageBtn.addEventListener('click', () => {
+        manageSpotPanel.classList.add('hidden');
+      });
+
+      map.addLayer(markers);
+    </script>
+  </body>
+</html>
