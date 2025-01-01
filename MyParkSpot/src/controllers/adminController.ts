@@ -8,13 +8,16 @@ import moment from 'moment-timezone';
 import { AdminDashboardDto } from '../dtos/admin/admin-dashboard.dto';
 import { plainToInstance } from 'class-transformer';
 import { CreateZoneDto } from '../dtos/admin/create-zone.dto';
+import { User } from '../models/User';
+import { UserRole } from '../enums/user-role.enum';
+import { CreateUserDto } from '../dtos/admin/create-user.dto';
+import bcrypt from 'bcrypt';
 
 const getAdminDashboard = async (
   req: Request<{}, {}, {}, AdminDashboardDto>,
   res: Response
 ): Promise<void> => {
-  const currentMonth =
-    req.query.month ?? moment().utc().tz(moment.tz.guess()).format('YYYY-MM');
+  const currentMonth = req.query.month ?? moment().utc().format('YYYY-MM');
 
   const totalZones = await MysqlDataSource.getRepository(Zone).count({
     where: { isDeleted: false },
@@ -42,9 +45,7 @@ const getAdminDashboard = async (
   const rentalsByHour: { [key: string]: number } = {};
 
   dailyRentals.forEach(rental => {
-    const rentalHour = moment(rental.startTime)
-      .tz(moment.tz.guess())
-      .format('HH:00');
+    const rentalHour = moment(rental.startTime).format('HH:00');
     if (rentalsByHour[rentalHour]) {
       rentalsByHour[rentalHour]++;
     } else {
@@ -150,10 +151,12 @@ const deleteZone = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
 
     await MysqlDataSource.transaction(async transactionalEntityManager => {
-      const zone = await MysqlDataSource.getRepository(Zone).findOne({
-        where: { id, isDeleted: false },
-        relations: ['parkingSpots', 'parkingSpots.parkingRentals'],
-      });
+      const zone = await transactionalEntityManager
+        .getRepository(Zone)
+        .findOne({
+          where: { id, isDeleted: false },
+          relations: ['parkingSpots', 'parkingSpots.parkingRentals'],
+        });
 
       if (!zone) {
         req.flash('error', 'Zone not found');
@@ -167,9 +170,11 @@ const deleteZone = async (req: Request, res: Response): Promise<void> => {
       });
 
       for (const spot of zone.parkingSpots) {
-        await MysqlDataSource.getRepository(ParkingSpot).update(spot.id, {
-          isDeleted: true,
-        });
+        await transactionalEntityManager
+          .getRepository(ParkingSpot)
+          .update(spot.id, {
+            isDeleted: true,
+          });
       }
 
       if (hasActiveRentals) {
@@ -177,7 +182,7 @@ const deleteZone = async (req: Request, res: Response): Promise<void> => {
         return res.status(400).redirect('/admin/manage/zones');
       }
 
-      await MysqlDataSource.getRepository(Zone).update(zone.id, {
+      await transactionalEntityManager.getRepository(Zone).update(zone.id, {
         isDeleted: true,
       });
 
@@ -213,10 +218,72 @@ const postCreateZone = async (
   }
 };
 
+const getUsers = async (_req: Request, res: Response): Promise<void> => {
+  const users = await MysqlDataSource.getRepository(User).find({
+    order: {
+      registrationDate: 'DESC',
+    },
+  });
+  return res.status(200).render('pages/admin/users', { users });
+};
+
+const getCreateUser = async (_req: Request, res: Response): Promise<void> => {
+  return res
+    .status(200)
+    .render('pages/admin/create-user', { roles: Object.values(UserRole) });
+};
+
+const postCreateUser = async (
+  req: Request<{}, {}, CreateUserDto>,
+  res: Response
+): Promise<void> => {
+  try {
+    let user = await MysqlDataSource.getRepository(User).findOne({
+      where: [{ email: req.body.email }, { username: req.body.username }],
+    });
+
+    if (user?.email === req.body.email) {
+      req.flash('error', 'A user with this email address already exists.');
+      return res.status(409).redirect('/admin/users/create');
+    }
+
+    if (user?.username === req.body.username) {
+      req.flash('error', 'A user with this username already exists.');
+      return res.status(409).redirect('/admin/users/create');
+    }
+
+    user = new User();
+    user.firstName = req.body.firstName;
+    user.lastName = req.body.lastName;
+    user.email = req.body.email;
+    user.username = req.body.username;
+    user.password = req.body.password;
+    user.role = req.body.role;
+
+    const salt = await bcrypt.genSalt(10);
+    const password = await bcrypt.hash(user.password, salt);
+
+    user.password = password;
+
+    await MysqlDataSource.getRepository(User).save(
+      MysqlDataSource.getRepository(User).create(user)
+    );
+
+    req.flash('success', 'You have successfully created a user.');
+    return res.status(201).redirect('/admin/users/create');
+  } catch (error: unknown) {
+    req.flash('error', 'An error occurred during creating a user.');
+    return res.status(500).redirect('/admin/users/create');
+  }
+};
+
 export default {
   getAdminDashboard,
   getManageZones,
   deleteZone,
   getCreateZone,
   postCreateZone,
+  getUsers,
+  getCreateUser,
+  postCreateUser,
 };

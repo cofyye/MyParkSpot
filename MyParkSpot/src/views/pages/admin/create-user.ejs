@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>MyParkSpot - Create Zone</title>
+    <%- include('../../shared/includes/meta') %> <%-
+    include('../../shared/includes/styles') %>
+  </head>
+  <body class="bg-background">
+    <%- include('../../shared/partials/header') %>
+    <main class="min-h-screen p-4 sm:p-6">
+      <div class="mx-auto flex w-full max-w-5xl flex-col md:flex-row">
+        <%- include('./partials/aside.ejs') %>
+
+        <section class="w-full space-y-6 p-6 md:w-9/12">
+          <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">
+            Create New User
+          </h1>
+
+          <form action="/admin/users/create" method="post">
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-900"
+                  for="firstName">
+                  First Name
+                </label>
+                <div class="mt-2">
+                  <input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm"
+                    required />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-900"
+                  for="lastName">
+                  Last Name
+                </label>
+                <div class="mt-2">
+                  <input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm"
+                    required />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-900"
+                  for="username">
+                  Username
+                </label>
+                <div class="mt-2">
+                  <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm"
+                    required />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-900"
+                  for="email">
+                  Email
+                </label>
+                <div class="mt-2">
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm"
+                    required />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-900"
+                  for="password">
+                  Password
+                </label>
+                <div class="mt-2">
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm"
+                    required />
+                </div>
+              </div>
+
+              <div>
+                <label
+                  class="block text-sm font-medium text-gray-900"
+                  for="extensionCost">
+                  Role
+                </label>
+                <div class="mt-2">
+                  <select
+                    name="role"
+                    id="role"
+                    class="block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm"
+                    required>
+                    <option value="0" selected disabled>Select a role</option>
+                    <% roles.forEach((role) => { %>
+                    <option value="<%= role %>" class="capitalize">
+                      <%= role %>
+                    </option>
+                    <% }) %>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-4">
+              <a
+                href="/admin/users"
+                class="btn-sm btn transform rounded-full border px-6 py-2">
+                Cancel
+              </a>
+              <button
+                type="submit"
+                class="btn-sm btn transform rounded-full border bg-primary px-6 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105">
+                Create User
+              </button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+    <%- include('../../shared/includes/scripts') %>
+  </body>
+</html>

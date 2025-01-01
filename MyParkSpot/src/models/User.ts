@@ -9,6 +9,7 @@ import { Car } from './Car';
 import { ParkingRental } from './ParkingRental';
 import { Transaction } from './Transaction';
 import { ColumnDecimalTransformer } from '../utils/decimal.transformer';
+import { UserRole } from '../enums/user-role.enum';
 
 @Entity({
   name: 'users',
@@ -31,6 +32,15 @@ export class User {
 
   @Column({ name: 'password', nullable: false, length: 100 })
   password: string;
+
+  @Column({
+    name: 'role',
+    nullable: false,
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.USER,
+  })
+  role: UserRole;
 
   @Column({
     name: 'credit',

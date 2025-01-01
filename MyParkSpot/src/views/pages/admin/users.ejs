@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>MyParkSpot - Admin Panel | Users</title>
+    <%- include('../../shared/includes/meta') %> <%-
+    include('../../shared/includes/styles') %>
+  </head>
+  <body class="bg-background">
+    <%- include('../../shared/partials/header') %>
+    <main class="min-h-screen p-0 sm:p-4">
+      <div class="mx-auto flex w-full max-w-7xl flex-col md:flex-row">
+        <!-- ASIDE NAVIGATION -->
+        <%- include('./partials/aside.ejs') %>
+
+        <!-- MAIN DASHBOARD CONTENT -->
+        <section class="w-full space-y-6 p-6 md:w-10/12">
+          <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">Users</h1>
+
+          <!-- Users Table -->
+          <div class="w-full">
+            <div class="mb-4 flex flex-wrap items-center justify-between">
+              <h3 class="text-lg font-medium text-gray-800">
+                Neki info text za usere...
+              </h3>
+              <a
+                href="/admin/users/create"
+                class="btn-sm btn transform rounded-full border px-6 py-2">
+                Create User
+              </a>
+            </div>
+            <div class="overflow-x-auto rounded-lg border border-gray-200 p-4">
+              <table class="min-w-full text-center text-gray-700">
+                <thead>
+                  <tr class="border-b">
+                    <th class="px-4 py-2">Fullname</th>
+                    <th class="px-4 py-2">Username</th>
+                    <th class="px-4 py-2">Email</th>
+                    <th class="px-4 py-2">Registered</th>
+                    <th class="px-4 py-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (users.length > 0) { %> <% users.forEach(user => { %>
+                  <tr class="hover:bg-gray-100">
+                    <td class="px-4 py-2">
+                      <%= user.firstName %> <%= user.lastName %>
+                    </td>
+                    <td class="px-4 py-2"><%= user.username %></td>
+                    <td class="px-4 py-2"><%= user.email %></td>
+                    <td class="px-4 py-2">
+                      <%=
+                      moment(user.registrationDate).tz(moment.tz.guess()).format(`DD
+                      MMM. YYYY [at] HH:mm[h]`) %>
+                    </td>
+                    <td class="px-4 py-2">
+                      <div
+                        class="relative flex items-center justify-center space-x-2">
+                        <form
+                          action="/admin/users/edit/<%= user.id %>"
+                          method="get">
+                          <button
+                            class="relative bottom-1 left-0 focus:outline-none"
+                            type="submit">
+                            <i class="fa-light fa-pen-to-square"></i>
+                          </button>
+                        </form>
+                        <form
+                          action="/admin/users/delete/<%= user.id %>"
+                          method="post">
+                          <button
+                            class="relative bottom-1 left-0 focus:outline-none"
+                            type="submit">
+                            <i class="fa-light fa-trash"></i>
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                  <% }) %> <% } else { %>
+                  <tr>
+                    <td colspan="3" class="p-5">
+                      Currently, there is no users registered on platform.
+                    </td>
+                  </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <%- include('../../shared/includes/scripts') %>
+  </body>
+</html>
