@@ -6,44 +6,90 @@ import { CreateZoneDto } from '../dtos/admin/create-zone.dto';
 import { CreateUserDto } from '../dtos/admin/create-user.dto';
 import { EditUserDto } from '../dtos/admin/edit-user.dto';
 import { CreateSpotDto } from '../dtos/admin/create-spot.dto';
+import authenticatedGuard from '../middlewares/authenticatedGuard';
+import roleGuard from '../middlewares/roleGuard';
+import { UserRole } from '../enums/user-role.enum';
+import { EditZoneDto } from '../dtos/admin/edit-zone.dto';
 
 const router = express.Router();
 
 // Get methods
 router.get(
   '/dashboard',
-  validateDto(AdminDashboardDto),
+  [
+    authenticatedGuard,
+    roleGuard([UserRole.FOUNDER, UserRole.ADMIN, UserRole.SUPPORT]),
+    validateDto(AdminDashboardDto, 'query'),
+  ],
   adminController.getAdminDashboard
 );
-router.get('/manage/zones', adminController.getManageZones);
-router.get('/manage/spots', adminController.getManageSpots);
-router.get('/zones/add', adminController.getCreateZone);
-router.get('/users', adminController.getUsers);
-router.get('/users/create', adminController.getCreateUser);
-router.get('/users/edit/:id', adminController.getEditUser);
+router.get(
+  '/manage/zones',
+  [authenticatedGuard],
+  adminController.getManageZones
+);
+router.get(
+  '/manage/spots',
+  [authenticatedGuard],
+  adminController.getManageSpots
+);
+router.get('/zones/add', [authenticatedGuard], adminController.getCreateZone);
+router.get(
+  '/zones/edit/:id',
+  [authenticatedGuard],
+  adminController.getEditZone
+);
+router.get('/users', [authenticatedGuard], adminController.getUsers);
+router.get(
+  '/users/create',
+  [authenticatedGuard],
+  adminController.getCreateUser
+);
+router.get(
+  '/users/edit/:id',
+  [authenticatedGuard],
+  adminController.getEditUser
+);
 
 // Post methods
-router.post('/zones/delete/:id', adminController.deleteZone);
+router.post(
+  '/zones/delete/:id',
+  [authenticatedGuard],
+  adminController.deleteZone
+);
 router.post(
   '/zones/add',
-  validateDto(CreateZoneDto),
+  [authenticatedGuard, validateDto(CreateZoneDto, 'body')],
   adminController.postCreateZone
 );
 router.post(
+  '/zones/edit/:id',
+  [authenticatedGuard, validateDto(EditZoneDto, 'body')],
+  adminController.postEditZone
+);
+router.post(
   '/users/create',
-  validateDto(CreateUserDto),
+  [authenticatedGuard, validateDto(CreateUserDto, 'body')],
   adminController.postCreateUser
 );
-router.post('/users/delete/:id', adminController.deleteUser);
+router.post(
+  '/users/delete/:id',
+  [authenticatedGuard],
+  adminController.deleteUser
+);
 router.post(
   '/users/edit/:id',
-  validateDto(EditUserDto),
+  [authenticatedGuard, validateDto(EditUserDto, 'body')],
   adminController.postEditUser
 );
-router.post('/spots/delete/:id', adminController.deleteSpot);
+router.post(
+  '/spots/delete/:id',
+  [authenticatedGuard],
+  adminController.deleteSpot
+);
 router.post(
   '/spots/add',
-  validateDto(CreateSpotDto),
+  [authenticatedGuard, validateDto(CreateSpotDto, 'body')],
   adminController.postCreateSpot
 );
 

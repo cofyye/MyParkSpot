@@ -5,6 +5,7 @@ import { MysqlDataSource } from '../config/data-source';
 import { CreateUserDto } from '../dtos/auth/create-user.dto';
 import { LoginUserDto } from '../dtos/auth/login-user.dto';
 import { User } from '../models/User';
+import redisClient from '../config/redis';
 
 const getLogin = async (_req: Request, res: Response): Promise<void> => {
   return res.status(200).render('pages/auth/login');
@@ -122,19 +123,20 @@ const postRegister = async (
 };
 
 const postLogout = async (req: Request, res: Response): Promise<void> => {
-  req.logOut(err => {
+  const userId = (req.user as User).id;
+  req.logOut(async err => {
     if (err) {
-      console.log('err', err);
       req.flash('error', 'An error occurred during logout.');
       return res.status(500).redirect('/client/profile');
     }
 
-    req.session.destroy(sessionErr => {
+    req.session.destroy(async sessionErr => {
       if (sessionErr) {
-        console.log('sessionErr', sessionErr);
         req.flash('error', 'An error occurred during logout.');
         return res.status(500).redirect('/client/profile');
       }
+
+      await redisClient.del(`user:${userId}`);
 
       return res.status(200).redirect('/');
     });

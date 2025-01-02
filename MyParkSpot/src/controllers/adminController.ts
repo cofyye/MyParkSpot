@@ -15,6 +15,7 @@ import bcrypt from 'bcrypt';
 import redisClient from '../config/redis';
 import { EditUserDto } from '../dtos/admin/edit-user.dto';
 import { CreateSpotDto } from '../dtos/admin/create-spot.dto';
+import { EditZoneDto } from '../dtos/admin/edit-zone.dto';
 
 const getAdminDashboard = async (
   req: Request<{}, {}, {}, AdminDashboardDto>,
@@ -215,7 +216,69 @@ const postCreateZone = async (
     return res.status(200).redirect('/admin/manage/zones');
   } catch (error: unknown) {
     req.flash('error', 'An error occurred while creating the zone');
-    return res.status(404).redirect('/admin/zones/add');
+    return res.status(500).redirect('/admin/zones/add');
+  }
+};
+
+const getEditZone = async (
+  req: Request<{ id: string }>,
+  res: Response
+): Promise<void> => {
+  try {
+    const zone = await MysqlDataSource.getRepository(Zone).findOne({
+      where: {
+        id: req.params.id,
+      },
+    });
+
+    if (!zone) {
+      req.flash('error', 'This zone does not exist.');
+      return res.status(500).redirect('/admin/manage/zones');
+    }
+
+    return res.status(200).render('pages/admin/edit-zone', { zone });
+  } catch (error: unknown) {
+    req.flash('error', 'An error occurred while getting the zone');
+    return res.status(500).redirect('/admin/manage/zones');
+  }
+};
+
+const postEditZone = async (
+  req: Request<{ id: string }, {}, EditZoneDto>,
+  res: Response
+): Promise<void> => {
+  try {
+    const zone = await MysqlDataSource.getRepository(Zone).findOne({
+      where: {
+        id: req.params.id,
+      },
+    });
+
+    if (!zone) {
+      req.flash('error', 'This zone does not exist.');
+      return res.status(500).redirect('/admin/manage/zones');
+    }
+
+    await MysqlDataSource.getRepository(Zone).update(
+      {
+        id: zone.id,
+      },
+      {
+        name: req.body.name,
+        type: req.body.type,
+        baseCost: req.body.baseCost,
+        dailyPassCost: req.body.dailyPassCost,
+        extensionCost: req.body.extensionCost,
+        maxExtensionDuration: req.body.maxExtensionDuration,
+        maxParkingDuration: req.body.maxParkingDuration,
+      }
+    );
+
+    req.flash('success', 'Zone edited successfully');
+    return res.status(200).redirect(`/admin/zones/edit/${req.params.id}`);
+  } catch (error: unknown) {
+    req.flash('error', 'An error occurred while editing the zone');
+    return res.status(500).redirect(`/admin/zones/edit/${req.params.id}`);
   }
 };
 
@@ -479,6 +542,8 @@ export default {
   deleteZone,
   getCreateZone,
   postCreateZone,
+  getEditZone,
+  postEditZone,
   getUsers,
   getCreateUser,
   postCreateUser,
