@@ -1,11 +1,5 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import { User } from '../models/User';
-import { Car } from '../models/Car';
-import { Zone } from '../models/Zone';
-import { ParkingSpot } from '../models/ParkingSpot';
-import { ParkingRental } from '../models/ParkingRental';
-import { Transaction } from '../models/Transaction';
 
 export const MysqlDataSource = new DataSource({
   type: 'mysql',
@@ -17,5 +11,5 @@ export const MysqlDataSource = new DataSource({
   synchronize: true,
   timezone: 'Z',
   logging: false,
-  entities: [User, Car, ParkingSpot, ParkingRental, Zone, Transaction],
+  entities: [__dirname + '/../models/*.ts'],
 });

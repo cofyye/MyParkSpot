@@ -10,6 +10,7 @@ import { ParkingRental } from './ParkingRental';
 import { Transaction } from './Transaction';
 import { ColumnDecimalTransformer } from '../utils/decimal.transformer';
 import { UserRole } from '../enums/user-role.enum';
+import { Fine } from './Fine';
 
 @Entity({
   name: 'users',
@@ -78,4 +79,10 @@ export class User {
 
   @OneToMany(() => Transaction, transaction => transaction.user)
   transactions: Transaction[];
+
+  @OneToMany(() => Fine, fine => fine.user)
+  fines: Fine[];
+
+  @OneToMany(() => Fine, fine => fine.issuedBy)
+  issuedFines: Fine[];
 }

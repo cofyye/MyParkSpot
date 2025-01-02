@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <%- include('../../shared/includes/meta') %> <%-
+    include('../../shared/includes/styles') %> <%-
+    include('../../shared/includes/leafletstyles') %>
+    <title>MyParkSpot - Fines</title>
+  </head>
+  <body class="bg-background">
+    <%- include('../../shared/partials/header') %>
+    <main class="min-h-screen p-0 sm:p-4">
+      <div class="mx-auto flex w-full max-w-7xl flex-col md:flex-row">
+        <%- include('./partials/aside.ejs') %>
+
+        <section class="w-full space-y-6 p-6 md:w-10/12">
+          <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">Fines</h1>
+          <div
+            id="manageMap"
+            class="h-96 w-full rounded-lg border border-gray-300"></div>
+
+          <form
+            id="issueFineForm"
+            action="/parking-inspector/fines/issue"
+            method="post">
+            <div
+              id="issueFinePanel"
+              class="w-full max-w-md rounded-lg border border-gray-300 p-4">
+              <h2 class="mb-4 text-lg font-medium text-gray-800">Issue Fine</h2>
+              <p id="fineSpotInfo" class="text-sm text-gray-700">
+                Parking spot information will be displayed here.
+              </p>
+
+              <div class="mt-4">
+                <label
+                  for="licensePlate"
+                  class="block text-sm font-medium text-gray-900">
+                  License Plate
+                </label>
+                <input
+                  type="text"
+                  id="licensePlate"
+                  name="licensePlate"
+                  required
+                  maxlength="15"
+                  class="mt-2 block w-full rounded-full border border-gray-300 px-4 py-2 shadow-sm sm:text-sm"
+                  placeholder="Enter license plate number" />
+              </div>
+
+              <input type="hidden" name="parkingSpotId" id="parkingSpotId" />
+
+              <div class="mt-6 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  id="cancelIssueFine"
+                  class="btn-sm btn transform rounded-full border px-6 py-2 font-medium text-black transition duration-300 ease-in-out hover:scale-105">
+                  Cancel
+                </button>
+                <button
+                  id="submitIssueFine"
+                  type="submit"
+                  class="btn-sm btn transform rounded-full border bg-primary px-6 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105 disabled:pointer-events-none disabled:bg-secondary"
+                  disabled>
+                  Issue Fine
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <div class="mt-8 w-full rounded-lg border border-gray-300 p-4">
+            <h3 class="mb-6 text-lg font-medium text-gray-800">Recent Fines</h3>
+            <div class="overflow-x-auto rounded-lg border border-gray-200 p-4">
+              <table class="min-w-full text-center text-gray-700">
+                <thead>
+                  <tr class="border-b text-xs uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 font-medium">
+                      License Plate
+                    </th>
+                    <th scope="col" class="px-6 py-3 font-medium">Amount</th>
+                    <th scope="col" class="px-6 py-3 font-medium">Status</th>
+                    <th scope="col" class="px-6 py-3 font-medium">Issued At</th>
+                    <th scope="col" class="px-6 py-3 font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 bg-white">
+                  <% if (fines && fines.length > 0) { %> <%
+                  fines.forEach(function(fine) { %>
+                  <tr>
+                    <td class="px-6 py-4 text-sm text-gray-900">
+                      <%= fine.licensePlate %>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900">
+                      $<%= fine.amount.toFixed(2) %>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900">
+                      <%= fine.status %>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900">
+                      <%=
+                      moment(fine.issuedAt).tz(moment.tz.guess()).format("llll")
+                      %>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900">
+                      <% if (fine.status.toLowerCase() !== 'canceled') { %>
+                      <form
+                        action="/parking-inspector/fines/cancel/<%= fine.id %>"
+                        method="POST">
+                        <button type="submit" class="hover:underline">
+                          Cancel
+                        </button>
+                      </form>
+                      <% } %>
+                    </td>
+                  </tr>
+                  <% }); %> <% } else { %>
+                  <tr>
+                    <td
+                      colspan="5"
+                      class="px-6 py-4 text-center text-sm text-gray-900">
+                      No fines issued recently.
+                    </td>
+                  </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <%- include('../../shared/includes/scripts') %> <%-
+    include('../../shared/includes/leafletscripts') %>
+
+    <script>
+      function decodeHtmlEntities(text) {
+        const textArea = document.createElement('textarea');
+        textArea.innerHTML = text;
+        return textArea.value;
+      }
+
+      function getZoneColor(zoneType) {
+        const zoneColors = {
+          purple: '#8A2BE2',
+          red: '#FF0800',
+          yellow: '#ffd800',
+          green: '#66FF00',
+          blue: '#00BFFF',
+        };
+        return zoneColors[zoneType] ?? 'pink';
+      }
+
+      function createParkingIcon(zoneType, isOccupied, spotId) {
+        let firstColor;
+        let secondColor;
+
+        if (isOccupied) {
+          firstColor = secondColor = 'silver';
+        } else {
+          firstColor = '#5c7687';
+          secondColor = getZoneColor(zoneType);
+        }
+
+        return L.divIcon({
+          html: `
+            <i class="fa-solid fa-parking"
+            style="font-size: 26px; color: transparent;
+                    background: radial-gradient(circle at top, ${firstColor} 60%, ${secondColor} 95%);
+                    -webkit-background-clip: text;">
+            </i>
+        `,
+          className: 'custom-div-icon',
+          iconSize: [30, 30],
+          iconAnchor: [15, 30],
+          popupAnchor: [0, -30],
+        });
+      }
+
+      const rawParkingSpots = '<%= parkingSpots %>';
+      const decodedParkingSpots = decodeHtmlEntities(rawParkingSpots);
+      const parsedParkingSpots = JSON.parse(decodedParkingSpots);
+
+      const parkingSpots = parsedParkingSpots.map(spot => {
+        return {
+          id: spot.id,
+          lat: spot.latitude,
+          lng: spot.longitude,
+          isOccupied: spot.isOccupied,
+          zone: spot.zone,
+        };
+      });
+
+      const map = L.map('manageMap', {
+        attributionControl: false,
+        zoomControl: false,
+        worldCopyJump: true,
+        maxBoundsViscosity: 1.0,
+      }).setView([43.3209, 21.8958], 14);
+
+      L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        {
+          subdomains: 'abcd',
+          maxZoom: 22,
+          minZoom: 2,
+          opacity: 0.9,
+          detectRetina: true,
+        }
+      ).addTo(map);
+
+      L.control
+        .attribution({
+          position: 'bottomright',
+          prefix: false,
+        })
+        .addAttribution('Leaflet | &copy; OpenStreetMap &copy; CARTO')
+        .addTo(map);
+
+      L.control
+        .zoom({
+          position: 'topleft',
+        })
+        .addTo(map);
+
+      L.control
+        .fullscreen({
+          position: 'topright',
+          title: 'View Fullscreen',
+          titleCancel: 'Exit Fullscreen',
+        })
+        .addTo(map);
+
+      L.control
+        .locate({
+          position: 'topright',
+          flyTo: true,
+          strings: {
+            title: 'Show me where I am',
+          },
+        })
+        .addTo(map);
+
+      const markers = L.markerClusterGroup({
+        showCoverageOnHover: false,
+      });
+
+      // Fine issuance references
+      const fineSpotInfo = document.getElementById('fineSpotInfo');
+      const cancelIssueFineBtn = document.getElementById('cancelIssueFine');
+      const parkingSpotIdInput = document.getElementById('parkingSpotId');
+      const submitIssueFineBtn = document.getElementById('submitIssueFine');
+
+      parkingSpots.forEach(spot => {
+        const marker = L.marker([spot.lat, spot.lng], {
+          icon: createParkingIcon(spot.zone.type, spot.isOccupied, spot.id),
+        });
+
+        marker.on('click', () => {
+          fineSpotInfo.innerHTML = `Spot #${spot.id}<br>Zone: ${spot.zone.name}`;
+          parkingSpotIdInput.value = spot.id;
+          submitIssueFineBtn.disabled = false;
+        });
+
+        markers.addLayer(marker);
+      });
+
+      cancelIssueFineBtn.addEventListener('click', () => {
+        fineSpotInfo.innerHTML =
+          'Parking spot information will be displayed here.';
+        submitIssueFineBtn.disabled = true;
+      });
+
+      map.addLayer(markers);
+    </script>
+  </body>
+</html>

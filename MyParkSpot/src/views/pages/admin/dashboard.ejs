@@ -119,10 +119,12 @@
                 class="overflow-x-auto rounded-lg border border-gray-200 p-4">
                 <table class="min-w-full text-center text-gray-700">
                   <thead>
-                    <tr class="border-b">
-                      <th class="px-4 py-2">Zone</th>
-                      <th class="px-4 py-2">Monthly Revenue (EUR)</th>
-                      <th class="px-4 py-2">Monthly Rentals</th>
+                    <tr class="border-b text-xs uppercase tracking-wider">
+                      <th class="px-6 py-3 font-medium">Zone</th>
+                      <th class="px-6 py-3 font-medium">
+                        Monthly Revenue (EUR)
+                      </th>
+                      <th class="px-6 py-3 font-medium">Monthly Rentals</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -135,7 +137,9 @@
                     </tr>
                     <% }) %> <% } else { %>
                     <tr>
-                      <td colspan="3" class="p-5">
+                      <td
+                        colspan="3"
+                        class="px-6 py-4 text-center text-sm text-gray-900">
                         No data available for the current month.
                       </td>
                     </tr>

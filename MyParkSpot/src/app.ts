@@ -19,6 +19,7 @@ import homeRoutes from './routes/homeRoutes';
 import authRoutes from './routes/authRoutes';
 import clientRoutes from './routes/clientRoutes';
 import adminRoutes from './routes/adminRoutes';
+import parkingInspectorRoutes from './routes/parkingInspectorRoutes';
 
 const main = async (): Promise<void> => {
   try {
@@ -132,6 +133,7 @@ const main = async (): Promise<void> => {
     app.use('/auth', authRoutes);
     app.use('/client', clientRoutes);
     app.use('/admin', adminRoutes);
+    app.use('/parking-inspector', parkingInspectorRoutes);
 
     // Run the application
     app.listen(port, () => {

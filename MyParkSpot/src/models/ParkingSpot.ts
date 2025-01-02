@@ -9,6 +9,7 @@ import {
 import { ParkingRental } from './ParkingRental';
 import { Zone } from './Zone';
 import { ColumnDecimalTransformer } from '../utils/decimal.transformer';
+import { Fine } from './Fine';
 
 @Entity({
   name: 'parking_spots',
@@ -57,6 +58,9 @@ export class ParkingSpot {
 
   @OneToMany(() => ParkingRental, rental => rental.parkingSpot)
   parkingRentals: ParkingRental[];
+
+  @OneToMany(() => Fine, fine => fine.parkingSpot)
+  fines: Fine[];
 
   @ManyToOne(() => Zone, zone => zone.parkingSpots, {
     nullable: false,
