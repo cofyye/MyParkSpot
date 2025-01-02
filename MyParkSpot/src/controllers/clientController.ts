@@ -209,7 +209,7 @@ const getMyCars = async (req: Request, res: Response): Promise<void> => {
     const user = req.user as User;
 
     const cars = await MysqlDataSource.getRepository(Car).find({
-      where: { user: { id: user.id } },
+      where: { userId: user.id, isDeleted: false },
     });
 
     return res.status(200).render('pages/client/my-cars', { cars });
@@ -228,6 +228,15 @@ const postRegisterCar = async (
   res: Response
 ): Promise<void> => {
   try {
+    const existingCar = await MysqlDataSource.getRepository(Car).findOne({
+      where: { licensePlate: req.body.licensePlate, isDeleted: false },
+    });
+
+    if (existingCar) {
+      req.flash('error', 'A car with this license plate already exists.');
+      return res.status(400).redirect('/client/cars/register');
+    }
+
     const newCar = new Car();
     const user = req.user as User;
 
@@ -255,7 +264,7 @@ const postDeleteCar = async (req: Request, res: Response): Promise<void> => {
     const carRepository = MysqlDataSource.getRepository(Car);
 
     const car = await carRepository.findOne({
-      where: { id: carId, user: { id: user.id } },
+      where: { id: carId, userId: user.id },
     });
 
     if (!car) {
@@ -263,7 +272,7 @@ const postDeleteCar = async (req: Request, res: Response): Promise<void> => {
       return res.status(404).redirect('/client/my-cars');
     }
 
-    await carRepository.remove(car);
+    await carRepository.update(car.id, { isDeleted: true });
 
     req.flash('success', 'Car deleted successfully.');
     return res.status(200).redirect('/client/my-cars');

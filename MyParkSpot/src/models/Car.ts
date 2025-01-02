@@ -16,7 +16,7 @@ export class Car {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'license_plate', nullable: false, unique: true, length: 15 })
+  @Column({ name: 'license_plate', nullable: false, length: 15 })
   licensePlate: string;
 
   @Column({ name: 'manufacturer', nullable: true, length: 50 })
@@ -30,6 +30,9 @@ export class Car {
 
   @Column({ name: 'is_parked', nullable: false, default: false })
   isParked: boolean;
+
+  @Column({ name: 'is_deleted', nullable: false, default: false })
+  isDeleted: boolean;
 
   // Relation Ids
 

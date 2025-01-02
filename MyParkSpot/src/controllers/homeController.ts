@@ -42,7 +42,7 @@ const getMap = async (req: Request, res: Response): Promise<void> => {
 
   if (user) {
     cars = await MysqlDataSource.getRepository(Car).find({
-      where: { user: { id: user.id } },
+      where: { userId: user.id, isDeleted: false },
     });
 
     userRentals = await MysqlDataSource.getRepository(ParkingRental).find({
