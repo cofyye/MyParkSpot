@@ -23,17 +23,14 @@ router.get(
   ],
   adminController.getAdminDashboard
 );
-router.get(
-  '/manage/zones',
-  [authenticatedGuard],
-  adminController.getManageZones
-);
-router.get(
-  '/manage/spots',
-  [authenticatedGuard],
-  adminController.getManageSpots
-);
+router.get('/spots', [authenticatedGuard], adminController.getManageSpots);
+router.get('/zones', [authenticatedGuard], adminController.getManageZones);
 router.get('/zones/add', [authenticatedGuard], adminController.getCreateZone);
+router.get(
+  '/zones/details/:id',
+  [authenticatedGuard],
+  adminController.getZoneDetails
+);
 router.get(
   '/zones/edit/:id',
   [authenticatedGuard],

@@ -164,7 +164,7 @@ const deleteZone = async (req: Request, res: Response): Promise<void> => {
 
       if (!zone) {
         req.flash('error', 'Zone not found');
-        return res.status(404).redirect('/admin/manage/zones');
+        return res.status(404).redirect('/admin/zones');
       }
 
       const hasActiveRentals = zone.parkingSpots.some(spot => {
@@ -183,7 +183,7 @@ const deleteZone = async (req: Request, res: Response): Promise<void> => {
 
       if (hasActiveRentals) {
         req.flash('error', 'Cannot delete zone with active parking rentals');
-        return res.status(400).redirect('/admin/manage/zones');
+        return res.status(400).redirect('/admin/zones');
       }
 
       await transactionalEntityManager.getRepository(Zone).update(zone.id, {
@@ -191,11 +191,11 @@ const deleteZone = async (req: Request, res: Response): Promise<void> => {
       });
 
       req.flash('success', 'Zone deleted successfully');
-      return res.status(200).redirect('/admin/manage/zones');
+      return res.status(200).redirect('/admin/zones');
     });
   } catch (error: unknown) {
     req.flash('error', 'An error occurred while deleting the zone');
-    return res.status(404).redirect('/admin/manage/zones');
+    return res.status(404).redirect('/admin/zones');
   }
 };
 
@@ -213,7 +213,7 @@ const postCreateZone = async (
     await MysqlDataSource.getRepository(Zone).save(zone);
 
     req.flash('success', 'Zone created successfully');
-    return res.status(200).redirect('/admin/manage/zones');
+    return res.status(200).redirect('/admin/zones');
   } catch (error: unknown) {
     req.flash('error', 'An error occurred while creating the zone');
     return res.status(500).redirect('/admin/zones/add');
@@ -233,13 +233,13 @@ const getEditZone = async (
 
     if (!zone) {
       req.flash('error', 'This zone does not exist.');
-      return res.status(500).redirect('/admin/manage/zones');
+      return res.status(500).redirect('/admin/zones');
     }
 
     return res.status(200).render('pages/admin/edit-zone', { zone });
   } catch (error: unknown) {
     req.flash('error', 'An error occurred while getting the zone');
-    return res.status(500).redirect('/admin/manage/zones');
+    return res.status(500).redirect('/admin/zones');
   }
 };
 
@@ -256,7 +256,7 @@ const postEditZone = async (
 
     if (!zone) {
       req.flash('error', 'This zone does not exist.');
-      return res.status(500).redirect('/admin/manage/zones');
+      return res.status(500).redirect('/admin/zones');
     }
 
     await MysqlDataSource.getRepository(Zone).update(
@@ -275,7 +275,7 @@ const postEditZone = async (
     );
 
     req.flash('success', 'Zone edited successfully');
-    return res.status(200).redirect(`/admin/zones/edit/${req.params.id}`);
+    return res.status(200).redirect(`/admin/zones`);
   } catch (error: unknown) {
     req.flash('error', 'An error occurred while editing the zone');
     return res.status(500).redirect(`/admin/zones/edit/${req.params.id}`);
@@ -489,7 +489,7 @@ const deleteSpot = async (req: Request, res: Response): Promise<void> => {
 
     if (!spot) {
       req.flash('error', 'Spot not found');
-      return res.status(404).redirect('/admin/manage/spots');
+      return res.status(404).redirect('/admin/spots');
     }
 
     const hasActiveRentals = spot.parkingRentals.some(rental => {
@@ -501,7 +501,7 @@ const deleteSpot = async (req: Request, res: Response): Promise<void> => {
         'error',
         'Cannot delete parking spot with active parking rentals'
       );
-      return res.status(400).redirect('/admin/manage/spots');
+      return res.status(400).redirect('/admin/spots');
     }
 
     await MysqlDataSource.getRepository(ParkingSpot).update(spot.id, {
@@ -509,10 +509,10 @@ const deleteSpot = async (req: Request, res: Response): Promise<void> => {
     });
 
     req.flash('success', 'Parking spot deleted successfully');
-    return res.status(200).redirect('/admin/manage/spots');
+    return res.status(200).redirect('/admin/spots');
   } catch (error: unknown) {
     req.flash('error', 'An error occurred while deleting the spot');
-    return res.status(404).redirect('/admin/manage/spots');
+    return res.status(404).redirect('/admin/spots');
   }
 };
 
@@ -529,10 +529,29 @@ const postCreateSpot = async (
     await MysqlDataSource.getRepository(ParkingSpot).save(spot);
 
     req.flash('success', 'Parking spot created successfully');
-    return res.status(200).redirect('/admin/manage/spots');
+    return res.status(200).redirect('/admin/spots');
   } catch (error: unknown) {
     req.flash('error', 'An error occurred while creating the spot');
-    return res.status(404).redirect('/admin/manage/spots');
+    return res.status(404).redirect('/admin/spots');
+  }
+};
+
+const getZoneDetails = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const zone = await MysqlDataSource.getRepository(Zone).findOne({
+      where: { id: req.params.id },
+      relations: ['parkingSpots'],
+    });
+
+    if (!zone) {
+      req.flash('error', 'Zone not found');
+      return res.status(404).redirect('/admin/zones');
+    }
+
+    return res.status(200).render('pages/admin/zone-details', { zone });
+  } catch (error: unknown) {
+    req.flash('error', 'An error occurred while fetching the zone');
+    return res.status(404).redirect('/admin/zones');
   }
 };
 
@@ -553,4 +572,5 @@ export default {
   getManageSpots,
   deleteSpot,
   postCreateSpot,
+  getZoneDetails,
 };

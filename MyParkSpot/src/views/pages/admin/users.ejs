@@ -9,24 +9,21 @@
     <%- include('../../shared/partials/header') %>
     <main class="min-h-screen p-0 sm:p-4">
       <div class="mx-auto flex w-full max-w-7xl flex-col md:flex-row">
-        <!-- ASIDE NAVIGATION -->
         <%- include('./partials/aside.ejs') %>
 
-        <!-- MAIN DASHBOARD CONTENT -->
         <section class="w-full space-y-6 p-6 md:w-10/12">
           <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">Users</h1>
 
-          <!-- Users Table -->
           <div class="w-full">
             <div class="overflow-x-auto rounded-lg border border-gray-200 p-4">
               <table class="min-w-full text-center text-gray-700">
                 <thead>
-                  <tr class="border-b">
-                    <th class="px-4 py-2">Fullname</th>
-                    <th class="px-4 py-2">Username</th>
-                    <th class="px-4 py-2">Email</th>
-                    <th class="px-4 py-2">Registered</th>
-                    <th class="px-4 py-2">Actions</th>
+                  <tr class="border-b text-xs uppercase tracking-wider">
+                    <th class="px-6 py-3 font-medium">Fullname</th>
+                    <th class="px-6 py-3 font-medium">Username</th>
+                    <th class="px-6 py-3 font-medium">Email</th>
+                    <th class="px-6 py-3 font-medium">Registered</th>
+                    <th class="px-6 py-3 font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
