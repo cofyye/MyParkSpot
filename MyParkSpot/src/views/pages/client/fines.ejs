@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>MyParkSpot - Fines</title>
+    <%- include('../../shared/includes/meta') %> <%-
+    include('../../shared/includes/styles') %>
+  </head>
+  <body class="bg-background">
+    <%- include('../../shared/partials/header') %>
+    <main class="min-h-screen p-0 sm:p-4">
+      <div class="mx-auto flex w-full max-w-5xl flex-col md:flex-row">
+        <%- include('./partials/aside.ejs') %>
+        <section class="w-full space-y-6 p-6 md:w-9/12">
+          <h1 class="mb-4 font-serif text-2xl font-medium md:mb-6">Fines</h1>
+          <table class="min-w-full text-center text-gray-700">
+            <thead>
+              <tr class="border-b text-xs uppercase tracking-wider">
+                <th class="px-6 py-3 font-medium">License Plate</th>
+                <th class="px-6 py-3 font-medium">Amount</th>
+                <th class="px-6 py-3 font-medium">Issued At</th>
+                <th class="px-6 py-3 font-medium">Inspector</th>
+                <th class="px-6 py-3 font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% fines.forEach((fine) => { %>
+              <tr class="hover:bg-gray-100">
+                <td class="px-4 py-2"><%= fine.licensePlate %></td>
+                <td class="px-4 py-2"><%= fine.amount %></td>
+                <td class="px-4 py-2">
+                  <%= moment(fine.issuedAt).tz(moment.tz.guess()).format(`DD
+                  MMM. YYYY [at] HH:mm[h]`) %>
+                </td>
+                <td class="px-4 py-2">
+                  <%= fine.issuedBy.firstName %> <%= fine.issuedBy.lastName %>
+                </td>
+                <td class="px-4 py-2">
+                  <div
+                    class="relative flex items-center justify-center space-x-2">
+                    <form
+                      action="/client/fines/pay/<%= fine.id %>"
+                      method="get">
+                      <button
+                        class="relative bottom-1 left-0 focus:outline-none"
+                        type="submit">
+                        <i class="fa-light fa-credit-card"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </main>
+    <%- include('../../shared/includes/scripts') %>
+  </body>
+</html>

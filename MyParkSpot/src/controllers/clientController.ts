@@ -12,6 +12,8 @@ import { PaymentMethod } from '../enums/payment-method.enum';
 import { CompletePaymentDto } from '../dtos/client/complete-payment.dto';
 import { Transaction } from '../models/Transaction';
 import { TransactionType } from '../enums/transaction-type.enum';
+import { Fine } from '../models/Fine';
+import { FineStatus } from '../enums/fine-status.enum';
 
 // Init stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -282,6 +284,32 @@ const postDeleteCar = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+const getFines = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const user = req.user as User;
+    const fines = await MysqlDataSource.getRepository(Fine).find({
+      where: {
+        userId: user.id,
+        status: FineStatus.ISSUED,
+      },
+      relations: {
+        issuedBy: true,
+      },
+      take: 20,
+    });
+
+    if (!fines.length) {
+      req.flash('error', 'Currently, there are no fine yet.');
+      return res.status(500).redirect('/client/my-cars');
+    }
+
+    return res.status(200).render('pages/client/fines', { fines });
+  } catch (error: unknown) {
+    req.flash('error', 'An error occurred while getting the fines.');
+    return res.status(500).redirect('/client/my-cars');
+  }
+};
+
 export default {
   getAccount,
   getPayments,
@@ -295,4 +323,5 @@ export default {
   postAccount,
   postRegisterCar,
   postDeleteCar,
+  getFines,
 };

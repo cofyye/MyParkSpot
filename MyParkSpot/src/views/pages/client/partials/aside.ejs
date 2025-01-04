@@ -14,6 +14,15 @@
         >My Cars</a
       >
     </li>
+    <% if (finesCount) { %>
+    <li class="md:w-full">
+      <a
+        href="/client/fines"
+        class="block px-4 py-2 text-center text-primary hover:bg-gray-100"
+        >Fines (<%= finesCount %>)</a
+      >
+    </li>
+    <% } %>
     <li class="md:w-full">
       <a
         href="/client/payments"
