@@ -11,6 +11,7 @@ import { Transaction } from './Transaction';
 import { ColumnDecimalTransformer } from '../utils/decimal.transformer';
 import { UserRole } from '../enums/user-role.enum';
 import { Fine } from './Fine';
+import { Notification } from './Notification';
 
 @Entity({
   name: 'users',
@@ -85,4 +86,7 @@ export class User {
 
   @OneToMany(() => Fine, fine => fine.issuedBy)
   issuedFines: Fine[];
+
+  @OneToMany(() => Notification, notification => notification.user)
+  notifications: Notification[];
 }

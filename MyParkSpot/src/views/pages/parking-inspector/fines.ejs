@@ -100,7 +100,7 @@
                       %>
                     </td>
                     <td class="px-6 py-4 text-sm text-gray-900">
-                      <% if (fine.status.toLowerCase() !== 'canceled') { %>
+                      <% if (fine.status.toLowerCase() == 'issued') { %>
                       <form
                         action="/parking-inspector/fines/cancel/<%= fine.id %>"
                         method="POST">

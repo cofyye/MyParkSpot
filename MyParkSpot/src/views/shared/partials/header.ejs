@@ -1,13 +1,20 @@
 <header
-  class="flex items-center justify-between bg-background p-6 shadow-md xl:px-20">
+  class="flex items-center justify-between bg-background p-4 shadow-md sm:p-6 xl:px-20">
   <a class="flex items-center gap-2 text-primary" href="/">
-    <p class="font-serif text-2xl font-medium">MyParkSpot</p>
+    <p class="font-serif text-2xl font-medium sm:hidden">MPS</p>
+    <p class="hidden font-serif text-2xl font-medium sm:block">MyParkSpot</p>
   </a>
-  <div class="hidden flex-1 items-center gap-12 px-16 md:flex">
-    <a class="link-hover link text-secondary hover:text-hover" href="/">Home</a>
-    <a class="link-hover link text-secondary hover:text-hover" href="/map"
-      >Find Parking</a
-    >
+  <div class="flex flex-1 gap-10 px-6 sm:px-16">
+    <div class="flex items-center gap-8 pl-2 sm:pl-0">
+      <a
+        class="link-hover link hidden text-secondary hover:text-hover sm:inline-block"
+        href="/"
+        >Home</a
+      >
+      <a class="link-hover link text-secondary hover:text-hover" href="/map"
+        >Find Parking</a
+      >
+    </div>
   </div>
 
   <% if(!user) { %>
@@ -17,15 +24,99 @@
     Log in
   </a>
   <% } else { %>
-  <div class="flex items-center gap-4">
-    <span class="hidden text-secondary md:inline">
+  <div class="flex items-center gap-2 sm:gap-4">
+    <span class="hidden text-secondary lg:inline">
       Hello, <%= user.username %></span
     >
     <a
       href="/client/account"
-      class="btn-sm btn transform rounded-full border px-6 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105">
-      Profile
+      class="btn-sm btn transform rounded-full p-2 font-semibold transition duration-300 ease-in-out hover:bg-gray-100 sm:border sm:px-6 sm:py-2 sm:hover:scale-102 sm:hover:bg-transparent">
+      <span class="block flex items-center sm:hidden">
+        <i class="fa-solid fa-user text-lg"></i>
+      </span>
+      <span class="hidden sm:inline">Profile</span>
     </a>
+
+    <div class="flex items-center gap-4">
+      <div class="relative">
+        <button
+          id="notificationBtn"
+          class="relative flex items-center rounded-full p-2 hover:bg-gray-100">
+          <i class="fa-solid fa-bell text-lg"></i>
+          <% if (notifications && notifications.length > 0) { %>
+          <span
+            class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
+            <%= notifications.length %>
+          </span>
+          <% } %>
+        </button>
+
+        <div
+          id="notificationDropdown"
+          class="z-50 absolute right-0 top-full mt-2 hidden w-72 rounded-lg border border-gray-200 bg-white shadow-lg sm:w-80">
+          <div class="border-b p-4">
+            <h3 class="font-medium text-gray-900">Notifications</h3>
+          </div>
+
+          <div class="max-h-96 overflow-y-auto">
+            <% if (notifications && notifications.length > 0) { %> <%
+            notifications.forEach(notification => { %>
+            <a <% if (notification.message.toLowerCase().includes('tap')) { %> href="<%= notification.type === 'fine_issued' ? '/client/fines' : '/map' %>"<% } %>>
+              <div
+                class="<%= notification.message.toLowerCase().includes('tap') ? 'cursor-pointer' : '' %> <%= !notification.isRead ? 'bg-white' : 'bg-gray-100' %> border-b p-4 hover:bg-gray-100">
+                <div class="flex items-start gap-3">
+                  <div class="flex-shrink-0 flex items-center justify-center w-5 h-5">
+                    <% if (notification.type === 'fine_issued') { %>
+                    <i class="fa-solid fa-ticket text-accent"></i>
+                    <% } else if (notification.type === 'rental_ending') { %>
+                    <i class="fa-solid fa-hourglass-end text-primary"></i>
+                    <% } else { %>
+                    <i class="fa-solid fa-circle-info text-secondary"></i>
+                    <% } %>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-sm text-secondary">
+                      <%= notification.message %>
+                    </p>
+                    <p class="mt-1 text-xs text-secondary/70">
+                      <%= moment(notification.createdAt).fromNow() %>
+                    </p>
+                  </div>
+                  <% if (!notification.isRead) { %>
+                  <div class="h-2 w-2 rounded-full bg-accent"></div>
+                  <% } %>
+                </div>
+              </div>
+            </a>
+            <% }) %> <% } else { %>
+            <div class="p-4 text-center text-sm text-secondary/70">
+              No notifications
+            </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <% } %>
 </header>
+
+<script>
+  const notificationBtn = document.getElementById('notificationBtn');
+  const notificationDropdown = document.getElementById('notificationDropdown');
+
+  notificationBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    notificationDropdown.classList.toggle('hidden');
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function (e) {
+    if (
+      !notificationDropdown.contains(e.target) &&
+      e.target !== notificationBtn
+    ) {
+      notificationDropdown.classList.add('hidden');
+    }
+  });
+</script>

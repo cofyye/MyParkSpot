@@ -20,6 +20,7 @@ import authRoutes from './routes/authRoutes';
 import clientRoutes from './routes/clientRoutes';
 import adminRoutes from './routes/adminRoutes';
 import parkingInspectorRoutes from './routes/parkingInspectorRoutes';
+import { read } from 'fs';
 
 const main = async (): Promise<void> => {
   try {
@@ -123,6 +124,28 @@ const main = async (): Promise<void> => {
         res.locals.session = req.session;
         res.locals.user = req.user;
         res.locals.moment = moment;
+        res.locals.notifications = [
+          {
+            message:
+              'A fine has been issued to your vehicle PK054RM. Tap here to pay it.',
+            createdAt: moment().subtract(1, 'day').toDate(),
+            isRead: false,
+            type: 'fine_issued',
+          },
+          {
+            message: 'Your parking rental expires at 12:31 PM.',
+            createdAt: moment().subtract(2, 'hours').toDate(),
+            isRead: true,
+            type: 'rental_ending',
+          },
+          {
+            message:
+              'Your parking rental expires at 12:31 PM. Tap here to extend it.',
+            createdAt: moment().subtract(25, 'minutes').toDate(),
+            isRead: false,
+            type: 'rental_ending',
+          },
+        ];
 
         next();
       }
