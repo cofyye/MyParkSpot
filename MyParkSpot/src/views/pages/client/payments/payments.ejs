@@ -59,11 +59,11 @@
                       <% if (transaction.transactionType === 'PARKING_RENTAL') {
                       %>
                       <span class="font-semibold text-gray-600"
-                        >- <%= Number(transaction.amount).toFixed(2) %> EUR
+                        >- <%= Number(transaction.amount).toFixed(2) %> &euro;
                       </span>
                       <% } else { %>
                       <span class="font-semibold text-gray-600"
-                        >+ <%= Number(transaction.amount).toFixed(2) %> EUR
+                        >+ <%= Number(transaction.amount).toFixed(2) %> &euro;
                       </span>
                       <% } %>
                     </li>
@@ -89,7 +89,7 @@
                   </label>
                   <p
                     class="mt-4 text-center text-2xl font-semibold text-gray-900">
-                    <%= Number(user.credit).toFixed(2) %> EUR
+                    <%= Number(user.credit).toFixed(2) %> &euro;
                   </p>
                 </div>
                 <div class="flex w-full flex-col items-center">
@@ -140,7 +140,7 @@
         labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
         datasets: [
           {
-            label: 'Spending (EUR)',
+            label: 'Spending (€)',
             data: [5, 3, 4, 7, 2, 6, 4],
             backgroundColor: 'black',
             borderColor: 'black',
@@ -154,7 +154,7 @@
         labels: Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`),
         datasets: [
           {
-            label: 'Spending (EUR)',
+            label: 'Spending (€)',
             data: Array.from(
               { length: 30 },
               () => Math.floor(Math.random() * 10) + 1
@@ -191,7 +191,7 @@
               beginAtZero: true,
               title: {
                 display: true,
-                text: 'EUR',
+                text: '€',
               },
             },
           },

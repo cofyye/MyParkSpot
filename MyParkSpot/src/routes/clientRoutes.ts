@@ -81,5 +81,10 @@ router.post(
   [authenticatedGuard],
   clientController.postDeleteCar
 );
+router.post(
+  '/fines/pay/:id',
+  [authenticatedGuard],
+  clientController.postPayFine
+);
 
 export default router;

@@ -298,12 +298,78 @@ const getFines = async (req: Request, res: Response): Promise<void> => {
       take: 20,
     });
 
-    if (!fines.length) {
-      req.flash('error', 'Currently, there are no fine yet.');
-      return res.status(500).redirect('/client/my-cars');
+    return res.status(200).render('pages/client/fines', { fines });
+  } catch (error: unknown) {
+    return res.status(500).render('pages/client/fines', { fines: [] });
+  }
+};
+
+const postPayFine = async (
+  req: Request<{ id: string }>,
+  res: Response
+): Promise<void> => {
+  try {
+    const user = req.user as User;
+
+    const fine = await MysqlDataSource.getRepository(Fine).findOne({
+      where: {
+        id: req.params.id,
+        status: FineStatus.ISSUED,
+      },
+    });
+
+    if (!fine) {
+      req.flash('error', 'The fine does not exist.');
+      return res.status(404).redirect('/client/fines');
     }
 
-    return res.status(200).render('pages/client/fines', { fines });
+    if (fine.status !== FineStatus.ISSUED) {
+      req.flash('error', 'Fine must have issued status for proceed.');
+      return res.status(409).redirect('/client/fines');
+    }
+
+    if (fine.userId !== user.id) {
+      req.flash('error', 'You are not a owner of this fine.');
+      return res.status(403).redirect('/client/fines');
+    }
+
+    if (Number(user.credit) < Number(fine.amount)) {
+      req.flash('error', 'Insufficient credit.');
+      return res.status(402).redirect('/client/fines');
+    }
+
+    await MysqlDataSource.transaction(async transaction => {
+      await transaction.getRepository(User).update(
+        {
+          id: user.id,
+        },
+        {
+          credit: Number(user.credit) - Number(fine.amount),
+        }
+      );
+
+      await transaction.getRepository(Fine).update(
+        {
+          id: fine.id,
+        },
+        {
+          status: FineStatus.PAID,
+        }
+      );
+    });
+
+    // Sync with redis
+    const userData = await redisClient.get(`user:${user.id}`);
+    if (userData) {
+      const tmpUser = JSON.parse(userData) as User;
+
+      tmpUser.credit = Number(tmpUser.credit) - Number(fine.amount);
+
+      await redisClient.setEx(`user:${user.id}`, 3600, JSON.stringify(tmpUser));
+    }
+
+    req.flash('success', 'You are successfully paid a fine.');
+    return res.status(403).redirect('/client/fines');
   } catch (error: unknown) {
     req.flash('error', 'An error occurred while getting the fines.');
     return res.status(500).redirect('/client/my-cars');
@@ -324,4 +390,5 @@ export default {
   postRegisterCar,
   postDeleteCar,
   getFines,
+  postPayFine,
 };
