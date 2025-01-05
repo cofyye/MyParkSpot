@@ -5,33 +5,12 @@ import { RegisterCarDto } from '../dtos/client/register-car.dto';
 import { AddFundsDto } from '../dtos/client/add-funds.dto';
 import { CompletePaymentDto } from '../dtos/client/complete-payment.dto';
 import authenticatedGuard from '../middlewares/authenticatedGuard';
-import { User } from '../models/User';
-import { MysqlDataSource } from '../config/data-source';
-import { Fine } from '../models/Fine';
-import { FineStatus } from '../enums/fine-status.enum';
-
 import clientController from '../controllers/clientController';
 
 const router = express.Router();
 
-// Check for fines
-router.use(
-  [authenticatedGuard],
-  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const user = req.user as User;
-
-    const finesCount = await MysqlDataSource.getRepository(Fine).count({
-      where: {
-        userId: user.id,
-        status: FineStatus.ISSUED,
-      },
-    });
-
-    res.locals.finesCount = finesCount;
-
-    next();
-  }
-);
+// Middlewares
+router.use([authenticatedGuard], clientController.checkFines);
 
 // Get methods
 router.get('/account', [authenticatedGuard], clientController.getAccount);

@@ -7,10 +7,17 @@ html {
 }
 
 #map {
-  height: calc(100% - 90px);
+  height: calc(100% - 66px);
   width: 100%;
   position: absolute;
-  top: 90px;
+  top: 66px;
+}
+
+@media (min-width: 640px) {
+  #map {
+    height: calc(100% - 90px);
+    top: 90px;
+  }
 }
 
 .custom-div-icon {

@@ -43,7 +43,8 @@
                             %>
                           </span>
                         </div>
-                        <% } else { %>
+                        <% } else if (transaction.transactionType ===
+                        'FUNDS_ADDED') { %>
                         <i
                           class="fa-solid fa-plus-circle text-primary-100 mr-3"></i>
                         <div>
@@ -54,10 +55,27 @@
                             %>
                           </span>
                         </div>
+                        <% } else if (transaction.transactionType ===
+                        'FINE_PAID') { %>
+                        <i
+                          class="fa-solid fa-receipt text-primary-100 mr-3"></i>
+                        <div>
+                          <span>Fine Paid</span><br />
+                          <span class="text-xs text-gray-500"
+                            ><%=
+                            moment(transaction.createdAt).tz(moment.tz.guess()).format("llll")
+                            %>
+                          </span>
+                        </div>
                         <% } %>
                       </div>
                       <% if (transaction.transactionType === 'PARKING_RENTAL') {
                       %>
+                      <span class="font-semibold text-gray-600"
+                        >- <%= Number(transaction.amount).toFixed(2) %> &euro;
+                      </span>
+                      <% } else if (transaction.transactionType === 'FINE_PAID')
+                      { %>
                       <span class="font-semibold text-gray-600"
                         >- <%= Number(transaction.amount).toFixed(2) %> &euro;
                       </span>

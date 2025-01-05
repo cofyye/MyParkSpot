@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { UpdateAccountDto } from '../../src/dtos/client/update-account.dto';
 import { MysqlDataSource } from '../../src/config/data-source';
 import { User } from '../models/User';
@@ -14,6 +14,8 @@ import { Transaction } from '../models/Transaction';
 import { TransactionType } from '../enums/transaction-type.enum';
 import { Fine } from '../models/Fine';
 import { FineStatus } from '../enums/fine-status.enum';
+import moment from 'moment';
+import { Notification } from '../models/Notification';
 
 // Init stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -292,9 +294,6 @@ const getFines = async (req: Request, res: Response): Promise<void> => {
         userId: user.id,
         status: FineStatus.ISSUED,
       },
-      relations: {
-        issuedBy: true,
-      },
       take: 20,
     });
 
@@ -356,6 +355,13 @@ const postPayFine = async (
           status: FineStatus.PAID,
         }
       );
+
+      const newTransaction = new Transaction();
+      newTransaction.userId = user.id;
+      newTransaction.transactionType = TransactionType.FINE_PAID;
+      newTransaction.amount = Number(fine.amount);
+      newTransaction.createdAt = moment().utc().toDate();
+      await transaction.getRepository(Transaction).save(newTransaction);
     });
 
     // Sync with redis
@@ -376,6 +382,54 @@ const postPayFine = async (
   }
 };
 
+const getNotifications = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const user = req.user as User;
+
+    const notifications = await MysqlDataSource.getRepository(
+      Notification
+    ).find({
+      where: {
+        userId: user.id,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+      take: 5,
+    });
+
+    res.locals.notifications = notifications;
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.locals.notifications = [];
+  }
+
+  next();
+};
+
+const checkFines = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const user = req.user as User;
+
+  const finesCount = await MysqlDataSource.getRepository(Fine).count({
+    where: {
+      userId: user.id,
+      status: FineStatus.ISSUED,
+    },
+  });
+
+  res.locals.finesCount = finesCount;
+
+  next();
+};
+
 export default {
   getAccount,
   getPayments,
@@ -391,4 +445,6 @@ export default {
   postDeleteCar,
   getFines,
   postPayFine,
+  getNotifications,
+  checkFines,
 };

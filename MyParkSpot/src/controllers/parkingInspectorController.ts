@@ -8,6 +8,8 @@ import moment from 'moment-timezone';
 import { ParkingSpot } from '../models/ParkingSpot';
 import { FineStatus } from '../enums/fine-status.enum';
 import { User } from '../models/User';
+import { Notification } from '../models/Notification';
+import { NotificationType } from '../enums/notification-type.enum';
 
 const issueFine = async (
   req: Request<{}, {}, IssueFineDto>,
@@ -17,41 +19,52 @@ const issueFine = async (
     const { licensePlate, parkingSpotId } = req.body;
     const user = req.user as User;
 
-    const fineSettings = await MysqlDataSource.getRepository(FineSettings).find(
-      {
+    await MysqlDataSource.transaction(async transactionalEntityManager => {
+      const fineSettings = await transactionalEntityManager.find(FineSettings, {
         order: { createdAt: 'DESC' },
         take: 1,
+      });
+      const fineSetting = fineSettings[0];
+
+      if (!fineSetting) {
+        throw new Error('Fine settings are not configured.');
       }
-    );
-    const fineSetting = fineSettings[0];
 
-    if (!fineSetting) {
-      req.flash('error', 'Fine settings are not configured.');
-      return res.status(400).redirect('/parking-inspector/fines');
-    }
+      const car = await transactionalEntityManager.findOne(Car, {
+        where: { licensePlate, isDeleted: false },
+      });
 
-    const car = await MysqlDataSource.getRepository(Car).findOne({
-      where: { licensePlate, isDeleted: false },
+      const fine = new Fine();
+      fine.licensePlate = licensePlate;
+      fine.amount = fineSetting.amount;
+      fine.parkingSpotId = parkingSpotId;
+      fine.issuedAt = moment().utc().toDate();
+      fine.issuedById = user.id;
+
+      if (car) {
+        fine.userId = car.userId;
+        fine.carId = car.id;
+
+        const notification = new Notification();
+        notification.userId = car.userId;
+        notification.message = `A fine has been issued to your vehicle ${licensePlate}. Tap here to pay it.`;
+        notification.type = NotificationType.FINE_ISSUED;
+        notification.createdAt = moment().utc().toDate();
+        notification.isRead = false;
+
+        await transactionalEntityManager.save(Notification, notification);
+      }
+
+      await transactionalEntityManager.save(Fine, fine);
     });
-
-    const fine = new Fine();
-    fine.licensePlate = licensePlate;
-    fine.amount = fineSetting.amount;
-    fine.parkingSpotId = parkingSpotId;
-    fine.issuedAt = moment().utc().toDate();
-    fine.issuedById = user.id;
-
-    if (car) {
-      fine.userId = car.userId;
-      fine.carId = car.id;
-    }
-
-    await MysqlDataSource.getRepository(Fine).save(fine);
 
     req.flash('success', 'Fine issued successfully');
     return res.status(200).redirect('/parking-inspector/fines');
   } catch (error) {
-    req.flash('error', 'An error occurred while issuing the fine');
+    req.flash(
+      'error',
+      error.message || 'An error occurred while issuing the fine'
+    );
     return res.status(500).redirect('/parking-inspector/fines');
   }
 };
