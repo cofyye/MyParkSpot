@@ -5,6 +5,7 @@ import { Notification } from '../models/Notification';
 import { NotificationType } from '../enums/notification-type.enum';
 import moment from 'moment-timezone';
 import { Between } from 'typeorm';
+import { publisherClient } from '../config/redis';
 
 const sendRentalExpirationNotifications = async () => {
   const targetMinuteStart = moment()
@@ -24,17 +25,32 @@ const sendRentalExpirationNotifications = async () => {
   ).find({
     where: {
       endTime: Between(targetMinuteStart, targetMinuteEnd),
+      expired: false,
     },
-    relations: ['user'],
+    relations: {
+      car: true,
+    },
+    select: {
+      id: true,
+      userId: true,
+      parkingSpotId: true,
+      endTime: true,
+      car: {
+        id: true,
+        licensePlate: true,
+      },
+    },
   });
 
+  console.log('x');
+  await publisherClient.publish('notification', 'notify from cronjob');
+
   for (const rental of expiringRentals) {
-    const user = rental.user;
     const expirationTime = moment(rental.endTime).format('LT');
 
     const notification = new Notification();
-    notification.userId = user.id;
-    notification.message = `Your parking rental expires at ${expirationTime}. Tap here to extend it.`;
+    notification.userId = rental.userId;
+    notification.message = `Your parking rental expires at ${expirationTime} for ${rental.car.licensePlate}. Tap here to extend it.`;
     notification.type = NotificationType.RENTAL_ENDING;
     notification.createdAt = moment().utc().toDate();
     notification.isRead = false;

@@ -10,6 +10,7 @@ import { FineStatus } from '../enums/fine-status.enum';
 import { User } from '../models/User';
 import { Notification } from '../models/Notification';
 import { NotificationType } from '../enums/notification-type.enum';
+import { publisherClient } from '../config/redis';
 
 const issueFine = async (
   req: Request<{}, {}, IssueFineDto>,
@@ -55,6 +56,11 @@ const issueFine = async (
 
         await transactionalEntityManager.save(Notification, notification);
       }
+
+      await publisherClient.publish(
+        'notification',
+        'notify from inspector controller'
+      );
 
       await transactionalEntityManager.save(Fine, fine);
     });

@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import { RedisStore } from 'connect-redis';
+import { Server } from 'socket.io';
+import http from 'http';
 import { join } from 'path';
 import cookieParser from 'cookie-parser';
 import releaseParkingSpots from './jobs/releaseParkingSpots';
@@ -13,15 +15,13 @@ import initPassport from './config/passport';
 import passport from 'passport';
 import moment from 'moment-timezone';
 import { MysqlDataSource } from './config/data-source';
-import redisClient from './config/redis';
-
+import redisClient, { publisherClient, subscriberClient } from './config/redis';
 import homeRoutes from './routes/homeRoutes';
 import authRoutes from './routes/authRoutes';
 import clientRoutes from './routes/clientRoutes';
 import adminRoutes from './routes/adminRoutes';
 import parkingInspectorRoutes from './routes/parkingInspectorRoutes';
 import sendRentalExpirationNotifications from './jobs/sendRentalExpirationNotifications';
-import authenticatedGuard from './middlewares/authenticatedGuard';
 import clientController from './controllers/clientController';
 
 const main = async (): Promise<void> => {
@@ -35,6 +35,10 @@ const main = async (): Promise<void> => {
     await redisClient.set('TEST_CONNECTION', 1);
     console.log('Redis Database connection established!');
     await redisClient.del('TEST_CONNECTION');
+
+    // Pub/Sub Redis
+    await subscriberClient.connect();
+    await publisherClient.connect();
 
     // Cron Jobs
     releaseParkingSpots();
@@ -142,8 +146,18 @@ const main = async (): Promise<void> => {
     app.use('/parking-inspector', parkingInspectorRoutes);
 
     // Run the application
-    app.listen(port, () => {
+    const server = http.createServer(app);
+    server.listen(port, () => {
       console.log(`App listening on port ${port}`);
+    });
+
+    // Run the socket
+    const io = new Server(server);
+
+    // RealTime Connections with Redis Pub/Sub
+    await subscriberClient.subscribe('notification', (message, channel) => {
+      console.log('Redis SUB: ' + message + ' ' + channel);
+      io.emit('NEW_NOTIFICATION', message);
     });
   } catch (error: unknown) {
     console.error('Database connection error:', error);

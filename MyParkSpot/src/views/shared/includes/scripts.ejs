@@ -1,4 +1,5 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/socket.io/socket.io.js"></script>
 
 <% if(messages.success) { %>
 <script>
@@ -35,3 +36,9 @@
   });
 </script>
 <% } %>
+
+<!-- Socket IO Client -->
+<script>
+  const socket = io();
+  socket.on('NEW_NOTIFICATION', msg => console.log(msg));
+</script>
