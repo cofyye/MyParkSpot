@@ -13,15 +13,13 @@ import initPassport from './config/passport';
 import passport from 'passport';
 import moment from 'moment-timezone';
 import { MysqlDataSource } from './config/data-source';
-import redisClient from './config/redis';
-
+import redisClient, { publisherClient, subscriberClient } from './config/redis';
 import homeRoutes from './routes/homeRoutes';
 import authRoutes from './routes/authRoutes';
 import clientRoutes from './routes/clientRoutes';
 import adminRoutes from './routes/adminRoutes';
 import parkingInspectorRoutes from './routes/parkingInspectorRoutes';
 import sendRentalExpirationNotifications from './jobs/sendRentalExpirationNotifications';
-import authenticatedGuard from './middlewares/authenticatedGuard';
 import clientController from './controllers/clientController';
 
 const main = async (): Promise<void> => {
@@ -35,6 +33,13 @@ const main = async (): Promise<void> => {
     await redisClient.set('TEST_CONNECTION', 1);
     console.log('Redis Database connection established!');
     await redisClient.del('TEST_CONNECTION');
+
+    // Pub/Sub Redis
+    await subscriberClient.connect();
+    await publisherClient.connect();
+    await subscriberClient.subscribe('notification', (message, channel) => {
+      console.log('Redis SUB: ' + message + ' ' + channel);
+    });
 
     // Cron Jobs
     releaseParkingSpots();
