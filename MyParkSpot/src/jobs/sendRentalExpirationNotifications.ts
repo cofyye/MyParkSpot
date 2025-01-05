@@ -38,6 +38,7 @@ const sendRentalExpirationNotifications = async () => {
     notification.type = NotificationType.RENTAL_ENDING;
     notification.createdAt = moment().utc().toDate();
     notification.isRead = false;
+    notification.parkingSpotId = rental.parkingSpotId;
 
     await MysqlDataSource.getRepository(Notification).save(notification);
   }

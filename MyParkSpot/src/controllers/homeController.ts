@@ -6,12 +6,15 @@ import { User } from '../models/User';
 import { Car } from '../models/Car';
 import { ParkingRental } from '../models/ParkingRental';
 import { GeoReplyWith } from 'redis';
-import { In, LessThan, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
+import { In, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { Transaction } from '../models/Transaction';
 import { TransactionType } from '../enums/transaction-type.enum';
 import moment from 'moment-timezone';
 import { NearbyParkingSpotsDto } from '../dtos/client/nearby-parking-spots.dto';
 import { RentParkingSpotDto } from '../dtos/client/rent-parking-spot.dto';
+import { Fine } from '../models/Fine';
+import { FineStatus } from '../enums/fine-status.enum';
+import { SpotIdDto } from '../dtos/client/spot-id.dto';
 
 const getHome = async (req: Request, res: Response): Promise<void> => {
   res.render('home');
@@ -27,8 +30,12 @@ async function syncParkingSpotsToRedis(parkingSpots: ParkingSpot[]) {
   }
 }
 
-const getMap = async (req: Request, res: Response): Promise<void> => {
+const getMap = async (
+  req: Request<{}, {}, {}, SpotIdDto>,
+  res: Response
+): Promise<void> => {
   const user = req.user as User;
+  const spotId = req.query.spotId ?? null;
 
   const parkingSpots = await MysqlDataSource.getRepository(ParkingSpot).find({
     where: { isDeleted: false },
@@ -59,6 +66,7 @@ const getMap = async (req: Request, res: Response): Promise<void> => {
     parkingSpots: JSON.stringify(parkingSpots),
     userRentals: JSON.stringify(userRentals),
     cars,
+    spotId,
   });
 };
 
@@ -135,6 +143,19 @@ const rentParkingSpot = async (
         throw new Error('Parking spot not available.');
       }
 
+      const activeFine = await transactionalEntityManager.findOne(Fine, {
+        where: {
+          parkingSpotId: parkingSpotId,
+          status: FineStatus.ISSUED || FineStatus.PAID,
+        },
+      });
+
+      if (activeFine) {
+        throw new Error(
+          `A parking ticket has been issued for this parking spot and is valid until ${moment(activeFine.issuedAt).add(24, 'hours').format('llll')}.`
+        );
+      }
+
       let amount;
       if (parkingMinutes === -1) {
         amount = parkingSpot.zone.dailyPassCost;
@@ -180,13 +201,16 @@ const rentParkingSpot = async (
   } catch (error: unknown) {
     const err = error as Error;
 
+    req.flash(
+      'error',
+      err.message || 'An error occurred while renting parking spot.'
+    );
+
     if (err.message === 'Insufficient credit.') {
-      req.flash('error', err.message);
       return res.status(200).redirect('/client/payments');
     }
 
-    req.flash('error', 'An error occurred while renting parking spot.');
-    return res.status(500).redirect('/map');
+    return res.redirect('/map');
   }
 };
 

@@ -131,8 +131,8 @@ const main = async (): Promise<void> => {
         next();
       }
     );
-    
-    app.use([authenticatedGuard], clientController.getNotifications);
+
+    app.use(clientController.getNotifications);
 
     // Initialization of Routes
     app.use('/', homeRoutes);

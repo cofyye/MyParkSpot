@@ -61,33 +61,37 @@
           <div class="max-h-96 overflow-y-auto">
             <% if (notifications && notifications.length > 0) { %> <%
             notifications.forEach(notification => { %>
-            <a <% if (notification.message.toLowerCase().includes('tap')) { %> href="<%= notification.type === 'fine_issued' ? '/client/fines' : '/map' %>"<% } %>>
-              <div
-                class="<%= notification.message.toLowerCase().includes('tap') ? 'cursor-pointer' : '' %> <%= !notification.isRead ? 'bg-white' : 'bg-gray-100' %> border-b p-4 hover:bg-gray-100">
-                <div class="flex items-start gap-3">
-                  <div class="flex-shrink-0 flex items-center justify-center w-5 h-5">
-                    <% if (notification.type === 'fine_issued') { %>
-                    <i class="fa-solid fa-receipt text-accent"></i>
-                    <% } else if (notification.type === 'rental_ending') { %>
-                    <i class="fa-solid fa-hourglass-end text-primary"></i>
-                    <% } else { %>
-                    <i class="fa-solid fa-circle-info text-secondary"></i>
+              <a <% if (notification.message.toLowerCase().includes('tap')) { %> 
+                    href="<%= notification.type === 'fine_issued' ? 
+                      '/client/fines' : 
+                      `/map?spotId=${notification.parkingSpotId}` 
+                    %>"
+                  <% } %>>              
+                <div class="<%= notification.message.toLowerCase().includes('tap') ? 'cursor-pointer' : '' %> <%= !notification.isRead ? 'bg-white' : 'bg-gray-100' %> border-b p-4 hover:bg-gray-100">
+                  <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 flex items-center justify-center w-5 h-5">
+                      <% if (notification.type === 'fine_issued') { %>
+                      <i class="fa-solid fa-receipt text-accent"></i>
+                      <% } else if (notification.type === 'rental_ending') { %>
+                      <i class="fa-solid fa-hourglass-end text-primary"></i>
+                      <% } else { %>
+                      <i class="fa-solid fa-circle-info text-secondary"></i>
+                      <% } %>
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-sm text-secondary">
+                        <%= notification.message %>
+                      </p>
+                      <p class="mt-1 text-xs text-secondary/70">
+                        <%= moment(notification.createdAt).fromNow() %>
+                      </p>
+                    </div>
+                    <% if (!notification.isRead) { %>
+                    <div class="h-2 w-2 rounded-full bg-accent"></div>
                     <% } %>
                   </div>
-                  <div class="flex-1">
-                    <p class="text-sm text-secondary">
-                      <%= notification.message %>
-                    </p>
-                    <p class="mt-1 text-xs text-secondary/70">
-                      <%= moment(notification.createdAt).fromNow() %>
-                    </p>
-                  </div>
-                  <% if (!notification.isRead) { %>
-                  <div class="h-2 w-2 rounded-full bg-accent"></div>
-                  <% } %>
                 </div>
-              </div>
-            </a>
+              </a>
             <% }) %> <% } else { %>
             <div class="p-4 text-center text-sm text-secondary/70">
               No notifications

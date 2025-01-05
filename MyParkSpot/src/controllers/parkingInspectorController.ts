@@ -51,6 +51,7 @@ const issueFine = async (
         notification.type = NotificationType.FINE_ISSUED;
         notification.createdAt = moment().utc().toDate();
         notification.isRead = false;
+        notification.parkingSpotId = parkingSpotId;
 
         await transactionalEntityManager.save(Notification, notification);
       }

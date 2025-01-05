@@ -10,6 +10,7 @@ import { ParkingRental } from './ParkingRental';
 import { Zone } from './Zone';
 import { ColumnDecimalTransformer } from '../utils/decimal.transformer';
 import { Fine } from './Fine';
+import { Notification } from './Notification';
 
 @Entity({
   name: 'parking_spots',
@@ -69,4 +70,7 @@ export class ParkingSpot {
   })
   @JoinColumn({ name: 'zone_id' })
   zone: Zone;
+
+  @OneToMany(() => Notification, notification => notification.parkingSpot)
+  notifications: Notification[];
 }

@@ -180,7 +180,8 @@
         </div>
       </div>
     </div>
-    <%- include('shared/includes/leafletscripts') %>
+    <%- include('shared/includes/leafletscripts') %> <%-
+    include('shared/includes/scripts') %>
     <script>
       // Functions
       function capitalizeFirstLetter(val) {
@@ -372,6 +373,23 @@
       });
 
       map.addLayer(markers);
+
+      const spotId = '<%= spotId %>';
+      if (spotId) {
+        const spot = parkingSpots.find(s => s.id === spotId);
+        if (spot) {
+          map.setView([spot.lat, spot.lng], 23);
+
+          markers.eachLayer(marker => {
+            if (
+              marker.getLatLng().lat === spot.lat &&
+              marker.getLatLng().lng === spot.lng
+            ) {
+              marker.fire('click');
+            }
+          });
+        }
+      }
 
       window.addEventListener('resize', adjustMapHeight);
 

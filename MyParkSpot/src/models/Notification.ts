@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { User } from './User';
 import { NotificationType } from '../enums/notification-type.enum';
+import { ParkingSpot } from './ParkingSpot';
 
 @Entity({ name: 'notifications' })
 export class Notification {
@@ -50,6 +51,9 @@ export class Notification {
   @Column({ name: 'user_id', nullable: false })
   userId: string;
 
+  @Column({ name: 'parking_spot_id', nullable: true })
+  parkingSpotId: string;
+
   // Relations
 
   @ManyToOne(() => User, user => user.notifications, {
@@ -59,4 +63,12 @@ export class Notification {
   })
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @ManyToOne(() => ParkingSpot, parkingSpot => parkingSpot.notifications, {
+    nullable: true,
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'parking_spot_id' })
+  parkingSpot: ParkingSpot;
 }
