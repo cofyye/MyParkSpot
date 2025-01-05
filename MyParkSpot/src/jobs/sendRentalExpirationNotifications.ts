@@ -42,6 +42,7 @@ const sendRentalExpirationNotifications = async () => {
     },
   });
 
+  console.log('x');
   await publisherClient.publish('notification', 'notify from cronjob');
 
   for (const rental of expiringRentals) {

@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
 import { RedisStore } from 'connect-redis';
+import { Server } from 'socket.io';
+import http from 'http';
 import { join } from 'path';
 import cookieParser from 'cookie-parser';
 import releaseParkingSpots from './jobs/releaseParkingSpots';
@@ -37,9 +39,6 @@ const main = async (): Promise<void> => {
     // Pub/Sub Redis
     await subscriberClient.connect();
     await publisherClient.connect();
-    await subscriberClient.subscribe('notification', (message, channel) => {
-      console.log('Redis SUB: ' + message + ' ' + channel);
-    });
 
     // Cron Jobs
     releaseParkingSpots();
@@ -147,8 +146,18 @@ const main = async (): Promise<void> => {
     app.use('/parking-inspector', parkingInspectorRoutes);
 
     // Run the application
-    app.listen(port, () => {
+    const server = http.createServer(app);
+    server.listen(port, () => {
       console.log(`App listening on port ${port}`);
+    });
+
+    // Run the socket
+    const io = new Server(server);
+
+    // RealTime Connections with Redis Pub/Sub
+    await subscriberClient.subscribe('notification', (message, channel) => {
+      console.log('Redis SUB: ' + message + ' ' + channel);
+      io.emit('NEW_NOTIFICATION', message);
     });
   } catch (error: unknown) {
     console.error('Database connection error:', error);
