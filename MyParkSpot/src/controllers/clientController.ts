@@ -16,6 +16,8 @@ import { Fine } from '../models/Fine';
 import { FineStatus } from '../enums/fine-status.enum';
 import moment from 'moment';
 import { Notification } from '../models/Notification';
+import { GetSpendingDataDto } from '../dtos/client/get-spending-data.dto';
+import { Between, In, MoreThanOrEqual, LessThanOrEqual, And } from 'typeorm';
 
 // Init stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -79,19 +81,79 @@ const postAccount = async (
   }
 };
 
-const getPayments = async (req: Request, res: Response): Promise<void> => {
+const getPayments = async (
+  req: Request<{}, {}, {}, GetSpendingDataDto>,
+  res: Response
+): Promise<void> => {
   try {
     const user = req.user as User;
+    const days = req.query.days
 
-    const transactions = await MysqlDataSource.getRepository(Transaction).find({
+    const now = moment().utc();
+    const endDate = now.clone().endOf('day');
+    const startDate = now
+      .clone()
+      .subtract(Number(days) - 1, 'days')
+      .startOf('day');
+
+    const recentTransactions = await MysqlDataSource.getRepository(
+      Transaction
+    ).find({
       where: { userId: user.id },
       order: { createdAt: 'DESC' },
       take: 3,
     });
 
-    return res
-      .status(200)
-      .render('pages/client/payments/payments', { transactions });
+    const transactions = await MysqlDataSource.getRepository(Transaction).find({
+      where: {
+        userId: user.id,
+        createdAt: And(
+          MoreThanOrEqual(startDate.toDate()),
+          LessThanOrEqual(endDate.toDate())
+        ),
+      },
+      order: { createdAt: 'ASC' },
+    });
+
+    const dailySpending = new Array(Number(days)).fill(0);
+    const labels = new Array(Number(days)).fill('');
+
+    for (let i = 0; i < Number(days); i++) {
+      labels[i] = now
+        .clone()
+        .subtract(Number(days) - 1 - i, 'days')
+        .format('MMM D');
+    }
+
+    transactions.forEach(transaction => {
+      const transactionDate = moment(transaction.createdAt);
+      const dayIndex = moment
+        .duration(transactionDate.diff(startDate))
+        .asDays();
+      const roundedDayIndex = Math.floor(dayIndex);
+
+      if (roundedDayIndex >= 0 && roundedDayIndex < Number(days)) {
+        if (
+          transaction.transactionType === TransactionType.PARKING_RENTAL ||
+          transaction.transactionType === TransactionType.FINE_PAID
+        ) {
+          dailySpending[roundedDayIndex] += Number(transaction.amount);
+        }
+      }
+    });
+
+    const roundedDailySpending = dailySpending.map(amount =>
+      Number(amount.toFixed(2))
+    );
+
+    return res.status(200).render('pages/client/payments/payments', {
+      transactions: recentTransactions,
+      days: Number(days),
+      chartData: {
+        labels,
+        spending: roundedDailySpending,
+      },
+    });
   } catch (error) {
     req.flash('error', 'An error occurred while fetching your transactions.');
     return res.status(500).redirect('/client/payments');

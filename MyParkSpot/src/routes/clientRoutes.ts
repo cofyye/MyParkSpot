@@ -6,6 +6,7 @@ import { AddFundsDto } from '../dtos/client/add-funds.dto';
 import { CompletePaymentDto } from '../dtos/client/complete-payment.dto';
 import authenticatedGuard from '../middlewares/authenticatedGuard';
 import clientController from '../controllers/clientController';
+import { GetSpendingDataDto } from '../dtos/client/get-spending-data.dto';
 
 const router = express.Router();
 
@@ -14,7 +15,11 @@ router.use([authenticatedGuard], clientController.checkFines);
 
 // Get methods
 router.get('/account', [authenticatedGuard], clientController.getAccount);
-router.get('/payments', [authenticatedGuard], clientController.getPayments);
+router.get(
+  '/payments',
+  [authenticatedGuard, validateDto(GetSpendingDataDto, 'query')],
+  clientController.getPayments
+);
 router.get(
   '/payments/complete',
   [authenticatedGuard, validateDto(CompletePaymentDto, 'query')],
