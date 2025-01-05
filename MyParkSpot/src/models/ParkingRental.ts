@@ -24,6 +24,9 @@ export class ParkingRental {
   @Column({ name: 'end_time', nullable: false, type: 'datetime' })
   endTime: Date;
 
+  @Column({ name: 'expired', nullable: false, default: false })
+  expired: boolean;
+
   // Relation Ids
 
   @Column({ name: 'user_id', nullable: false })

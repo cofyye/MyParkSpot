@@ -387,27 +387,26 @@ const getNotifications = async (
   res: Response,
   next: NextFunction
 ): Promise<void> => {
-  try {
-    const user = req.user as User;
+  const user = req.user as User;
+  if (user) {
+    try {
+      const notifications = await MysqlDataSource.getRepository(
+        Notification
+      ).find({
+        where: {
+          userId: user.id,
+        },
+        order: {
+          createdAt: 'DESC',
+        },
+        take: 5,
+      });
 
-    const notifications = await MysqlDataSource.getRepository(
-      Notification
-    ).find({
-      where: {
-        userId: user.id,
-      },
-      order: {
-        createdAt: 'DESC',
-      },
-      take: 5,
-    });
-
-    res.locals.notifications = notifications;
-  } catch (error) {
-    console.error('Error fetching notifications:', error);
-    res.locals.notifications = [];
+      res.locals.notifications = notifications;
+    } catch (error: unknown) {
+      res.locals.notifications = [];
+    }
   }
-
   next();
 };
 

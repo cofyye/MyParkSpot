@@ -12,19 +12,41 @@ const releaseParkingSpots = async () => {
   ).find({
     where: {
       endTime: LessThanOrEqual(moment().utc().toDate()),
+      expired: false,
     },
-    relations: ['car', 'parkingSpot'],
+    select: {
+      id: true,
+      carId: true,
+      parkingSpotId: true,
+    },
   });
 
   for (const rental of expiredRentals) {
-    const car = rental.car;
-    const parkingSpot = rental.parkingSpot;
-
     await MysqlDataSource.transaction(async transactionalEntityManager => {
-      await transactionalEntityManager.update(Car, car.id, { isParked: false });
-      await transactionalEntityManager.update(ParkingSpot, parkingSpot.id, {
-        isOccupied: false,
-      });
+      await transactionalEntityManager.getRepository(Car).update(
+        {
+          id: rental.carId,
+        },
+        { isParked: false }
+      );
+
+      await transactionalEntityManager.getRepository(ParkingSpot).update(
+        {
+          id: rental.parkingSpotId,
+        },
+        {
+          isOccupied: false,
+        }
+      );
+
+      await transactionalEntityManager.getRepository(ParkingRental).update(
+        {
+          id: rental.id,
+        },
+        {
+          expired: true,
+        }
+      );
     });
   }
 };

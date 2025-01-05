@@ -57,6 +57,7 @@ const getMap = async (
         user: { id: user.id },
         startTime: LessThanOrEqual(moment.utc().toDate()),
         endTime: MoreThanOrEqual(moment.utc().toDate()),
+        expired: false,
       },
       select: ['parkingSpotId'],
     });
@@ -101,6 +102,7 @@ const rentParkingSpot = async (
 ): Promise<void> => {
   try {
     const userId = (req.user as User).id;
+
     const user = await MysqlDataSource.getRepository(User).findOne({
       where: { id: userId },
     });
@@ -143,18 +145,18 @@ const rentParkingSpot = async (
         throw new Error('Parking spot not available.');
       }
 
-      const activeFine = await transactionalEntityManager.findOne(Fine, {
-        where: {
-          parkingSpotId: parkingSpotId,
-          status: FineStatus.ISSUED || FineStatus.PAID,
-        },
-      });
+      // const activeFine = await transactionalEntityManager.findOne(Fine, {
+      //   where: {
+      //     parkingSpotId: parkingSpotId,
+      //     status: FineStatus.ISSUED || FineStatus.PAID,
+      //   },
+      // });
 
-      if (activeFine) {
-        throw new Error(
-          `A parking ticket has been issued for this parking spot and is valid until ${moment(activeFine.issuedAt).add(24, 'hours').format('llll')}.`
-        );
-      }
+      // if (activeFine) {
+      //   throw new Error(
+      //     `A parking ticket has been issued for this parking spot and is valid until ${moment(activeFine.issuedAt).add(24, 'hours').format('llll')}.`
+      //   );
+      // }
 
       let amount;
       if (parkingMinutes === -1) {
@@ -162,6 +164,7 @@ const rentParkingSpot = async (
       } else {
         amount = parkingHours * parkingSpot.zone.baseCost;
       }
+
       if (user.credit < amount) {
         throw new Error('Insufficient credit.');
       }

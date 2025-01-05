@@ -130,17 +130,11 @@ const postLogout = async (req: Request, res: Response): Promise<void> => {
       return res.status(500).redirect('/client/profile');
     }
 
-    req.session.destroy(async sessionErr => {
-      if (sessionErr) {
-        req.flash('error', 'An error occurred during logout.');
-        return res.status(500).redirect('/client/profile');
-      }
-
-      await redisClient.del(`user:${userId}`);
-
-      return res.status(200).redirect('/');
-    });
+    await redisClient.del(`user:${userId}`);
   });
+
+  req.flash('success', 'You have successfully logged out.');
+  return res.status(201).redirect('/');
 };
 
 export default { getLogin, postLogin, getRegister, postRegister, postLogout };
