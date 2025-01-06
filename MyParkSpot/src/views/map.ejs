@@ -40,7 +40,7 @@
     </div>
     <div
       id="parkModal"
-      class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black bg-opacity-50">
+      class="fixed inset-0 z-50 flex hidden items-center justify-center overflow-y-auto bg-black bg-opacity-50">
       <div
         class="relative w-full max-w-sm rounded-xl bg-white px-6 py-8 shadow-xl">
         <button
@@ -60,7 +60,7 @@
             </h3>
             <div
               id="parking-duration-options"
-              class="grid grid-cols-1 gap-6 sm:grid-cols-1 md:grid-cols-2"></div>
+              class="grid grid-cols-2 gap-2 sm:gap-6"></div>
           </div>
 
           <input
@@ -74,7 +74,7 @@
               Select Your Car
             </h3>
             <% if (cars && cars.length > 0) { %>
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div class="grid grid-cols-2 gap-2 sm:gap-6">
               <% cars.forEach(function(car) { %> <% if (car.isParked) { %>
               <div
                 class="car-option relative transform cursor-not-allowed rounded-lg border border-gray-300 p-4 opacity-50">
@@ -206,14 +206,15 @@
         return textArea.value;
       }
       function adjustMapHeight() {
+        const header = document.querySelector('header');
         const parkingInfo = document.getElementById('parking-info');
         const map = document.getElementById('map');
-        if (parkingInfo.classList.contains('hidden')) {
-          map.style.height = 'calc(100% - 90px)';
-        } else {
-          const parkingInfoHeight = parkingInfo.offsetHeight;
-          map.style.height = `calc(100% - 90px - ${parkingInfoHeight}px)`;
-        }
+        const headerHeight = header.offsetHeight;
+        const parkingInfoHeight = parkingInfo.classList.contains('hidden')
+          ? 0
+          : parkingInfo.offsetHeight;
+
+        map.style.height = `calc(100vh - ${headerHeight}px - ${parkingInfoHeight}px)`;
       }
       function getZoneColor(zoneType) {
         const zoneColors = {
@@ -255,7 +256,8 @@
           popupAnchor: [0, -30],
         });
       }
-
+      adjustMapHeight();
+      
       // Check for unauthorized user
       const user = '<%= user %>';
 

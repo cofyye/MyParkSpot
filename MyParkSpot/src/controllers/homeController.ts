@@ -122,6 +122,10 @@ const rentParkingSpot = async (
       return res.status(400).redirect('/map');
     }
 
+    let licensePlate: string;
+    let rentalEndTime: string;
+    let parkingAmount: number;
+
     await MysqlDataSource.transaction(async transactionalEntityManager => {
       const car = await transactionalEntityManager.findOne(Car, {
         where: { id: carId, userId: userId },
@@ -145,18 +149,19 @@ const rentParkingSpot = async (
         throw new Error('Parking spot not available.');
       }
 
-      // const activeFine = await transactionalEntityManager.findOne(Fine, {
-      //   where: {
-      //     parkingSpotId: parkingSpotId,
-      //     status: FineStatus.ISSUED || FineStatus.PAID,
-      //   },
-      // });
+      const activeFine = await transactionalEntityManager.findOne(Fine, {
+        where: {
+          parkingSpotId: parkingSpotId,
+          status: In([FineStatus.ISSUED, FineStatus.PAID]),
+          issuedAt: MoreThanOrEqual(moment().subtract(24, 'hours').toDate()),
+        },
+      });
 
-      // if (activeFine) {
-      //   throw new Error(
-      //     `A parking ticket has been issued for this parking spot and is valid until ${moment(activeFine.issuedAt).add(24, 'hours').format('llll')}.`
-      //   );
-      // }
+      if (activeFine) {
+        throw new Error(
+          `A parking ticket has been issued for this parking spot and is valid until ${moment(activeFine.issuedAt).add(24, 'hours').format('llll')}.`
+        );
+      }
 
       let amount;
       if (parkingMinutes === -1) {
@@ -194,12 +199,19 @@ const rentParkingSpot = async (
       newTransaction.transactionType = TransactionType.PARKING_RENTAL;
       newTransaction.amount = amount;
       await transactionalEntityManager.save(Transaction, newTransaction);
+
+      licensePlate = car.licensePlate;
+      rentalEndTime = moment(rental.endTime).format('lll');
+      parkingAmount = amount;
     });
 
     // Sync with redis
     await redisClient.setEx(`user:${user.id}`, 3600, JSON.stringify(user));
 
-    req.flash('success', 'Parking spot rented successfully.');
+    req.flash(
+      'success',
+      `Parking ticket purchased for ${licensePlate}. Cost: €${parkingAmount!.toFixed(2)}. Valid until ${rentalEndTime}.`
+    );
     return res.status(201).redirect('/map');
   } catch (error: unknown) {
     const err = error as Error;
