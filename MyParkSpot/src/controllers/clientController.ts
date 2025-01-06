@@ -87,7 +87,7 @@ const getPayments = async (
 ): Promise<void> => {
   try {
     const user = req.user as User;
-    const days = req.query.days
+    const days = req.query.days;
 
     const now = moment().utc();
     const endDate = now.clone().endOf('day');
@@ -215,7 +215,6 @@ const getCompletePayments = async (
     req.flash('success', 'Funds successfully added.');
     return res.status(200).redirect('/client/payments');
   } catch (err: unknown) {
-    console.log(err);
     req.flash('error', 'An error occurred while completing the payment.');
     return res.status(500).redirect('/client/payments/funds/add');
   }
@@ -491,6 +490,55 @@ const checkFines = async (
   next();
 };
 
+const getActiveCars = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  const user = req.user as User;
+  if (user) {
+    try {
+      const cars = await MysqlDataSource.getRepository(Car).find({
+        where: {
+          userId: user.id,
+          isDeleted: false,
+          parkingRentals: { expired: false },
+        },
+        relations: {
+          parkingRentals: {
+            parkingSpot: true,
+          },
+        },
+        select: {
+          id: true,
+          licensePlate: true,
+          manufacturer: true,
+          model: true,
+          year: true,
+          isParked: true,
+          parkingRentals: {
+            id: true,
+            parkingSpot: {
+              id: true,
+            },
+          },
+        },
+      });
+
+      res.locals.activeCars = cars.map(car => ({
+        ...car,
+        rentedParkingSpotId: car.parkingRentals[0]?.parkingSpot.id,
+      }));
+    } catch (error: unknown) {
+      res.locals.activeCars = [];
+    }
+  } else {
+    res.locals.activeCars = [];
+  }
+
+  next();
+};
+
 export default {
   getAccount,
   getPayments,
@@ -508,4 +556,5 @@ export default {
   postPayFine,
   getNotifications,
   checkFines,
+  getActiveCars,
 };

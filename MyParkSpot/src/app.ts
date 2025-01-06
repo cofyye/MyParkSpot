@@ -137,6 +137,7 @@ const main = async (): Promise<void> => {
     );
 
     app.use(clientController.getNotifications);
+    app.use(clientController.getActiveCars);
 
     // Initialization of Routes
     app.use('/', homeRoutes);

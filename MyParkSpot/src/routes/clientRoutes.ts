@@ -15,6 +15,7 @@ router.use([authenticatedGuard], clientController.checkFines);
 
 // Get methods
 router.get('/account', [authenticatedGuard], clientController.getAccount);
+router.get('/my-cars', [authenticatedGuard], clientController.getMyCars);
 router.get(
   '/payments',
   [authenticatedGuard, validateDto(GetSpendingDataDto, 'query')],

@@ -14,6 +14,10 @@
       <a class="link-hover link text-secondary hover:text-hover" href="/map"
         >Find Parking</a
       >
+      <a 
+        id="manage-rentals"
+        class="link-hover link text-secondary hover:text-hover cursor-pointer"
+      >Manage Parking Rentals</a>
     </div>
   </div>
 
@@ -105,6 +109,61 @@
   <% } %>
 </header>
 
+<div
+  id="rentalsModal"
+  class="fixed inset-0 z-50 flex hidden items-center justify-center bg-black bg-opacity-50">
+  <div class="relative w-full max-w-sm rounded-xl bg-white px-6 py-8 shadow-xl">
+    <button
+      type="button"
+      id="closeRentalsModal"
+      class="absolute right-6 top-5 text-lg text-gray-500 hover:text-gray-700 focus:outline-none">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+
+    <h2 class="mb-6 text-xl font-semibold text-gray-800">
+      Manage Parking Rentals
+    </h2>
+
+    <div>
+      <h3 class="text-md mb-2 font-medium text-gray-700">
+        Your Parked Cars
+      </h3>
+      <% if (activeCars && activeCars.length > 0) { %>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <% activeCars.forEach(function(car) { %>
+            <a href="/map?spotId=<%= car.rentedParkingSpotId %>" class="block">
+              <div class="transform cursor-pointer rounded-lg border border-gray-200 p-4 transition-all hover:border-primary hover:shadow-md">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-md font-semibold text-gray-800"><%= car.licensePlate %></p>
+                    <p class="mt-1 text-sm text-gray-600">
+                      <%= car.manufacturer %> <%= car.model %> 
+                      <% if (car.year) { %>(<%= car.year %>)<% } %>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </a>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <p class="text-center p-3 text-sm text-gray-500">          
+          No vehicles parked yet. <br>
+          <a href="/map" class="text-primary/80 hover:underline inline">Find the perfect spot.</a>
+        </p>
+      <% } %>
+    </div>
+
+    <div class="mt-6 flex justify-end">
+      <button
+        id="closeRentalsBtn"
+        class="btn-sm btn transform rounded-full border px-6 py-2 font-semibold hover:bg-gray-100">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
   const notificationBtn = document.getElementById('notificationBtn');
   const notificationDropdown = document.getElementById('notificationDropdown');
@@ -114,13 +173,35 @@
     notificationDropdown.classList.toggle('hidden');
   });
 
-  // Close dropdown when clicking outside
   document.addEventListener('click', function (e) {
     if (
       !notificationDropdown.contains(e.target) &&
       e.target !== notificationBtn
     ) {
       notificationDropdown.classList.add('hidden');
+    }
+  });
+
+  const rentalsModal = document.getElementById('rentalsModal');
+  const manageRentalsBtn = document.getElementById('manage-rentals');
+  const closeRentalsModal = document.getElementById('closeRentalsModal');
+  const closeRentalsBtn = document.getElementById('closeRentalsBtn');
+
+  manageRentalsBtn.addEventListener('click', () => {
+    rentalsModal.classList.remove('hidden');
+  });
+
+  closeRentalsModal.addEventListener('click', () => {
+    rentalsModal.classList.add('hidden');
+  });
+
+  closeRentalsBtn.addEventListener('click', () => {
+    rentalsModal.classList.add('hidden');
+  });
+
+  rentalsModal.addEventListener('click', (e) => {
+    if (e.target === rentalsModal) {
+      rentalsModal.classList.add('hidden');
     }
   });
 </script>
