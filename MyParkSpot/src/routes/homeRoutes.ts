@@ -3,13 +3,17 @@ import homeController from '../controllers/homeController';
 import { validateDto } from '../middlewares/validateDto';
 import { NearbyParkingSpotsDto } from '../dtos/client/nearby-parking-spots.dto';
 import { RentParkingSpotDto } from '../dtos/client/rent-parking-spot.dto';
-import { SpotIdDto } from '../dtos/client/spot-id.dto';
+import { SpotIdOptionalDto } from '../dtos/client/spot-id-optional.dto';
 
 const router = express.Router();
 
 // Get methods
 router.get('/', homeController.getHome);
-router.get('/map', validateDto(SpotIdDto, 'query'), homeController.getMap);
+router.get(
+  '/map',
+  validateDto(SpotIdOptionalDto, 'query'),
+  homeController.getMap
+);
 router.get(
   '/api/nearby-parking-spots',
   validateDto(NearbyParkingSpotsDto, 'query'),
@@ -22,5 +26,6 @@ router.post(
   validateDto(RentParkingSpotDto),
   homeController.rentParkingSpot
 );
+router.post('/unpark/:spotId', homeController.unparkSpot);
 
 export default router;
