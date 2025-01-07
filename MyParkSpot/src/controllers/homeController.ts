@@ -15,6 +15,8 @@ import { RentParkingSpotDto } from '../dtos/client/rent-parking-spot.dto';
 import { Fine } from '../models/Fine';
 import { FineStatus } from '../enums/fine-status.enum';
 import { SpotIdOptionalDto } from '../dtos/client/spot-id-optional.dto';
+import { ZoneIdDto } from '../dtos/client/zone-id.dto';
+import { Zone } from '../models/Zone';
 
 const getHome = async (req: Request, res: Response): Promise<void> => {
   res.render('home');
@@ -98,18 +100,11 @@ const getNearbyParkingSpots = async (
 
 async function getTodaysParkingDuration(
   userId: string,
-  parkingSpotId: string,
+  zoneId: string,
   transactionalEntityManager: EntityManager
 ) {
   const today = moment().startOf('day').utc();
   const tomorrow = moment().endOf('day').utc();
-
-  const zoneId = (
-    await transactionalEntityManager.findOne(ParkingSpot, {
-      where: { id: parkingSpotId },
-      select: { zoneId: true },
-    })
-  ).zoneId;
 
   const todaysRentals = await transactionalEntityManager.find(ParkingRental, {
     where: {
@@ -190,7 +185,7 @@ const rentParkingSpot = async (
 
       const todaysDuration = await getTodaysParkingDuration(
         userId,
-        parkingSpotId,
+        parkingSpot.zoneId,
         transactionalEntityManager
       );
 
@@ -341,10 +336,66 @@ const unparkSpot = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+const getRemainingTime = async (
+  req: Request<{}, {}, {}, ZoneIdDto>,
+  res: Response
+): Promise<void> => {
+  try {
+    const userId = (req.user as User).id;
+    const { zoneId } = req.query;
+
+    const zone = await MysqlDataSource.getRepository(Zone).findOne({
+      where: { id: zoneId },
+    });
+
+    if (!zone) {
+      res.status(404).json({ error: 'Zone not found' });
+      return;
+    }
+
+    const todaysDuration = await getTodaysParkingDuration(
+      userId,
+      zoneId,
+      MysqlDataSource.manager
+    );
+
+    const maxRegularDuration = zone.maxParkingDuration || 24 * 60;
+    const maxExtensionDuration = zone.maxExtensionDuration || 0;
+
+    const remainingRegularTime = Math.max(
+      0,
+      maxRegularDuration - todaysDuration
+    );
+    const remainingExtensionTime =
+      maxExtensionDuration > 0
+        ? Math.max(
+            0,
+            maxRegularDuration + maxExtensionDuration - todaysDuration
+          )
+        : 0;
+
+    const isInExtensionPeriod = todaysDuration >= maxRegularDuration;
+
+    res.json({
+      remainingRegularTime,
+      remainingExtensionTime,
+      isInExtensionPeriod,
+      hasExtensionAvailable: maxExtensionDuration > 0,
+      hasDailyPass: !isNaN(zone.dailyPassCost),
+      dailyPassCost: zone.dailyPassCost,
+      baseCost: zone.baseCost,
+      extensionCost: zone.extensionCost,
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get remaining time' });
+  }
+};
+
 export default {
   getHome,
   getMap,
   rentParkingSpot,
   getNearbyParkingSpots,
   unparkSpot,
+  getRemainingTime,
 };

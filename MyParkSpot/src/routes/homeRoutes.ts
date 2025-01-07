@@ -4,6 +4,8 @@ import { validateDto } from '../middlewares/validateDto';
 import { NearbyParkingSpotsDto } from '../dtos/client/nearby-parking-spots.dto';
 import { RentParkingSpotDto } from '../dtos/client/rent-parking-spot.dto';
 import { SpotIdOptionalDto } from '../dtos/client/spot-id-optional.dto';
+import authenticatedGuard from '../middlewares/authenticatedGuard';
+import { ZoneIdDto } from '../dtos/client/zone-id.dto';
 
 const router = express.Router();
 
@@ -18,6 +20,11 @@ router.get(
   '/api/nearby-parking-spots',
   validateDto(NearbyParkingSpotsDto, 'query'),
   homeController.getNearbyParkingSpots
+);
+router.get(
+  '/api/remaining-time',
+  [validateDto(ZoneIdDto, 'query'), authenticatedGuard],
+  homeController.getRemainingTime
 );
 
 // Post methods

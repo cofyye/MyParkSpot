@@ -443,66 +443,128 @@
       let selectedCarId = null;
 
       if (user) {
-        openParkModal.addEventListener('click', () => {
+        openParkModal.addEventListener('click', async () => {
           parkModal.classList.remove('hidden');
           const durationOptionsContainer = document.getElementById(
             'parking-duration-options'
           );
           durationOptionsContainer.innerHTML = '';
 
-          const durationOptionsValues = [];
-
-          if (zone.maxParkingDuration === null) {
-            durationOptionsValues.push(
-              '1 hour',
-              '2 hours',
-              '3 hours',
-              'Full Day'
+          try {
+            const response = await fetch(
+              `/api/remaining-time?zoneId=${zone.id}`
             );
-          } else {
-            if (zone.maxParkingDuration) {
-              if (zone.maxParkingDuration % 60 === 0) {
-                const hours = zone.maxParkingDuration / 60;
-                for (let i = 1; i <= hours; i++) {
-                  durationOptionsValues.push(`${i} hour${i > 1 ? 's' : ''}`);
-                }
-              } else {
-                durationOptionsValues.push(
-                  `${zone.maxParkingDuration} minutes`
+            if (!response.ok) throw new Error('Failed to get remaining time');
+            const {
+              remainingRegularTime,
+              remainingExtensionTime,
+              isInExtensionPeriod,
+              hasExtensionAvailable,
+              hasDailyPass,
+              dailyPassCost,
+              baseCost,
+              extensionCost,
+            } = await response.json();
+
+            const durationOptionsValues = [];
+
+            if (isInExtensionPeriod) {
+              if (hasExtensionAvailable && remainingExtensionTime > 0) {
+                const maxExtensionHours = Math.floor(
+                  remainingExtensionTime / 60
                 );
+                const max3Hours = maxExtensionHours > 3 ? 3 : maxExtensionHours;
+                for (let i = 1; i <= max3Hours; i++) {
+                  durationOptionsValues.push({
+                    text: `${i} hour${i > 1 ? 's' : ''} (extension)`,
+                    value: i * 60,
+                    cost: (i * extensionCost).toFixed(2),
+                    isExtension: true,
+                  });
+                }
+
+                const remainingMinutes = remainingExtensionTime % 60;
+                if (remainingMinutes > 0) {
+                  durationOptionsValues.push({
+                    text: `${remainingMinutes} minutes (extension)`,
+                    value: remainingMinutes,
+                    cost: ((remainingMinutes / 60) * extensionCost).toFixed(2),
+                    isExtension: true,
+                  });
+                }
+              }
+              if (remainingExtensionTime === 0) {
+                durationOptionsContainer.innerHTML =
+                  '<p class="text-center text-gray-500 py-3 text-lg col-span-2">You have reached the maximum parking duration for today in this zone.</p>';
+                return;
+              }
+            } else {
+              const maxHours = Math.floor(remainingRegularTime / 60);
+              const max3Hours = maxHours > 3 ? 3 : maxHours;
+              for (let i = 1; i <= max3Hours; i++) {
+                durationOptionsValues.push({
+                  text: `${i} hour${i > 1 ? 's' : ''}`,
+                  value: i * 60,
+                  cost: (i * baseCost).toFixed(2),
+                });
+              }
+
+              const remainingMinutes = remainingRegularTime % 60;
+              if (remainingMinutes > 0) {
+                durationOptionsValues.push({
+                  text: `${remainingMinutes} minutes`,
+                  value: remainingMinutes,
+                  cost: ((remainingMinutes / 60) * baseCost).toFixed(2),
+                });
+              }
+
+              if (hasDailyPass) {
+                durationOptionsValues.push({
+                  text: 'Full Day',
+                  value: -1,
+                  cost: dailyPassCost.toFixed(2),
+                  isDailyPass: true,
+                });
               }
             }
-          }
 
-          durationOptionsValues.forEach(option => {
-            const optionDiv = document.createElement('div');
-            optionDiv.className =
-              'duration-option transform cursor-pointer rounded-lg border border-gray-300 p-6 text-center transition-transform hover:scale-105 focus:outline-none';
-            optionDiv.dataset.value = convertToMinutes(option);
+            durationOptionsValues.forEach(option => {
+              const optionDiv = document.createElement('div');
+              optionDiv.className = `duration-option transform cursor-pointer rounded-lg border p-4 text-center transition-all hover:scale-105 focus:outline-none border-gray-300`;
+              optionDiv.dataset.value = option.value;
 
-            const optionText = document.createElement('p');
-            optionText.className = 'text-sm font-semibold text-gray-800';
-            optionText.textContent = option;
+              const optionText = document.createElement('p');
+              optionText.className = 'text-sm font-semibold text-gray-800';
+              optionText.textContent = option.text;
+              optionDiv.appendChild(optionText);
 
-            optionDiv.appendChild(optionText);
-            durationOptionsContainer.appendChild(optionDiv);
-          });
+              const costText = document.createElement('p');
+              costText.className = 'mt-1 text-xs text-gray-600';
+              costText.textContent = `€${option.cost}`;
+              optionDiv.appendChild(costText);
 
-          durationOptions = document.querySelectorAll('.duration-option');
-          durationOptions.forEach(option => {
-            option.addEventListener('click', () => {
-              if (!option.dataset.value) return;
-
-              durationOptions.forEach(opt =>
-                opt.classList.remove('border-gray-200', 'border-primary')
-              );
-
-              option.classList.add('border-primary');
-              selectedDuration = option.getAttribute('data-value');
-              parkingDurationInput.value = selectedDuration;
-              toggleSubmitButton();
+              durationOptionsContainer.appendChild(optionDiv);
             });
-          });
+
+            durationOptions = document.querySelectorAll('.duration-option');
+            durationOptions.forEach(option => {
+              option.addEventListener('click', () => {
+                if (!option.dataset.value) return;
+
+                durationOptions.forEach(opt =>
+                  opt.classList.remove('border-primary')
+                );
+
+                option.classList.add('border-primary');
+                selectedDuration = option.getAttribute('data-value');
+                parkingDurationInput.value = selectedDuration;
+                toggleSubmitButton();
+              });
+            });
+          } catch (error) {
+            durationOptionsContainer.innerHTML =
+              '<p class="text-center text-gray-500 py-3 text-lg col-span-2">Failed to load parking options.<br> Please try again.</p>';
+          }
         });
       }
 
