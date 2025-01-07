@@ -42,15 +42,6 @@
 <!-- Socket IO Client -->
 <% if (user) { %>
 <script>
-  navigator.mediaDevices
-    .getUserMedia({
-      audio: true,
-    })
-    .then(stream => {})
-    .catch(
-      err => (document.body.innerHTML = 'You must allow audio permission !!!!')
-    );
-
   function appendNotification(notification) {
     const notificationList = document.getElementById('notificationList');
 
@@ -91,34 +82,24 @@
       const parsedMessage = JSON.parse(message);
 
       if (parsedMessage.userId === '<%= user.id %>') {
-        Swal.fire({
-          title: 'Notification! <i class="fa-thin fa-phone-volume"></i>',
-          text: `New notification !!!`,
-          icon: 'warning',
-          iconColor: '#000',
-          customClass: {
-            popup: 'rounded-3xl border border-gray-300 shadow-lg',
-            title: 'font-serif text-2xl font-bold text-primary',
-            content: 'text-gray-900',
-            confirmButton:
-              'rounded-full bg-primary px-4 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105 hover:bg-hover',
-          },
-          buttonsStyling: false,
-        });
+        if (
+          !document.getElementById('notificationLength') ||
+          !document.getElementById('notificationLength')?.innerText
+        ) {
+          const notificationBtn = document.getElementById('notificationBtn');
 
-        const audio = new Audio('/audio/smb_star.wav');
-        audio.play();
-        setTimeout(
-          () =>
-            (document.getElementById('swal2-title').innerText =
-              'Notification!'),
-          10000
-        );
+          document.getElementById('noNotification').remove();
 
-        const notificationLength =
-          document.getElementById('notificationLength');
-        notificationLength.innerText =
-          parseInt(notificationLength.innerText || 0) + 1;
+          notificationBtn.insertAdjacentHTML(
+            'beforeend',
+            `<span id="notificationLength" class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">1</span>`
+          );
+        } else {
+          const notificationLength =
+            document.getElementById('notificationLength');
+          notificationLength.innerText =
+            parseInt(notificationLength.innerText || 0) + 1;
+        }
 
         appendNotification(JSON.parse(message));
       }
