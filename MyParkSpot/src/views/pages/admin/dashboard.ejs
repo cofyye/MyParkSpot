@@ -97,7 +97,9 @@
                 </div>
                 <div class="rounded-lg border border-gray-200 p-4">
                   <h4 class="text-md text-gray-700">Revenue This Month</h4>
-                  <p class="mt-2"><%= monthlyRentalsRevenue %> EUR</p>
+                  <p class="mt-2">
+                    <%= monthlyRentalsRevenue.toFixed(2) %> EUR
+                  </p>
                 </div>
                 <div class="rounded-lg border border-gray-200 p-4">
                   <h4 class="text-md text-gray-700">
@@ -105,7 +107,7 @@
                   </h4>
                   <p class="mt-2">
                     <%= monthlyRentalsCount > 0 ? (monthlyRentalsRevenue /
-                    monthlyRentalsCount) : 0 %> EUR
+                    monthlyRentalsCount).toFixed(2) : 0 %> EUR
                   </p>
                 </div>
               </div>

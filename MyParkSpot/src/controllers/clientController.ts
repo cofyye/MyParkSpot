@@ -435,8 +435,19 @@ const postPayFine = async (
       await redisClient.setEx(`user:${user.id}`, 3600, JSON.stringify(tmpUser));
     }
 
-    req.flash('success', 'You are successfully paid a fine.');
-    return res.status(403).redirect('/client/fines');
+    req.flash('success', 'Fine paid successfully.');
+
+    const fineCount = await MysqlDataSource.getRepository(Fine).count({
+      where: {
+        userId: user.id,
+        status: FineStatus.ISSUED,
+      },
+    });
+
+    if (fineCount === 0) {
+      return res.status(200).redirect('/client/payments?days=7');
+    }
+    return res.status(200).redirect('/client/fines');
   } catch (error: unknown) {
     req.flash('error', 'An error occurred while getting the fines.');
     return res.status(500).redirect('/client/my-cars');

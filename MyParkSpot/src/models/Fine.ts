@@ -50,13 +50,6 @@ export class Fine {
   })
   issuedAt: Date;
 
-  @Column({
-    name: 'paid_at',
-    type: 'datetime',
-    nullable: true,
-  })
-  paidAt?: Date;
-
   // Relation Ids
 
   @Column({ name: 'user_id', nullable: true })
