@@ -244,7 +244,7 @@ const postAddFunds = async (
             price_data: {
               currency: 'EUR',
               product_data: {
-                name: `MyParkSpot - Add ${req.body.amount} €`,
+                name: `MyParkSpot - Add €${req.body.amount.toFixed(2)}`,
                 description:
                   'Easily add funds to your MyParkSpot account to ensure uninterrupted access to parking reservations and exclusive features. This secure payment will be instantly credited to your account balance, allowing you to enjoy seamless parking services whenever you need them.',
               },

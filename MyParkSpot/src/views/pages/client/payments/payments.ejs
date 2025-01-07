@@ -186,7 +186,7 @@
               enabled: true,
               callbacks: {
                 label: function (context) {
-                  return `${context.parsed.y.toFixed(2)} €`;
+                  return `€${context.parsed.y.toFixed(2)}`;
                 },
               },
             },
@@ -208,7 +208,7 @@
               },
               ticks: {
                 callback: function (value) {
-                  return value.toFixed(2) + ' €';
+                  return `€${value.toFixed(2)}`;
                 },
               },
               title: {
