@@ -58,6 +58,7 @@ const main = async (): Promise<void> => {
               "'self'",
               'https://unpkg.com',
               'https://cdn.jsdelivr.net',
+              'https://cdnjs.cloudflare.com',
               "'unsafe-inline'",
             ],
             styleSrc: [
@@ -156,8 +157,7 @@ const main = async (): Promise<void> => {
     const io = new Server(server);
 
     // RealTime Connections with Redis Pub/Sub
-    await subscriberClient.subscribe('notification', (message, channel) => {
-      console.log('Redis SUB: ' + message + ' ' + channel);
+    await subscriberClient.subscribe('notification', (message, _channel) => {
       io.emit('NEW_NOTIFICATION', message);
     });
   } catch (error: unknown) {

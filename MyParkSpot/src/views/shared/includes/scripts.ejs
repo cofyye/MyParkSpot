@@ -1,3 +1,5 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.46/moment-timezone.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="/socket.io/socket.io.js"></script>
 
@@ -38,7 +40,89 @@
 <% } %>
 
 <!-- Socket IO Client -->
+<% if (user) { %>
 <script>
+  navigator.mediaDevices
+    .getUserMedia({
+      audio: true,
+    })
+    .then(stream => {})
+    .catch(
+      err => (document.body.innerHTML = 'You must allow audio permission !!!!')
+    );
+
+  function appendNotification(notification) {
+    const notificationList = document.getElementById('notificationList');
+
+    let injectHtml = `<a `;
+    if (notification?.message.toLowerCase().includes('tap')) {
+      injectHtml += `href="${notification?.type === 'fine_issued' ? '/client/fines' : `/map?spotId=${notification?.parkingSpotId}`}">`;
+      injectHtml += `<div class="cursor-pointer `;
+    } else {
+      injectHtml += `<div class="`;
+    }
+    injectHtml += `bg-white border-b p-4 hover:bg-gray-100">`;
+    injectHtml += `<div class="flex items-start gap-3">`;
+    injectHtml += `<div class="flex-shrink-0 flex items-center justify-center w-5 h-5">`;
+    if (notification?.type === 'fine_issued') {
+      injectHtml += `<i class="fa-solid fa-receipt text-accent"></i>`;
+    } else if (notification?.type === 'rental_ending') {
+      injectHtml += `<i class="fa-solid fa-hourglass-end text-primary"></i>`;
+    } else {
+      injectHtml += `<i class="fa-solid fa-circle-info text-secondary"></i>`;
+    }
+    injectHtml += `</div>`;
+    injectHtml += `<div class="flex-1">`;
+    injectHtml += `<p class="text-sm text-secondary">${notification?.message}</p>`;
+    injectHtml += `<p class="mt-1 text-xs text-secondary/70">${moment(notification?.createdAt).fromNow()}</p>`;
+    injectHtml += `</div>`;
+    injectHtml += `<div class="h-2 w-2 rounded-full bg-accent"></div>`;
+    injectHtml += `</div>`;
+    injectHtml += `</div>`;
+    injectHtml += `</div>`;
+    injectHtml += `</a>`;
+
+    notificationList.insertAdjacentHTML('afterbegin', injectHtml);
+  }
+
   const socket = io();
-  socket.on('NEW_NOTIFICATION', msg => console.log(msg));
+  socket.on('NEW_NOTIFICATION', message => {
+    try {
+      const parsedMessage = JSON.parse(message);
+
+      if (parsedMessage.userId === '<%= user.id %>') {
+        Swal.fire({
+          title: 'Notification! <i class="fa-thin fa-phone-volume"></i>',
+          text: `New notification !!!`,
+          icon: 'warning',
+          iconColor: '#000',
+          customClass: {
+            popup: 'rounded-3xl border border-gray-300 shadow-lg',
+            title: 'font-serif text-2xl font-bold text-primary',
+            content: 'text-gray-900',
+            confirmButton:
+              'rounded-full bg-primary px-4 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105 hover:bg-hover',
+          },
+          buttonsStyling: false,
+        });
+
+        const audio = new Audio('/audio/smb_star.wav');
+        audio.play();
+        setTimeout(
+          () =>
+            (document.getElementById('swal2-title').innerText =
+              'Notification!'),
+          10000
+        );
+
+        const notificationLength =
+          document.getElementById('notificationLength');
+        notificationLength.innerText =
+          parseInt(notificationLength.innerText || 0) + 1;
+
+        appendNotification(JSON.parse(message));
+      }
+    } catch (error) {}
+  });
 </script>
+<% } %>

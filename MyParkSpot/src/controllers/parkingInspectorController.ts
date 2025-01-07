@@ -55,12 +55,18 @@ const issueFine = async (
         notification.parkingSpotId = parkingSpotId;
 
         await transactionalEntityManager.save(Notification, notification);
-      }
 
-      await publisherClient.publish(
-        'notification',
-        'notify from inspector controller'
-      );
+        await publisherClient.publish(
+          'notification',
+          JSON.stringify({
+            userId: notification.userId,
+            parkingSpotId: notification.parkingSpotId,
+            message: notification.message,
+            type: notification.type,
+            createdAt: notification.createdAt,
+          })
+        );
+      }
 
       await transactionalEntityManager.save(Fine, fine);
     });

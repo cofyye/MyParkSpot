@@ -49,6 +49,7 @@
           <i class="fa-solid fa-bell text-lg"></i>
           <% if (notifications && notifications.length > 0) { %>
           <span
+          id="notificationLength"
             class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
             <%= notifications.length %>
           </span>
@@ -62,7 +63,7 @@
             <h3 class="font-medium text-gray-900">Notifications</h3>
           </div>
 
-          <div class="max-h-96 overflow-y-auto">
+          <div class="max-h-96 overflow-y-auto" id="notificationList">
             <% if (notifications && notifications.length > 0) { %> <%
             notifications.forEach(notification => { %>
               <a <% if (notification.message.toLowerCase().includes('tap')) { %> 

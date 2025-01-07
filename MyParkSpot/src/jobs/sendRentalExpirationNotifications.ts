@@ -42,8 +42,6 @@ const sendRentalExpirationNotifications = async () => {
     },
   });
 
-  await publisherClient.publish('notification', 'notify from cronjob');
-
   for (const rental of expiringRentals) {
     const expirationTime = moment(rental.endTime).format('LT');
 
@@ -54,6 +52,17 @@ const sendRentalExpirationNotifications = async () => {
     notification.createdAt = moment().utc().toDate();
     notification.isRead = false;
     notification.parkingSpotId = rental.parkingSpotId;
+
+    await publisherClient.publish(
+      'notification',
+      JSON.stringify({
+        userId: notification.userId,
+        parkingSpotId: notification.parkingSpotId,
+        message: notification.message,
+        type: notification.type,
+        createdAt: notification.createdAt,
+      })
+    );
 
     await MysqlDataSource.getRepository(Notification).save(notification);
   }
