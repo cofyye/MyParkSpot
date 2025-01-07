@@ -23,6 +23,7 @@ import adminRoutes from './routes/adminRoutes';
 import parkingInspectorRoutes from './routes/parkingInspectorRoutes';
 import sendRentalExpirationNotifications from './jobs/sendRentalExpirationNotifications';
 import clientController from './controllers/clientController';
+import newCarsSynchronization from './jobs/newCarsSynchronization';
 
 const main = async (): Promise<void> => {
   try {
@@ -43,6 +44,7 @@ const main = async (): Promise<void> => {
     // Cron Jobs
     releaseParkingSpots();
     sendRentalExpirationNotifications();
+    newCarsSynchronization();
 
     // App Initialization
     const app = express();
