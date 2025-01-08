@@ -550,6 +550,24 @@ const getActiveCars = async (
   next();
 };
 
+const getAllTransactions = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const user = req.user as User;
+    const transactions = await MysqlDataSource.getRepository(Transaction).find({
+      where: { userId: user.id },
+      order: { createdAt: 'DESC' },
+    });
+
+    res.render('pages/client/payments/transactions', { transactions });
+  } catch (error) {
+    req.flash('error', 'An error occurred while fetching transactions.');
+    res.redirect('/client/payments');
+  }
+};
+
 export default {
   getAccount,
   getPayments,
@@ -568,4 +586,5 @@ export default {
   getNotifications,
   checkFines,
   getActiveCars,
+  getAllTransactions,
 };

@@ -11,6 +11,7 @@ import { User } from '../models/User';
 import { Notification } from '../models/Notification';
 import { NotificationType } from '../enums/notification-type.enum';
 import { publisherClient } from '../config/redis';
+import { ParkingRental } from '../models/ParkingRental';
 
 const issueFine = async (
   req: Request<{}, {}, IssueFineDto>,
@@ -55,6 +56,26 @@ const issueFine = async (
         notification.parkingSpotId = parkingSpotId;
 
         await transactionalEntityManager.save(Notification, notification);
+
+        const parkingRental: ParkingRental = new ParkingRental();
+        parkingRental.userId = car.userId;
+        parkingRental.carId = car.id;
+        parkingRental.parkingSpotId = parkingSpotId;
+        parkingRental.expired = false;
+        parkingRental.minutes = 24 * 60;
+        parkingRental.totalCost = fineSetting.amount;
+        parkingRental.startTime = moment().utc().toDate();
+        parkingRental.endTime = moment().add(24, 'hours').utc().toDate();
+
+        await transactionalEntityManager.save(ParkingRental, parkingRental);
+
+        await transactionalEntityManager.update(Car, car.id, {
+          isParked: true,
+        });
+
+        await transactionalEntityManager.update(ParkingSpot, parkingSpotId, {
+          isOccupied: true,
+        });
 
         await publisherClient.publish(
           'notification',

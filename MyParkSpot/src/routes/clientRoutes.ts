@@ -44,6 +44,11 @@ router.get(
   clientController.getRegisterCar
 );
 router.get('/fines', [authenticatedGuard], clientController.getFines);
+router.get(
+  '/payments/transactions',
+  [authenticatedGuard],
+  clientController.getAllTransactions
+);
 
 // Post methods
 router.post(

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>MyParkSpot - Transactions</title>
+    <%- include('../../../shared/includes/meta') %> <%-
+    include('../../../shared/includes/styles') %>
+  </head>
+  <body class="bg-background">
+    <%- include('../../../shared/partials/header') %>
+    <main class="min-h-screen p-0 sm:p-4">
+      <div class="mx-auto flex w-full max-w-5xl flex-col md:flex-row">
+        <%- include('../partials/aside.ejs') %>
+        <section class="w-full space-y-6 p-6 md:w-9/12">
+          <div class="flex items-center justify-between">
+            <h1 class="font-serif text-2xl font-medium">Transaction History</h1>
+            <a
+              href="/client/payments?days=7"
+              class="btn-sm btn transform rounded-full border px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105">
+              Back to Payments
+            </a>
+          </div>
+
+          <div class="rounded-lg">
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                  <tr class="border-b text-xs uppercase tracking-wider">
+                    <th scope="col" class="px-6 py-3 font-medium">Type</th>
+                    <th scope="col" class="px-6 py-3 font-medium">Amount</th>
+                    <th scope="col" class="px-6 py-3 font-medium">Date</th>
+                  </tr>
+                </thead>
+                <tbody class="text-center">
+                  <% if (transactions && transactions.length > 0) { %> <%
+                  transactions.forEach((transaction) => { %>
+                  <tr class="hover:bg-gray-50">
+                    <td class="whitespace-nowrap px-6 py-4">
+                      <div class="flex items-center">
+                        <% if (transaction.transactionType === 'PARKING_RENTAL')
+                        { %>
+                        <i class="fa-solid fa-parking mr-3 text-accent"></i>
+                        <span>Parking Rental</span>
+                        <% } else if (transaction.transactionType ===
+                        'FUNDS_ADDED') { %>
+                        <i
+                          class="fa-solid fa-plus-circle mr-3 text-primary"></i>
+                        <span>Funds Added</span>
+                        <% } else if (transaction.transactionType ===
+                        'FINE_PAID') { %>
+                        <i class="fa-solid fa-receipt mr-3 text-primary"></i>
+                        <span>Fine Paid</span>
+                        <% } %>
+                      </div>
+                    </td>
+                    <td class="whitespace-nowrap px-6 py-4 text-gray-600">
+                      <% if (transaction.transactionType === 'FUNDS_ADDED') { %>
+                      <span class="font-semibold"
+                        >+ €<%= Number(transaction.amount).toFixed(2) %></span
+                      >
+                      <% } else { %>
+                      <span class="font-semibold"
+                        >- €<%= Number(transaction.amount).toFixed(2) %></span
+                      >
+                      <% } %>
+                    </td>
+                    <td
+                      class="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                      <%=
+                      moment(transaction.createdAt).tz(moment.tz.guess()).format("llll")
+                      %>
+                    </td>
+                  </tr>
+                  <% }); %> <% } else { %>
+                  <tr>
+                    <td
+                      colspan="3"
+                      class="px-6 py-4 text-center text-sm text-gray-500">
+                      No transactions found
+                    </td>
+                  </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <%- include('../../../shared/includes/scripts') %>
+  </body>
+</html>

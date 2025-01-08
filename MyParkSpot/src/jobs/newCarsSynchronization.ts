@@ -13,8 +13,6 @@ const newCarsSynchronization = async () => {
     },
   });
 
-  console.log(activeFines);
-
   activeFines.forEach(async fine => {
     const car = await MysqlDataSource.getRepository(Car).findOne({
       where: {
