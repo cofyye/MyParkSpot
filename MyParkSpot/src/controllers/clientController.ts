@@ -265,10 +265,6 @@ const postAddFunds = async (
   }
 };
 
-const getSettings = async (req: Request, res: Response): Promise<void> => {
-  return res.status(200).render('pages/client/settings');
-};
-
 const getMyCars = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = req.user as User;
@@ -574,7 +570,6 @@ export default {
   getCompletePayments,
   getCancelPayments,
   getAddFunds,
-  getSettings,
   getMyCars,
   getRegisterCar,
   postAddFunds,

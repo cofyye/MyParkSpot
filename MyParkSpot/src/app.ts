@@ -24,6 +24,9 @@ import parkingInspectorRoutes from './routes/parkingInspectorRoutes';
 import sendRentalExpirationNotifications from './jobs/sendRentalExpirationNotifications';
 import clientController from './controllers/clientController';
 import newCarsSynchronization from './jobs/newCarsSynchronization';
+import authenticatedGuard from './middlewares/authenticatedGuard';
+import { UserRole } from './enums/user-role.enum';
+import roleGuard from './middlewares/roleGuard';
 
 const main = async (): Promise<void> => {
   try {
@@ -145,9 +148,17 @@ const main = async (): Promise<void> => {
     // Initialization of Routes
     app.use('/', homeRoutes);
     app.use('/auth', authRoutes);
-    app.use('/client', clientRoutes);
-    app.use('/admin', adminRoutes);
-    app.use('/parking-inspector', parkingInspectorRoutes);
+    app.use('/client', [authenticatedGuard], clientRoutes);
+    app.use(
+      '/admin',
+      [authenticatedGuard, roleGuard([UserRole.FOUNDER, UserRole.ADMIN])],
+      adminRoutes
+    );
+    app.use(
+      '/parking-inspector',
+      [authenticatedGuard, roleGuard([UserRole.PARKING_INSPECTOR])],
+      parkingInspectorRoutes
+    );
 
     // Run the application
     const server = http.createServer(app);

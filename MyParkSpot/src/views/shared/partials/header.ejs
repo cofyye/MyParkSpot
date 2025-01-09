@@ -14,10 +14,12 @@
       <a class="link-hover link text-secondary hover:text-hover" href="/map"
         >Find Parking</a
       >
-      <a 
+      <% if (user.role === 'founder' || user.role === 'user') { %>
+        <a 
         id="manage-rentals"
         class="link-hover link text-secondary hover:text-hover cursor-pointer"
-      >Manage Parking Rentals</a>
+        >Manage Parking Rentals</a>
+      <% } %>
     </div>
   </div>
 
@@ -188,7 +190,7 @@
   const closeRentalsModal = document.getElementById('closeRentalsModal');
   const closeRentalsBtn = document.getElementById('closeRentalsBtn');
 
-  manageRentalsBtn.addEventListener('click', () => {
+  manageRentalsBtn?.addEventListener('click', () => {
     rentalsModal.classList.remove('hidden');
   });
 

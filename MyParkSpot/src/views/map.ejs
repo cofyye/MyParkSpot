@@ -20,6 +20,7 @@
           <p id="parking-details" class="mt-2 text-secondary"></p>
         </div>
         <div class="flex items-center justify-center gap-2 sm:gap-4">
+          <% if (user.role === 'founder' || user.role === 'user') { %>
           <button
             id="park-here"
             class="btn-sm btn transform cursor-pointer rounded-full border bg-accent px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
@@ -30,6 +31,7 @@
             class="btn-sm btn transform cursor-pointer rounded-full border bg-accent px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
             End Parking
           </button>
+          <% } %>
           <button
             id="zone-info"
             class="btn-sm btn transform cursor-pointer rounded-full border px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
@@ -268,7 +270,7 @@
 
       const parkBtn = document.getElementById('park-here');
       if (!user) {
-        parkBtn.addEventListener('click', e => {
+        parkBtn?.addEventListener('click', e => {
           e.preventDefault();
           window.location.href = '/auth/login';
         });
@@ -363,19 +365,19 @@
         marker.on('click', () => {
           document.getElementById('parking-info').classList.remove('hidden');
           if (spot.isOccupied) {
-            document.getElementById('park-here').classList.add('hidden');
+            document.getElementById('park-here')?.classList.add('hidden');
             const isUserSpot = userRentals.some(
               rental => rental.parkingSpotId === spot.id
             );
             if (isUserSpot) {
-              document.getElementById('unpark-here').classList.remove('hidden');
+              document.getElementById('unpark-here')?.classList.remove('hidden');
               document.getElementById('parkingSpot').value = spot.id;
             } else {
-              document.getElementById('unpark-here').classList.add('hidden');
+              document.getElementById('unpark-here')?.classList.add('hidden');
             }
           } else {
-            document.getElementById('park-here').classList.remove('hidden');
-            document.getElementById('unpark-here').classList.add('hidden');
+            document.getElementById('park-here')?.classList.remove('hidden');
+            document.getElementById('unpark-here')?.classList.add('hidden');
             document.getElementById('parkingSpot').value = spot.id;
           }
           document.getElementById('parking-details').innerHTML = `
@@ -418,7 +420,7 @@
 
       // Unpark handler
       const unparkBtn = document.getElementById('unpark-here');
-      unparkBtn.addEventListener('click', () => {
+      unparkBtn?.addEventListener('click', () => {
         if (confirm('Are you sure you want to end this parking session?')) {
           const form = document.createElement('form');
           form.method = 'POST';
@@ -443,7 +445,7 @@
       let selectedCarId = null;
 
       if (user) {
-        openParkModal.addEventListener('click', async () => {
+        openParkModal?.addEventListener('click', async () => {
           parkModal.classList.remove('hidden');
           const durationOptionsContainer = document.getElementById(
             'parking-duration-options'

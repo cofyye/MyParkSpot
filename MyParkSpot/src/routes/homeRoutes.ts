@@ -6,6 +6,8 @@ import { RentParkingSpotDto } from '../dtos/client/rent-parking-spot.dto';
 import { SpotIdOptionalDto } from '../dtos/client/spot-id-optional.dto';
 import authenticatedGuard from '../middlewares/authenticatedGuard';
 import { ZoneIdDto } from '../dtos/client/zone-id.dto';
+import roleGuard from '../middlewares/roleGuard';
+import { UserRole } from '../enums/user-role.enum';
 
 const router = express.Router();
 
@@ -23,16 +25,28 @@ router.get(
 );
 router.get(
   '/api/remaining-time',
-  [validateDto(ZoneIdDto, 'query'), authenticatedGuard],
+  [
+    roleGuard([UserRole.FOUNDER, UserRole.USER]),
+    validateDto(ZoneIdDto, 'query'),
+    authenticatedGuard,
+  ],
   homeController.getRemainingTime
 );
 
 // Post methods
 router.post(
   '/rent-parking-spot',
-  validateDto(RentParkingSpotDto),
+  [
+    authenticatedGuard,
+    roleGuard([UserRole.FOUNDER, UserRole.USER]),
+    validateDto(RentParkingSpotDto),
+  ],
   homeController.rentParkingSpot
 );
-router.post('/unpark/:spotId', homeController.unparkSpot);
+router.post(
+  '/unpark/:spotId',
+  [authenticatedGuard, roleGuard([UserRole.FOUNDER, UserRole.USER])],
+  homeController.unparkSpot
+);
 
 export default router;
