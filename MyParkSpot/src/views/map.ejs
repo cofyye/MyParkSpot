@@ -639,11 +639,11 @@
             });
 
             durationOptions = document.querySelectorAll('.duration-option');
-            durationOptions.forEach(option => {
+            durationOptions?.forEach(option => {
               option.addEventListener('click', () => {
                 if (!option.dataset.value) return;
 
-                durationOptions.forEach(opt =>
+                durationOptions?.forEach(opt =>
                   opt.classList.remove('border-primary')
                 );
 
@@ -699,7 +699,7 @@
       });
 
       function resetModalSelections() {
-        durationOptions.forEach(opt => {
+        durationOptions?.forEach(opt => {
           opt.classList.remove('border-primary');
         });
         parkingDurationInput.value = '';

@@ -12,6 +12,7 @@ import { Notification } from '../models/Notification';
 import { NotificationType } from '../enums/notification-type.enum';
 import { publisherClient } from '../config/redis';
 import { ParkingRental } from '../models/ParkingRental';
+import redisClient from '../config/redis';
 
 const issueFine = async (
   req: Request<{}, {}, IssueFineDto>,
@@ -92,6 +93,14 @@ const issueFine = async (
 
       await transactionalEntityManager.save(Fine, fine);
     });
+
+    // Sync with Redis
+    const parkingSpotsData = await redisClient.get('parkingSpots');
+    const parkingSpots = JSON.parse(parkingSpotsData) as ParkingSpot[];
+    const updatedParkingSpots = parkingSpots.map(s =>
+      s.id === parkingSpotId ? { ...s, isOccupied: true } : s
+    );
+    await redisClient.set('parkingSpots', JSON.stringify(updatedParkingSpots));
 
     req.flash('success', 'Fine issued successfully');
     return res.status(200).redirect('/parking-inspector/fines');
