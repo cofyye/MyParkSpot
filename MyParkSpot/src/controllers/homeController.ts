@@ -18,19 +18,9 @@ import { SpotIdOptionalDto } from '../dtos/client/spot-id-optional.dto';
 import { ZoneIdDto } from '../dtos/client/zone-id.dto';
 import { Zone } from '../models/Zone';
 
-const getHome = async (req: Request, res: Response): Promise<void> => {
+const getHome = async (_req: Request, res: Response): Promise<void> => {
   res.render('home');
 };
-
-async function syncParkingSpotsToRedis(parkingSpots: ParkingSpot[]) {
-  for (const spot of parkingSpots) {
-    await redisClient.geoAdd('parkingSpots', {
-      longitude: spot.longitude,
-      latitude: spot.latitude,
-      member: spot.id,
-    });
-  }
-}
 
 const getMap = async (
   req: Request<{}, {}, {}, SpotIdOptionalDto>,
@@ -38,13 +28,6 @@ const getMap = async (
 ): Promise<void> => {
   const user = req.user as User;
   const spotId = req.query.spotId ?? null;
-
-  const parkingSpots = await MysqlDataSource.getRepository(ParkingSpot).find({
-    where: { isDeleted: false },
-    relations: ['zone'],
-  });
-
-  syncParkingSpotsToRedis(parkingSpots);
 
   let cars: Car[] = [];
   let userRentals: ParkingRental[] = [];
@@ -65,8 +48,10 @@ const getMap = async (
     });
   }
 
+  const parkingSpots = await redisClient.get(`parkingSpots`);
+
   return res.render('map', {
-    parkingSpots: JSON.stringify(parkingSpots),
+    parkingSpots: JSON.stringify(JSON.parse(parkingSpots || '[]')),
     userRentals: JSON.stringify(userRentals),
     cars,
     spotId,
@@ -77,25 +62,29 @@ const getNearbyParkingSpots = async (
   req: Request<{}, {}, {}, NearbyParkingSpotsDto>,
   res: Response
 ): Promise<void> => {
-  const lat = req.query.lat;
-  const lng = req.query.lng;
-  const radius = req.query.radius;
+  try {
+    const lat = req.query.lat;
+    const lng = req.query.lng;
+    const radius = req.query.radius;
 
-  const spots = await redisClient.geoSearchWith(
-    'parkingSpots',
-    { longitude: lng, latitude: lat },
-    { radius: radius, unit: 'km' },
-    [GeoReplyWith.COORDINATES]
-  );
+    const spots = await redisClient.geoSearchWith(
+      'geo:parkingSpots',
+      { longitude: lng, latitude: lat },
+      { radius: radius, unit: 'km' },
+      [GeoReplyWith.COORDINATES]
+    );
 
-  const parkingSpots = await MysqlDataSource.getRepository(ParkingSpot).find({
-    where: {
-      id: In(spots.map(spot => spot.member)),
-      isDeleted: false,
-    },
-    relations: ['zone'],
-  });
-  res.json(parkingSpots);
+    const parkingSpotsData = await redisClient.get('parkingSpots');
+    const parkingSpots = JSON.parse(parkingSpotsData);
+    const filteredSpots = parkingSpots.filter(
+      (spot: ParkingSpot) =>
+        spots.map(s => s.member).includes(spot.id) && !spot.isDeleted
+    );
+
+    res.json(filteredSpots);
+  } catch (error: unknown) {
+    res.json([]);
+  }
 };
 
 async function getTodaysParkingDuration(
@@ -265,6 +254,12 @@ const rentParkingSpot = async (
 
     // Sync with redis
     await redisClient.setEx(`user:${user.id}`, 3600, JSON.stringify(user));
+    const parkingSpotsData = await redisClient.get('parkingSpots');
+    const parkingSpots = JSON.parse(parkingSpotsData) as ParkingSpot[];
+    const updatedParkingSpots = parkingSpots.map(s =>
+      s.id === req.body.parkingSpotId ? { ...s, isOccupied: true } : s
+    );
+    await redisClient.set('parkingSpots', JSON.stringify(updatedParkingSpots));
 
     req.flash(
       'success',
@@ -323,6 +318,14 @@ const unparkSpot = async (req: Request, res: Response): Promise<void> => {
         isParked: false,
       });
     });
+
+    // Sync with Redis
+    const parkingSpotsData = await redisClient.get('parkingSpots');
+    const parkingSpots = JSON.parse(parkingSpotsData) as ParkingSpot[];
+    const updatedParkingSpots = parkingSpots.map(s =>
+      s.id === req.body.parkingSpotId ? { ...s, isOccupied: false } : s
+    );
+    await redisClient.set('parkingSpots', JSON.stringify(updatedParkingSpots));
 
     req.flash('success', 'Parking session ended successfully.');
     return res.status(200).redirect('/map');

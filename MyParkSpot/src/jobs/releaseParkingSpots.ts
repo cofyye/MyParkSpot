@@ -5,6 +5,7 @@ import { ParkingSpot } from '../models/ParkingSpot';
 import { LessThanOrEqual } from 'typeorm';
 import { ParkingRental } from '../models/ParkingRental';
 import moment from 'moment-timezone';
+import redisClient from '../config/redis';
 
 const releaseParkingSpots = async () => {
   const expiredRentals = await MysqlDataSource.getRepository(
@@ -48,6 +49,14 @@ const releaseParkingSpots = async () => {
         }
       );
     });
+
+    // Sync with Redis
+    const parkingSpotsData = await redisClient.get('parkingSpots');
+    const parkingSpots = JSON.parse(parkingSpotsData) as ParkingSpot[];
+    const updatedParkingSpots = parkingSpots.map(s =>
+      s.id === rental.parkingSpotId ? { ...s, isOccupied: false } : s
+    );
+    await redisClient.set('parkingSpots', JSON.stringify(updatedParkingSpots));
   }
 };
 

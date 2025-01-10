@@ -179,6 +179,17 @@ const deleteZone = async (req: Request, res: Response): Promise<void> => {
           .update(spot.id, {
             isDeleted: true,
           });
+
+        // Sync with Redis
+        const parkingSpotsData = await redisClient.get('parkingSpots');
+        const parkingSpots = JSON.parse(parkingSpotsData) as ParkingSpot[];
+        const updatedParkingSpots = parkingSpots.map(s =>
+          s.id === spot.id ? { ...s, isDeleted: true } : s
+        );
+        await redisClient.set(
+          'parkingSpots',
+          JSON.stringify(updatedParkingSpots)
+        );
       }
 
       if (hasActiveRentals) {
@@ -508,6 +519,14 @@ const deleteSpot = async (req: Request, res: Response): Promise<void> => {
       isDeleted: true,
     });
 
+    // Sync with Redis
+    const parkingSpotsData = await redisClient.get('parkingSpots');
+    const parkingSpots = JSON.parse(parkingSpotsData) as ParkingSpot[];
+    const updatedParkingSpots = parkingSpots.map(s =>
+      s.id === spot.id ? { ...s, isDeleted: true } : s
+    );
+    await redisClient.set('parkingSpots', JSON.stringify(updatedParkingSpots));
+
     req.flash('success', 'Parking spot deleted successfully');
     return res.status(200).redirect('/admin/spots');
   } catch (error: unknown) {
@@ -527,6 +546,23 @@ const postCreateSpot = async (
     ) as ParkingSpot;
 
     await MysqlDataSource.getRepository(ParkingSpot).save(spot);
+
+    const spotWithZone = await MysqlDataSource.getRepository(
+      ParkingSpot
+    ).findOne({
+      where: {
+        id: spot.id,
+      },
+      relations: {
+        zone: true,
+      },
+    });
+
+    // Sync with Redis
+    const parkingSpotsData = await redisClient.get('parkingSpots');
+    const parkingSpots = JSON.parse(parkingSpotsData) as ParkingSpot[];
+    parkingSpots.push(spotWithZone);
+    await redisClient.set('parkingSpots', JSON.stringify(parkingSpots));
 
     req.flash('success', 'Parking spot created successfully');
     return res.status(200).redirect('/admin/spots');

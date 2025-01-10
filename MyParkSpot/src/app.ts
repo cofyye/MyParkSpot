@@ -27,6 +27,8 @@ import newCarsSynchronization from './jobs/newCarsSynchronization';
 import authenticatedGuard from './middlewares/authenticatedGuard';
 import { UserRole } from './enums/user-role.enum';
 import roleGuard from './middlewares/roleGuard';
+import compression from 'compression';
+import utils from './utils/utils';
 
 const main = async (): Promise<void> => {
   try {
@@ -44,6 +46,9 @@ const main = async (): Promise<void> => {
     await subscriberClient.connect();
     await publisherClient.connect();
 
+    // Sync all parking spots with Redis
+    await utils.syncParkingSpotsToRedis();
+
     // Cron Jobs
     releaseParkingSpots();
     sendRentalExpirationNotifications();
@@ -52,6 +57,9 @@ const main = async (): Promise<void> => {
     // App Initialization
     const app = express();
     const port = process.env.PORT || 3000;
+
+    // Compression
+    app.use(compression());
 
     // Security
     app.use(
