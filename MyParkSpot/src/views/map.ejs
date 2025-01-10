@@ -430,7 +430,14 @@
       }
 
       function handleLocationError(error) {
-        window.location.href = '/map';
+        fetch(
+          `/api/nearby-parking-spots?lat=${43.3209}&lng=${21.8958}&radius=${9999}`
+        )
+          .then(response => response.json())
+          .then(nearbySpots => {
+            updateMarkers(nearbySpots);
+          })
+          .catch(error => console.error('Error fetching nearby spots:', error));
       }
 
       if ('geolocation' in navigator) {

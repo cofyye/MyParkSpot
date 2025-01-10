@@ -53,6 +53,8 @@ const sendRentalExpirationNotifications = async () => {
     notification.isRead = false;
     notification.parkingSpotId = rental.parkingSpotId;
 
+    await MysqlDataSource.getRepository(Notification).save(notification);
+
     await publisherClient.publish(
       'notification',
       JSON.stringify({
@@ -64,8 +66,6 @@ const sendRentalExpirationNotifications = async () => {
         createdAt: notification.createdAt,
       })
     );
-
-    await MysqlDataSource.getRepository(Notification).save(notification);
   }
 };
 
