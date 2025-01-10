@@ -8,26 +8,150 @@
   <body class="bg-background">
     <%- include('shared/partials/header') %>
     <main>
+      <section class="flex min-h-svh flex-col px-4 py-32 md:px-8">
+        <!-- Top content grows to push the button down -->
+        <div class="flex flex-1 flex-col items-center justify-center">
+          <h1 class="mb-4 font-serif text-5xl font-medium md:mb-6 md:text-7xl">
+            MyParkSpot.
+          </h1>
+          <h2
+            class="mb-2 text-center font-serif text-2xl font-normal text-primary md:text-4xl">
+            Your
+            <span class="italic text-accent">All-in-One</span>
+            Parking Solution
+          </h2>
+          <p
+            class="text-center text-lg leading-relaxed text-secondary md:mb-6 md:text-xl">
+            Tired of circling around looking for a parking spot? MyParkSpot
+            makes finding and renting parking spaces effortless.
+          </p>
+        </div>
+
+        <!-- Button anchored at the bottom -->
+        <div class="flex justify-center">
+          <a
+            href="/map"
+            class="rounded-full border bg-primary px-8 py-4 font-medium text-white transition duration-300 ease-in-out hover:scale-105 hover:bg-hover">
+            Find Parking Spot
+          </a>
+        </div>
+      </section>
+
+      <section class="w-full bg-accent px-4 py-16 md:px-8">
+        <div class="mx-auto w-full max-w-screen-xl">
+          <div class="flex flex-col justify-center space-y-4 md:space-y-6">
+            <h3 class="text-2xl font-semibold text-primary md:text-3xl">
+              Park with Confidence
+            </h3>
+            <p class="text-base text-primary md:text-lg">
+              Say goodbye to the stress of finding parking. With MyParkSpot,
+              enjoy real-time availability, secure payments, and guaranteed
+              spots, whether you're heading out for a quick errand or a long
+              journey.
+            </p>
+          </div>
+          <div class="mt-8 flex items-center justify-center">
+            <!-- <img
+              src=""
+              alt="Parking illustration"
+              class="max-w-full rounded-lg shadow-lg"
+            /> -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Video/Additional Content Section -->
+      <section class="bg-white px-4 py-24 shadow-inner md:px-8">
+        <div class="mx-auto w-full max-w-screen-xl">
+          <div
+            class="flex flex-col items-center space-y-6 md:flex-row md:space-x-8 md:space-y-0">
+            <div class="w-full md:w-1/2">
+              <!-- <video
+                class="rounded-2xl shadow-lg"
+                width="100%"
+                controls
+                poster=""
+              >
+                <source src="" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video> -->
+            </div>
+            <div class="w-full md:w-1/2">
+              <h3 class="mb-3 text-2xl font-semibold text-primary md:text-3xl">
+                Discover More
+              </h3>
+              <p class="mb-3 text-base text-secondary md:text-lg">
+                Watch our tutorial video to learn how to efficiently locate,
+                reserve, and manage parking spots. Our advanced mapping
+                solutions are designed to save you time and reduce hassle.
+              </p>
+              <p class="text-base text-secondary md:text-lg">
+                Whether you’re a driver searching for a spot or a parking
+                operator managing spaces, MyParkSpot offers the tools you need
+                for a seamless parking experience.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section
-        class="mb-32 mt-32 flex flex-col items-center justify-center p-4 md:p-6">
-        <h1 class="mb-4 font-serif text-5xl font-medium md:mb-6 md:text-8xl">
-          MyParkSpot.
-        </h1>
-        <h2
-          class="mb-2 text-center font-serif text-2xl font-normal text-primary md:text-4xl">
-          Your
-          <span class="italic text-accent">All-in-One</span>
-          Parking Solution
-        </h2>
-        <p
-          class="mb-4 text-center text-lg leading-relaxed text-secondary md:mb-6 md:text-xl">
-          Easily find and rent parking spots with our comprehensive tool.
-        </p>
-        <a
-          href="/map"
-          class="mt-32 rounded-full border bg-primary px-4 py-2 font-medium text-white transition duration-300 ease-in-out hover:scale-105 hover:bg-hover sm:mt-0 md:px-6 md:py-3"
-          >Find Parking Spot
-        </a>
+        class="relative overflow-hidden bg-gradient-to-b from-gray-100 to-gray-50 px-4 py-16 md:px-8">
+        <div class="mx-auto w-full max-w-screen-xl">
+          <h3 class="mb-4 text-2xl font-semibold text-primary md:text-3xl">
+            Unlock the Full Potential
+          </h3>
+          <p class="mb-8 text-base text-secondary md:text-lg">
+            Discover how our powerful tools can enhance your parking experience,
+            streamline payments, and keep you seamlessly connected.
+          </p>
+          <div class="grid gap-y-10 md:grid-cols-3 md:gap-x-8">
+            <div
+              class="group rounded-lg bg-white p-8 transition duration-300 hover:scale-102">
+              <div
+                class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white">
+                <i class="fas fa-car text-xl"></i>
+              </div>
+              <h4 class="mb-2 text-xl font-semibold text-primary">
+                Smart Navigation
+              </h4>
+              <p class="text-base text-secondary">
+                Access real-time routing and directions to the nearest available
+                spots with ease. No more circling around.
+              </p>
+            </div>
+
+            <div
+              class="group rounded-lg bg-white p-8 transition duration-300 hover:scale-102">
+              <div
+                class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white">
+                <i class="fas fa-credit-card text-xl"></i>
+              </div>
+              <h4 class="mb-2 text-xl font-semibold text-primary">
+                Secure Payments
+              </h4>
+              <p class="text-base text-secondary">
+                Pay for your parking via MyParkSpot’s integrated system. Enjoy
+                peace of mind with safe and easy transactions.
+              </p>
+            </div>
+
+            <div
+              class="group rounded-lg bg-white p-8 transition duration-300 hover:scale-102">
+              <div
+                class="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white">
+                <i class="fas fa-broadcast-tower text-xl"></i>
+              </div>
+              <h4 class="mb-2 text-xl font-semibold text-primary">
+                Real-Time Updates
+              </h4>
+              <p class="text-base text-secondary">
+                Stay informed about spot availability, updated prices, and any
+                parking restrictions instantly.
+              </p>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
     <%- include('shared/partials/footer') %> <%-
