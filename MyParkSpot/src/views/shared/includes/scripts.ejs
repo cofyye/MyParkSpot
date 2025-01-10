@@ -45,14 +45,16 @@
   function appendNotification(notification) {
     const notificationList = document.getElementById('notificationList');
 
-    let injectHtml = `<a `;
+    let injectHtml = `<form action="/client/notifications/${notification.id}/read" method="post">`;
+    injectHtml += `<button class="w-full text-left" type="submit">`;
     if (notification?.message.toLowerCase().includes('tap')) {
-      injectHtml += `href="${notification?.type === 'fine_issued' ? '/client/fines' : `/map?spotId=${notification?.parkingSpotId}`}">`;
+      injectHtml += `<input type="hidden" name="redirectUrl" value="${notification?.type === 'fine_issued' ? '/client/fines' : `/map?spotId=${notification?.parkingSpotId}`}" />`;
       injectHtml += `<div class="cursor-pointer `;
     } else {
+      injectHtml += `<input type="hidden" name="redirectUrl" value="/" />`;
       injectHtml += `<div class="`;
     }
-    injectHtml += `bg-white border-b p-4 hover:bg-gray-100">`;
+    injectHtml += `${!notification.isRead ? 'bg-white' : 'bg-gray-100'} border-b p-4 hover:bg-gray-100">`;
     injectHtml += `<div class="flex items-start gap-3">`;
     injectHtml += `<div class="flex-shrink-0 flex items-center justify-center w-5 h-5">`;
     if (notification?.type === 'fine_issued') {
@@ -71,7 +73,7 @@
     injectHtml += `</div>`;
     injectHtml += `</div>`;
     injectHtml += `</div>`;
-    injectHtml += `</a>`;
+    injectHtml += `</button>`;
 
     notificationList.insertAdjacentHTML('afterbegin', injectHtml);
   }
@@ -88,9 +90,9 @@
         ) {
           const notificationBtn = document.getElementById('notificationBtn');
 
-          document.getElementById('noNotification').remove();
+          document.getElementById('noNotification')?.remove();
 
-          notificationBtn.insertAdjacentHTML(
+          notificationBtn?.insertAdjacentHTML(
             'beforeend',
             `<span id="notificationLength" class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">1</span>`
           );
@@ -98,12 +100,14 @@
           const notificationLength =
             document.getElementById('notificationLength');
           notificationLength.innerText =
-            parseInt(notificationLength.innerText || 0) + 1;
+            parseInt(notificationLength?.innerText || 0) + 1;
         }
 
         appendNotification(JSON.parse(message));
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   });
 </script>
 <% } %>

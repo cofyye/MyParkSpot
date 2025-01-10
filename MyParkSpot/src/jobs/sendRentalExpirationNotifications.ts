@@ -56,6 +56,7 @@ const sendRentalExpirationNotifications = async () => {
     await publisherClient.publish(
       'notification',
       JSON.stringify({
+        id: notification.id,
         userId: notification.userId,
         parkingSpotId: notification.parkingSpotId,
         message: notification.message,
