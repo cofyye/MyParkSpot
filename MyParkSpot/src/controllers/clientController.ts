@@ -17,7 +17,8 @@ import { FineStatus } from '../enums/fine-status.enum';
 import moment from 'moment';
 import { Notification } from '../models/Notification';
 import { GetSpendingDataDto } from '../dtos/client/get-spending-data.dto';
-import { Between, In, MoreThanOrEqual, LessThanOrEqual, And } from 'typeorm';
+import { MoreThanOrEqual, LessThanOrEqual, And } from 'typeorm';
+import { ReadNotificationDto } from '../dtos/client/read-notification.dto';
 
 // Init stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -471,8 +472,17 @@ const getNotifications = async (
       });
 
       res.locals.notifications = notifications;
+      res.locals.notificationLength = await MysqlDataSource.getRepository(
+        Notification
+      ).count({
+        where: {
+          userId: user.id,
+          isRead: false,
+        },
+      });
     } catch (error: unknown) {
       res.locals.notifications = [];
+      res.locals.notificationLength = 0;
     }
   }
   next();
@@ -560,7 +570,45 @@ const getAllTransactions = async (
     res.render('pages/client/payments/transactions', { transactions });
   } catch (error) {
     req.flash('error', 'An error occurred while fetching transactions.');
-    res.redirect('/client/payments');
+    res.status(500).redirect('/client/payments');
+  }
+};
+
+const postReadNotification = async (
+  req: Request<{ id: string }, {}, ReadNotificationDto>,
+  res: Response
+): Promise<void> => {
+  try {
+    const user = req.user as User;
+
+    const notification = await MysqlDataSource.getRepository(
+      Notification
+    ).findOne({
+      where: { id: req.params.id },
+    });
+
+    if (!notification) {
+      req.flash('error', 'The notification not found.');
+      return res.status(404).redirect('/');
+    }
+
+    if (notification.userId !== user.id) {
+      req.flash('error', 'You are not owner of this notification.');
+      return res.status(409).redirect('/');
+    }
+
+    await MysqlDataSource.getRepository(Notification).update(
+      {
+        id: notification.id,
+      },
+      {
+        isRead: true,
+      }
+    );
+
+    res.status(200).redirect(req.body.redirectUrl);
+  } catch (error) {
+    res.status(500).redirect(req.body.redirectUrl);
   }
 };
 
@@ -582,4 +630,5 @@ export default {
   checkFines,
   getActiveCars,
   getAllTransactions,
+  postReadNotification,
 };

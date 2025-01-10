@@ -95,5 +95,10 @@ router.post(
   [roleGuard([UserRole.FOUNDER, UserRole.USER])],
   clientController.postPayFine
 );
+router.post(
+  '/notifications/:id/read',
+  [roleGuard([UserRole.FOUNDER, UserRole.USER])],
+  clientController.postReadNotification
+);
 
 export default router;

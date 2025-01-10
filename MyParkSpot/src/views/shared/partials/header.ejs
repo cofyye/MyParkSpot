@@ -14,11 +14,12 @@
       <a class="link-hover link text-secondary hover:text-hover" href="/map"
         >Find Parking</a
       >
-      <% if (user.role === 'founder' || user.role === 'user') { %>
-        <a 
+      <% if (user?.role === 'founder' || user?.role === 'user') { %>
+      <a
         id="manage-rentals"
-        class="link-hover link text-secondary hover:text-hover cursor-pointer"
-        >Manage Parking Rentals</a>
+        class="link-hover link cursor-pointer text-secondary hover:text-hover"
+        >Manage Parking Rentals</a
+      >
       <% } %>
     </div>
   </div>
@@ -49,18 +50,18 @@
           id="notificationBtn"
           class="relative flex items-center rounded-full p-2 hover:bg-gray-100">
           <i class="fa-solid fa-bell text-lg"></i>
-          <% if (notifications && notifications.length > 0) { %>
+          <% if (notificationLength) { %>
           <span
             id="notificationLength"
             class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-white">
-            <%= notifications.length %>
+            <%= notificationLength %>
           </span>
           <% } %>
         </button>
 
         <div
           id="notificationDropdown"
-          class="z-50 absolute right-0 top-full mt-2 hidden w-72 rounded-lg border border-gray-200 bg-white shadow-lg sm:w-80">
+          class="absolute right-0 top-full z-50 mt-2 hidden w-72 rounded-lg border border-gray-200 bg-white shadow-lg sm:w-80">
           <div class="border-b p-4">
             <h3 class="font-medium text-gray-900">Notifications</h3>
           </div>
@@ -68,15 +69,26 @@
           <div class="max-h-96 overflow-y-auto" id="notificationList">
             <% if (notifications && notifications.length > 0) { %> <%
             notifications.forEach(notification => { %>
-              <a <% if (notification.message.toLowerCase().includes('tap')) { %> 
-                    href="<%= notification.type === 'fine_issued' ? 
+            <form
+              action="/client/notifications/<%= notification.id %>/read"
+              method="post">
+              <% if (notification.message.toLowerCase().includes('tap')) { %>
+              <input
+                type="hidden"
+                name="redirectUrl"
+                value="<%= notification.type === 'fine_issued' ? 
                       '/client/fines' : 
                       `/map?spotId=${notification.parkingSpotId}` 
-                    %>"
-                  <% } %>>              
-                <div class="<%= notification.message.toLowerCase().includes('tap') ? 'cursor-pointer' : '' %> <%= !notification.isRead ? 'bg-white' : 'bg-gray-100' %> border-b p-4 hover:bg-gray-100">
+                    %>" />
+              <% } else { %>
+              <input type="hidden" name="redirectUrl" value="/" />
+              <% } %>
+              <button class="w-full text-left" type="submit">
+                <div
+                  class="<%= notification.message.toLowerCase().includes('tap') ? 'cursor-pointer' : '' %> <%= !notification.isRead ? 'bg-white' : 'bg-gray-100' %> border-b p-4 hover:bg-gray-100">
                   <div class="flex items-start gap-3">
-                    <div class="flex-shrink-0 flex items-center justify-center w-5 h-5">
+                    <div
+                      class="flex h-5 w-5 flex-shrink-0 items-center justify-center">
                       <% if (notification.type === 'fine_issued') { %>
                       <i class="fa-solid fa-receipt text-accent"></i>
                       <% } else if (notification.type === 'rental_ending') { %>
@@ -98,9 +110,12 @@
                     <% } %>
                   </div>
                 </div>
-              </a>
+              </button>
+            </form>
             <% }) %> <% } else { %>
-            <div id="noNotification" class="p-4 text-center text-sm text-secondary/70">
+            <div
+              id="noNotification"
+              class="p-4 text-center text-sm text-secondary/70">
               No notifications
             </div>
             <% } %>
@@ -128,32 +143,35 @@
     </h2>
 
     <div>
-      <h3 class="text-md mb-2 font-medium text-gray-700">
-        Your Parked Cars
-      </h3>
+      <h3 class="text-md mb-2 font-medium text-gray-700">Your Parked Cars</h3>
       <% if (activeCars && activeCars.length > 0) { %>
-        <div class="grid gap-4 sm:grid-cols-2">
-          <% activeCars.forEach(function(car) { %>
-            <a href="/map?spotId=<%= car.rentedParkingSpotId %>" class="block">
-              <div class="transform cursor-pointer rounded-lg border border-gray-200 p-4 transition-all hover:border-primary hover:shadow-md">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-md font-semibold text-gray-800"><%= car.licensePlate %></p>
-                    <p class="mt-1 text-sm text-gray-600">
-                      <%= car.manufacturer %> <%= car.model %> 
-                      <% if (car.year) { %>(<%= car.year %>)<% } %>
-                    </p>
-                  </div>
-                </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <% activeCars.forEach(function(car) { %>
+        <a href="/map?spotId=<%= car.rentedParkingSpotId %>" class="block">
+          <div
+            class="transform cursor-pointer rounded-lg border border-gray-200 p-4 transition-all hover:border-primary hover:shadow-md">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-md font-semibold text-gray-800">
+                  <%= car.licensePlate %>
+                </p>
+                <p class="mt-1 text-sm text-gray-600">
+                  <%= car.manufacturer %> <%= car.model %> <% if (car.year) {
+                  %>(<%= car.year %>)<% } %>
+                </p>
               </div>
-            </a>
-          <% }); %>
-        </div>
+            </div>
+          </div>
+        </a>
+        <% }); %>
+      </div>
       <% } else { %>
-        <p class="text-center p-3 text-sm text-gray-500">          
-          No vehicles parked yet. <br>
-          <a href="/map" class="text-primary/80 hover:underline inline">Find the perfect spot.</a>
-        </p>
+      <p class="p-3 text-center text-sm text-gray-500">
+        No vehicles parked yet. <br />
+        <a href="/map" class="inline text-primary/80 hover:underline"
+          >Find the perfect spot.</a
+        >
+      </p>
       <% } %>
     </div>
 
@@ -202,7 +220,7 @@
     rentalsModal.classList.add('hidden');
   });
 
-  rentalsModal.addEventListener('click', (e) => {
+  rentalsModal.addEventListener('click', e => {
     if (e.target === rentalsModal) {
       rentalsModal.classList.add('hidden');
     }
