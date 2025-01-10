@@ -20,7 +20,7 @@
           <p id="parking-details" class="mt-2 text-secondary"></p>
         </div>
         <div class="flex items-center justify-center gap-2 sm:gap-4">
-          <% if (user.role === 'founder' || user.role === 'user') { %>
+          <% if (user?.role === 'founder' || user?.role === 'user') { %>
           <button
             id="park-here"
             class="btn-sm btn transform cursor-pointer rounded-full border bg-accent px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
@@ -251,12 +251,12 @@
 
         return L.divIcon({
           html: `
-            <i class="fa-solid fa-square-parking"
-              style="font-size: 26px; color: transparent;
-              background: radial-gradient(circle at top,${firstColor} 60%, ${secondColor} 95%);
-              -webkit-background-clip: text;">
-            </i>
-          `,
+                  <i class="fa-solid fa-square-parking"
+                    style="font-size: 26px; color: transparent;
+                    background: radial-gradient(circle at top,${firstColor} 60%, ${secondColor} 95%);
+                    -webkit-background-clip: text;">
+                  </i>
+                `,
           className: 'custom-div-icon',
           iconSize: [30, 30],
           iconAnchor: [15, 30],
@@ -370,7 +370,9 @@
               rental => rental.parkingSpotId === spot.id
             );
             if (isUserSpot) {
-              document.getElementById('unpark-here')?.classList.remove('hidden');
+              document
+                .getElementById('unpark-here')
+                ?.classList.remove('hidden');
               document.getElementById('parkingSpot').value = spot.id;
             } else {
               document.getElementById('unpark-here')?.classList.add('hidden');
@@ -381,9 +383,9 @@
             document.getElementById('parkingSpot').value = spot.id;
           }
           document.getElementById('parking-details').innerHTML = `
-            <p>Status: ${spot.isOccupied ? 'Occupied' : 'Available'}</p>
-            <p>Zone: ${capitalizeFirstLetter(spot.zone.type)}</p>
-          `;
+                  <p>Status: ${spot.isOccupied ? 'Occupied' : 'Available'}</p>
+                  <p>Zone: ${capitalizeFirstLetter(spot.zone.type)}</p>
+                `;
           zone = spot.zone;
           adjustMapHeight();
         });
@@ -411,6 +413,87 @@
       }
 
       window.addEventListener('resize', adjustMapHeight);
+
+      // Location Logic
+      function handleLocationUpdate(position) {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        const accuracy = position.coords.accuracy;
+        const radius = 1;
+
+        fetch(`/api/nearby-parking-spots?lat=${lat}&lng=${lng}&radius=${1}`)
+          .then(response => response.json())
+          .then(nearbySpots => {
+            updateMarkers(nearbySpots);
+          })
+          .catch(error => console.error('Error fetching nearby spots:', error));
+      }
+
+      function handleLocationError(error) {
+        window.location.href = '/map';
+      }
+
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          handleLocationUpdate,
+          handleLocationError
+        );
+        setInterval(() => {
+          navigator.geolocation.getCurrentPosition(
+            handleLocationUpdate,
+            handleLocationError
+          );
+        }, 5000);
+      } else {
+        console.error('Geolocation is not supported by this browser.');
+      }
+
+      function updateMarkers(spots) {
+        markers.clearLayers();
+
+        spots.forEach(spot => {
+          const marker = L.marker([spot.latitude, spot.longitude], {
+            icon: createParkingIcon(
+              spot.zone.type,
+              spot.isOccupied,
+              userRentals,
+              spot.id
+            ),
+          });
+
+          marker.on('click', () => {
+            document.getElementById('parking-info').classList.remove('hidden');
+            if (spot.isOccupied) {
+              document.getElementById('park-here')?.classList.add('hidden');
+              const isUserSpot = userRentals.some(
+                rental => rental.parkingSpotId === spot.id
+              );
+              if (isUserSpot) {
+                document
+                  .getElementById('unpark-here')
+                  ?.classList.remove('hidden');
+                document.getElementById('parkingSpot').value = spot.id;
+              } else {
+                document.getElementById('unpark-here')?.classList.add('hidden');
+              }
+            } else {
+              document.getElementById('park-here')?.classList.remove('hidden');
+              document.getElementById('unpark-here')?.classList.add('hidden');
+              document.getElementById('parkingSpot').value = spot.id;
+            }
+            document.getElementById('parking-details').innerHTML = `
+                  <p>Status: ${spot.isOccupied ? 'Occupied' : 'Available'}</p>
+                  <p>Zone: ${capitalizeFirstLetter(spot.zone.type)}</p>
+                `;
+            zone = spot.zone;
+            adjustMapHeight();
+          });
+
+          markers.addLayer(marker);
+        });
+
+        map.addLayer(markers);
+      }
 
       // Park Here Modal
       document.getElementById('close-info').addEventListener('click', () => {

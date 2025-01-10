@@ -189,17 +189,17 @@
   const notificationBtn = document.getElementById('notificationBtn');
   const notificationDropdown = document.getElementById('notificationDropdown');
 
-  notificationBtn.addEventListener('click', function (e) {
+  notificationBtn?.addEventListener('click', function (e) {
     e.stopPropagation();
-    notificationDropdown.classList.toggle('hidden');
+    notificationDropdown?.classList.toggle('hidden');
   });
 
   document.addEventListener('click', function (e) {
     if (
-      !notificationDropdown.contains(e.target) &&
+      !notificationDropdown?.contains(e.target) &&
       e.target !== notificationBtn
     ) {
-      notificationDropdown.classList.add('hidden');
+      notificationDropdown?.classList.add('hidden');
     }
   });
 
