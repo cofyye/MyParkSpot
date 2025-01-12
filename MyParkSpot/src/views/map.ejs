@@ -23,12 +23,12 @@
           <% if (user?.role === 'founder' || user?.role === 'user') { %>
           <button
             id="park-here"
-            class="btn-sm btn transform cursor-pointer rounded-full border bg-accent px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
+            class="btn-sm btn hidden transform cursor-pointer rounded-full border bg-accent px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
             Park Here
           </button>
           <button
             id="unpark-here"
-            class="btn-sm btn transform cursor-pointer rounded-full border bg-accent px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
+            class="btn-sm btn hidden transform cursor-pointer rounded-full border bg-accent px-4 py-2 font-semibold transition duration-300 ease-in-out hover:scale-105 md:px-6 md:py-2">
             End Parking
           </button>
           <% } %>
@@ -267,6 +267,7 @@
 
       // Check for unauthorized user
       const user = '<%= user %>';
+      let isNavigationAllowed = false;
 
       const parkBtn = document.getElementById('park-here');
       if (!user) {
@@ -294,7 +295,6 @@
           zone: spot.zone,
         };
       });
-      console.log(parkingSpots);
 
       // Leaflet Map
       const map = L.map('map', {
@@ -337,7 +337,7 @@
         })
         .addTo(map);
 
-      L.control
+      const locateControl = L.control
         .locate({
           position: 'topright',
           flyTo: true,
@@ -346,6 +346,21 @@
           },
         })
         .addTo(map);
+
+      map.on('locationfound', function (e) {
+        isNavigationAllowed = true;
+        console.log('Location found:', e.latlng);
+      });
+
+      map.on('stop', function () {
+        console.log('User has stopped locating');
+        isNavigationAllowed = false;
+      });
+
+      map.on('locationerror', function (e) {
+        console.error('Location error:', e.message);
+        isNavigationAllowed = false;
+      });
 
       const markers = L.markerClusterGroup({
         showCoverageOnHover: false,
@@ -484,8 +499,12 @@
                 document.getElementById('unpark-here')?.classList.add('hidden');
               }
             } else {
-              document.getElementById('park-here')?.classList.remove('hidden');
-              document.getElementById('unpark-here')?.classList.add('hidden');
+              if (!isNavigationAllowed) {
+                document
+                  .getElementById('park-here')
+                  ?.classList.remove('hidden');
+                document.getElementById('unpark-here')?.classList.add('hidden');
+              }
               document.getElementById('parkingSpot').value = spot.id;
             }
             document.getElementById('parking-details').innerHTML = `

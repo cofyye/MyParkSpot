@@ -51,7 +51,7 @@ const getMap = async (
   const parkingSpots = await redisClient.get(`parkingSpots`);
 
   return res.render('map', {
-    parkingSpots: JSON.stringify(JSON.parse(parkingSpots || '[]')),
+    parkingSpots,
     userRentals: JSON.stringify(userRentals),
     cars,
     spotId,
@@ -75,7 +75,7 @@ const getNearbyParkingSpots = async (
     );
 
     const parkingSpotsData = await redisClient.get('parkingSpots');
-    const parkingSpots = JSON.parse(parkingSpotsData);
+    const parkingSpots = JSON.parse(parkingSpotsData) as ParkingSpot[];
     const filteredSpots = parkingSpots.filter(
       (spot: ParkingSpot) =>
         spots.map(s => s.member).includes(spot.id) && !spot.isDeleted

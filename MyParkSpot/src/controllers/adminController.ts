@@ -522,10 +522,9 @@ const deleteSpot = async (req: Request, res: Response): Promise<void> => {
     // Sync with Redis
     const parkingSpotsData = await redisClient.get('parkingSpots');
     const parkingSpots = JSON.parse(parkingSpotsData) as ParkingSpot[];
-    const updatedParkingSpots = parkingSpots.map(s =>
-      s.id === spot.id ? { ...s, isDeleted: true } : s
-    );
+    const updatedParkingSpots = parkingSpots.filter(s => s.id !== spot.id);
     await redisClient.set('parkingSpots', JSON.stringify(updatedParkingSpots));
+    await redisClient.ZREM('geo:parkingSpots', spot.id);
 
     req.flash('success', 'Parking spot deleted successfully');
     return res.status(200).redirect('/admin/spots');
@@ -563,6 +562,11 @@ const postCreateSpot = async (
     const parkingSpots = JSON.parse(parkingSpotsData) as ParkingSpot[];
     parkingSpots.push(spotWithZone);
     await redisClient.set('parkingSpots', JSON.stringify(parkingSpots));
+    await redisClient.geoAdd('geo:parkingSpots', {
+      longitude: spot.longitude,
+      latitude: spot.latitude,
+      member: spot.id,
+    });
 
     req.flash('success', 'Parking spot created successfully');
     return res.status(200).redirect('/admin/spots');
