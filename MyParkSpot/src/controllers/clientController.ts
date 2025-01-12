@@ -19,6 +19,7 @@ import { Notification } from '../models/Notification';
 import { GetSpendingDataDto } from '../dtos/client/get-spending-data.dto';
 import { MoreThanOrEqual, LessThanOrEqual, And } from 'typeorm';
 import { ReadNotificationDto } from '../dtos/client/read-notification.dto';
+import { ParkingRental } from '../models/ParkingRental';
 
 // Init stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -332,6 +333,20 @@ const postDeleteCar = async (req: Request, res: Response): Promise<void> => {
     if (!car) {
       req.flash('error', 'Car not found.');
       return res.status(404).redirect('/client/my-cars');
+    }
+
+    const parkingRentals = await MysqlDataSource.getRepository(
+      ParkingRental
+    ).count({
+      where: { carId: car.id, expired: false },
+    });
+
+    if (parkingRentals > 0) {
+      req.flash(
+        'error',
+        'You cannot delete a car with active parking rentals.'
+      );
+      return res.status(409).redirect('/client/my-cars');
     }
 
     await carRepository.update(car.id, { isDeleted: true });

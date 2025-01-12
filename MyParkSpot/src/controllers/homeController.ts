@@ -257,7 +257,7 @@ const rentParkingSpot = async (
     const parkingSpotsData = await redisClient.get('parkingSpots');
     const parkingSpots = JSON.parse(parkingSpotsData) as ParkingSpot[];
     const updatedParkingSpots = parkingSpots.map(s =>
-      s.id === req.body.parkingSpotId ? { ...s, isOccupied: true } : s
+      s.id === parkingSpotId ? { ...s, isOccupied: true } : s
     );
     await redisClient.set('parkingSpots', JSON.stringify(updatedParkingSpots));
 
@@ -294,7 +294,6 @@ const unparkSpot = async (req: Request, res: Response): Promise<void> => {
           expired: false,
           endTime: MoreThanOrEqual(moment().utc().toDate()),
         },
-        relations: ['car', 'parkingSpot'],
       });
 
       if (!rental) {
@@ -308,13 +307,13 @@ const unparkSpot = async (req: Request, res: Response): Promise<void> => {
 
       await transactionalEntityManager.update(
         ParkingSpot,
-        rental.parkingSpot.id,
+        rental.parkingSpotId,
         {
           isOccupied: false,
         }
       );
 
-      await transactionalEntityManager.update(Car, rental.car.id, {
+      await transactionalEntityManager.update(Car, rental.carId, {
         isParked: false,
       });
     });
@@ -323,7 +322,7 @@ const unparkSpot = async (req: Request, res: Response): Promise<void> => {
     const parkingSpotsData = await redisClient.get('parkingSpots');
     const parkingSpots = JSON.parse(parkingSpotsData) as ParkingSpot[];
     const updatedParkingSpots = parkingSpots.map(s =>
-      s.id === req.body.parkingSpotId ? { ...s, isOccupied: false } : s
+      s.id === spotId ? { ...s, isOccupied: false } : s
     );
     await redisClient.set('parkingSpots', JSON.stringify(updatedParkingSpots));
 
