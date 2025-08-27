@@ -436,7 +436,9 @@
         const accuracy = position.coords.accuracy;
         const radius = 1;
 
-        fetch(`/api/nearby-parking-spots?lat=${lat}&lng=${lng}&radius=${1}`)
+        fetch(
+          `/api/nearby-parking-spots?lat=${lat}&lng=${lng}&radius=${radius}`
+        )
           .then(response => response.json())
           .then(nearbySpots => {
             updateMarkers(nearbySpots);
