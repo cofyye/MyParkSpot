@@ -173,6 +173,8 @@ const getCompletePayments = async (
   try {
     const user = req.user as User;
 
+    console.log(req.query);
+
     if (req.query.payment_method === PaymentMethod.PAYPAL) {
       req.flash('error', 'PayPal is currently unavailable for payments.');
       return res.status(503).redirect('/client/payments/funds/add');

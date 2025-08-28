@@ -73,6 +73,7 @@ const main = async (): Promise<void> => {
               'https://cdn.jsdelivr.net',
               'https://cdnjs.cloudflare.com',
               "'unsafe-inline'",
+              'https://checkout.stripe.com',
             ],
             styleSrc: [
               "'self'",
@@ -95,7 +96,11 @@ const main = async (): Promise<void> => {
               'https://c.basemaps.cartocdn.com',
               'https://d.basemaps.cartocdn.com',
               'https://unpkg.com',
+              'https://*.stripe.com',
             ],
+            frameSrc: ["'self'", 'https://checkout.stripe.com'],
+            connectSrc: ["'self'", 'https://checkout.stripe.com'],
+            formAction: ["'self'", 'https://checkout.stripe.com'],
           },
         },
       })
@@ -124,7 +129,7 @@ const main = async (): Promise<void> => {
         resave: true,
         cookie: {
           secure: process.env.NODE_ENV === 'production',
-          sameSite: 'strict',
+          sameSite: 'none',
           httpOnly: true,
         },
       })

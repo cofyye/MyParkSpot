@@ -7,5 +7,5 @@ export class GetSpendingDataDto {
   @Min(1, { message: 'Days must be at least 1.' })
   @Max(31, { message: 'Days cannot exceed 31.' })
   @IsNotEmpty({ message: 'Days parameter is required.' })
-  public readonly days: number;
+  public readonly days: number = 7;
 }
