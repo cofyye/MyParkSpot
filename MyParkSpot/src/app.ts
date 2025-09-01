@@ -129,7 +129,7 @@ const main = async (): Promise<void> => {
         resave: true,
         cookie: {
           secure: process.env.NODE_ENV === 'production',
-          sameSite: 'none',
+          sameSite: 'lax',
           httpOnly: true,
         },
       })
